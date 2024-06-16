@@ -1,0 +1,88 @@
+/* VitePress 自定义样式 + GSAP 动画支持 */
+
+/* ═══ 首页沉浸式导航 ═══ */
+
+/* 首页导航绝对定位，不需要占位，去掉 VPContent 的 nav 高度 padding */
+body.cool-home-page .VPContent {
+  padding-top: 0 !important;
+}
+
+body.cool-home-page .VPNav {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+}
+
+body.cool-home-page .VPNavBar {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+}
+
+body.cool-home-page .VPNavBar .content-body {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+/* 导航文字在 hero 渐变背景上更清晰 */
+body.cool-home-page .VPNavBar .VPNavBarMenuLink,
+body.cool-home-page .VPNavBar .VPNavBarTitle {
+  color: var(--vp-c-text-1);
+}
+
+/* 滚动后导航栏恢复毛玻璃 */
+body.cool-home-page .VPNav.scrolled {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid var(--vp-c-divider) !important;
+}
+
+:root.dark body.cool-home-page .VPNav.scrolled {
+  background: rgba(20, 20, 30, 0.7) !important;
+}
+
+/* Features 卡片悬浮效果（CSS 过渡，非 GSAP） */
+.VPFeature {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+.dark .VPFeature:hover {
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* 减少动画偏好的用户 */
+@media (prefers-reduced-motion: reduce) {
+  .VPFeature {
+    transition: none;
+  }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5);
+}
