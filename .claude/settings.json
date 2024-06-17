@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(open http://localhost:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5175/)",
+      "Bash(kill %1)",
+      "Bash(python /tmp/screenshot_homepage.py)",
+      "Bash(python3 /tmp/screenshot_homepage.py)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io diff --stat)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io status --short)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io commit -m '迁移到 VitePress *)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io commit -m '修复首页布局与权限清理 *)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io log --oneline -4)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io log --oneline -5)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io log --format=\"%h %s\" -5)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io reset --soft HEAD~2)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io reset HEAD -- .claude/settings.json)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io add -A)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io commit -m \"feat: migrate to VitePress\")",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io reset --soft HEAD~1)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io checkout HEAD -- .claude/settings.json)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io add .github .gitignore README.md docs package.json package-lock.json)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io rm -r css img js)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io reset --soft 3ba3ca5)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io add .claude)",
+      "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io commit -m \"fix: homepage layout and clean permissions\")"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp"
+    ]
+  }
+}
