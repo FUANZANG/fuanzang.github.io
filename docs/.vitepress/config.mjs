@@ -9,6 +9,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
+      { text: '笔记', link: '/notes/performance-optimization' },
       { text: '指南', link: '/guide/getting-started' },
       { text: '博客', link: '/blog/hello-world' }
     ],
@@ -27,6 +28,34 @@ export default defineConfig({
           text: '博客',
           items: [
             { text: 'Hello World', link: '/blog/hello-world' }
+          ]
+        }
+      ],
+      '/notes/': [
+        {
+          text: '性能优化',
+          items: [
+            { text: '前端性能优化', link: '/notes/performance-optimization' },
+            { text: 'Webpack 构建优化', link: '/notes/webpack-optimization' }
+          ]
+        },
+        {
+          text: '前端基础',
+          items: [
+            { text: 'HTML', link: '/notes/html-note' },
+            { text: 'CSS', link: '/notes/css-note' },
+            { text: 'JavaScript', link: '/notes/javascript-note' },
+            { text: 'TypeScript', link: '/notes/typescript-note' },
+            { text: 'Vue', link: '/notes/vue-note' }
+          ]
+        },
+        {
+          text: '进阶',
+          items: [
+            { text: '浏览器', link: '/notes/browser-note' },
+            { text: 'Node', link: '/notes/node-note' },
+            { text: '正则与校验', link: '/notes/regex-and-validation' },
+            { text: 'ECMA Script 标准', link: '/notes/ecma-script-standard' }
           ]
         }
       ]
