@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Fuanzang',
-  description: 'Fuanzang 的个人站点 - 知识库、博客与作品展示',
+  title: 'FUANZANG',
+  description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
   lang: 'zh-CN',
   base: '/',
 
@@ -10,7 +10,6 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '笔记', link: '/notes/performance-optimization' },
-      { text: '指南', link: '/guide/getting-started' },
       { text: '博客', link: '/blog/hello-world' }
     ],
 
@@ -18,17 +17,13 @@ export default defineConfig({
       '/guide/': [
         {
           text: '指南',
-          items: [
-            { text: '快速开始', link: '/guide/getting-started' }
-          ]
+          items: [{ text: '快速开始', link: '/guide/getting-started' }]
         }
       ],
       '/blog/': [
         {
           text: '博客',
-          items: [
-            { text: 'Hello World', link: '/blog/hello-world' }
-          ]
+          items: [{ text: 'Hello World', link: '/blog/hello-world' }]
         }
       ],
       '/notes/': [
@@ -61,13 +56,11 @@ export default defineConfig({
       ]
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/FUANZANG' }
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/FUANZANG' }],
 
     footer: {
       message: '基于 VitePress 构建',
-      copyright: 'Copyright © 2026 Fuanzang'
+      copyright: 'Copyright © 2026 FUANZANG'
     },
 
     search: {

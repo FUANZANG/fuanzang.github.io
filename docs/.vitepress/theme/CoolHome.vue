@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger)
 const router = useRouter()
 const heroRef = ref(null)
 const orbsRef = ref(null)
-const titleChars = ref('Fuanzang'.split(''))
+const titleChars = ref('FUANZANG'.split(''))
 const st = ref([])
 const tw = ref([])
 let scrollHandler = null
@@ -27,7 +27,7 @@ const orbConfig = [
   ['var(--g2)', '480px', '22%', '68%', '90px', 0.3],
   ['var(--g3)', '380px', '58%', '3%', '70px', 0.25],
   ['var(--g4)', '440px', '52%', '80%', '85px', 0.2],
-  ['var(--g1)', '300px', '82%', '38%', '75px', 0.4],
+  ['var(--g1)', '300px', '82%', '38%', '75px', 0.4]
 ]
 
 // Mouse parallax — uses x-axis (scroll parallax owns y-axis)
@@ -43,7 +43,7 @@ function onMove(e) {
       y: my * factor * 0.4,
       duration: 0.6,
       ease: 'power2.out',
-      overwrite: 'auto',
+      overwrite: 'auto'
     })
   })
 }
@@ -61,78 +61,118 @@ async function run() {
     ['.hero-title', -0.5],
     ['.hero-subtitle', -0.35],
     ['.hero-tagline', -0.25],
-    ['.hero-actions', -0.15],
+    ['.hero-actions', -0.15]
   ]
   layers.forEach(([sel, speed]) => {
     const el = hero.querySelector(sel)
     if (!el) return
-    st.value.push(ScrollTrigger.create({
-      trigger: hero,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-      onUpdate: self => {
-        gsap.set(el, { y: self.progress * self.distance * speed })
-      },
-    }))
+    st.value.push(
+      ScrollTrigger.create({
+        trigger: hero,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+        onUpdate: self => {
+          gsap.set(el, { y: self.progress * self.distance * speed })
+        }
+      })
+    )
   })
 
   // Orb parallax
   const orbs = hero.querySelectorAll('.parallax-orb')
   orbs.forEach((orb, i) => {
     const speed = orbConfig[i]?.[5] || 0.2
-    st.value.push(ScrollTrigger.create({
-      trigger: hero,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-      onUpdate: self => {
-        gsap.set(orb, { y: self.progress * self.distance * -speed })
-      },
-    }))
+    st.value.push(
+      ScrollTrigger.create({
+        trigger: hero,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+        onUpdate: self => {
+          gsap.set(orb, { y: self.progress * self.distance * -speed })
+        }
+      })
+    )
   })
 
   // ── Reveal Animations ──
   // Orbs fade in
   if (orbs.length) {
     gsap.set(orbs, { scale: 0.4, opacity: 0 })
-    tw.value.push(gsap.to(orbs, {
-      scale: 1, opacity: 1, duration: 2, stagger: 0.25, ease: 'power2.out',
-      filter: (i) => `blur(${orbConfig[i]?.[4]?.replace('px','') || 80}px)`,
-    }))
+    tw.value.push(
+      gsap.to(orbs, {
+        scale: 1,
+        opacity: 1,
+        duration: 2,
+        stagger: 0.25,
+        ease: 'power2.out',
+        filter: i => `blur(${orbConfig[i]?.[4]?.replace('px', '') || 80}px)`
+      })
+    )
   }
 
   // Title characters fly in
   const chars = hero.querySelectorAll('.char')
   if (chars.length) {
     gsap.set(chars, { y: 120, opacity: 0, rotateX: -90 })
-    tw.value.push(gsap.to(chars, {
-      y: 0, opacity: 1, rotateX: 0,
-      duration: 1.1, stagger: 0.07, ease: 'back.out(1.4)', delay: 0.4,
-    }))
+    tw.value.push(
+      gsap.to(chars, {
+        y: 0,
+        opacity: 1,
+        rotateX: 0,
+        duration: 1.1,
+        stagger: 0.07,
+        ease: 'back.out(1.4)',
+        delay: 0.4
+      })
+    )
   }
 
   // Subtitle
   const sub = hero.querySelector('.hero-subtitle')
   if (sub) {
     gsap.set(sub, { y: 50, opacity: 0 })
-    tw.value.push(gsap.to(sub, { y: 0, opacity: 1, duration: 0.9, delay: 1, ease: 'power3.out' }))
+    tw.value.push(
+      gsap.to(sub, {
+        y: 0,
+        opacity: 1,
+        duration: 0.9,
+        delay: 1,
+        ease: 'power3.out'
+      })
+    )
   }
 
   // Tagline
   const tag = hero.querySelector('.hero-tagline')
   if (tag) {
     gsap.set(tag, { y: 30, opacity: 0 })
-    tw.value.push(gsap.to(tag, { y: 0, opacity: 1, duration: 0.8, delay: 1.2, ease: 'power3.out' }))
+    tw.value.push(
+      gsap.to(tag, {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        delay: 1.2,
+        ease: 'power3.out'
+      })
+    )
   }
 
   // Action buttons
   const btns = hero.querySelectorAll('.action-btn')
   if (btns.length) {
     gsap.set(btns, { y: 30, opacity: 0 })
-    tw.value.push(gsap.to(btns, {
-      y: 0, opacity: 1, stagger: 0.12, duration: 0.7, delay: 1.4, ease: 'power3.out',
-    }))
+    tw.value.push(
+      gsap.to(btns, {
+        y: 0,
+        opacity: 1,
+        stagger: 0.12,
+        duration: 0.7,
+        delay: 1.4,
+        ease: 'power3.out'
+      })
+    )
   }
 
   // ── Feature Cards ──
@@ -140,17 +180,26 @@ async function run() {
   if (cards.length) {
     gsap.set(cards, { y: 100, opacity: 0, scale: 0.85, rotateX: 15 })
     cards.forEach((card, i) => {
-      st.value.push(ScrollTrigger.create({
-        trigger: card,
-        start: 'top 90%',
-        onEnter: () => {
-          tw.value.push(gsap.to(card, {
-            y: 0, opacity: 1, scale: 1, rotateX: 0,
-            duration: 0.9, delay: i * 0.12, ease: 'power3.out',
-          }))
-        },
-        once: true,
-      }))
+      st.value.push(
+        ScrollTrigger.create({
+          trigger: card,
+          start: 'top 90%',
+          onEnter: () => {
+            tw.value.push(
+              gsap.to(card, {
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                rotateX: 0,
+                duration: 0.9,
+                delay: i * 0.12,
+                ease: 'power3.out'
+              })
+            )
+          },
+          once: true
+        })
+      )
     })
   }
 
@@ -158,16 +207,23 @@ async function run() {
   const sectionHeading = document.querySelector('.section-heading')
   if (sectionHeading) {
     gsap.set(sectionHeading, { y: 40, opacity: 0 })
-    st.value.push(ScrollTrigger.create({
-      trigger: sectionHeading,
-      start: 'top 85%',
-      onEnter: () => {
-        tw.value.push(gsap.to(sectionHeading, {
-          y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
-        }))
-      },
-      once: true,
-    }))
+    st.value.push(
+      ScrollTrigger.create({
+        trigger: sectionHeading,
+        start: 'top 85%',
+        onEnter: () => {
+          tw.value.push(
+            gsap.to(sectionHeading, {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              ease: 'power3.out'
+            })
+          )
+        },
+        once: true
+      })
+    )
   }
 
   // Refresh ScrollTrigger after DOM updates
@@ -235,7 +291,7 @@ onUnmounted(() => {
             top: cfg[2],
             left: cfg[3],
             filter: `blur(${cfg[4]})`,
-            animationDelay: `${i * 1.8}s`,
+            animationDelay: `${i * 1.8}s`
           }"
         />
       </div>
@@ -252,15 +308,24 @@ onUnmounted(() => {
               :key="i"
               class="char"
               :style="{ animationDelay: `${i * 0.08 + 0.6}s` }"
-            >{{ ch }}</span>
+              >{{ ch }}</span
+            >
           </span>
         </div>
         <p class="hero-subtitle">个人知识库 &amp; 博客</p>
         <p class="hero-tagline">记录学习 · 分享思考 · 展示作品</p>
         <div class="hero-actions">
-          <a href="/guide/getting-started" class="action-btn primary">开始阅读</a>
+          <a href="/notes/performance-optimization" class="action-btn primary"
+            >开始阅读</a
+          >
           <a href="/blog/hello-world" class="action-btn ghost">浏览博客</a>
-          <a href="https://github.com/FUANZANG" target="_blank" rel="noopener" class="action-btn subtle">GitHub ↗</a>
+          <a
+            href="https://github.com/FUANZANG"
+            target="_blank"
+            rel="noopener"
+            class="action-btn subtle"
+            >GitHub ↗</a
+          >
         </div>
       </div>
 
@@ -287,25 +352,23 @@ onUnmounted(() => {
           <div class="card-icon">
             <span>🚀</span>
           </div>
-          <h3>作品展示</h3>
-          <p>展示个人项目与作品，记录开发过程与技术实践</p>
+          <h3>技术博客</h3>
+          <p>技术文章与经验分享，记录开发心得与思考</p>
           <div class="card-shine" />
         </div>
         <div class="feature-card" data-accent="var(--c-pink)">
           <div class="card-icon">
             <span>💡</span>
           </div>
-          <h3>思考分享</h3>
-          <p>分享对技术、产品与生活的思考与感悟</p>
+          <h3>工具推荐</h3>
+          <p>分享好用的开发工具、插件与资源</p>
           <div class="card-shine" />
         </div>
       </div>
     </section>
 
     <!-- ═══ FOOTER SPACER ═══ -->
-    <footer class="home-footer">
-      <p>© 2026 Fuanzang · Built with VitePress</p>
-    </footer>
+    <div style="height: 2rem" />
   </div>
 </template>
 
@@ -329,18 +392,50 @@ onUnmounted(() => {
   --c-purple: #8b5cf6;
   --c-pink: #ec4899;
   --c-cyan: #06b6d4;
-  --g1: linear-gradient(135deg, rgba(59, 130, 246, 0.45), rgba(139, 92, 246, 0.35));
-  --g2: linear-gradient(135deg, rgba(236, 72, 153, 0.4), rgba(245, 158, 11, 0.3));
-  --g3: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.3));
-  --g4: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(236, 72, 153, 0.3));
+  --g1: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.45),
+    rgba(139, 92, 246, 0.35)
+  );
+  --g2: linear-gradient(
+    135deg,
+    rgba(236, 72, 153, 0.4),
+    rgba(245, 158, 11, 0.3)
+  );
+  --g3: linear-gradient(
+    135deg,
+    rgba(6, 182, 212, 0.4),
+    rgba(59, 130, 246, 0.3)
+  );
+  --g4: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.4),
+    rgba(236, 72, 153, 0.3)
+  );
 }
 
 /* Dark mode adjustments */
 :root.dark .cool-home {
-  --g1: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.2));
-  --g2: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.15));
-  --g3: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.15));
-  --g4: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.15));
+  --g1: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.25),
+    rgba(139, 92, 246, 0.2)
+  );
+  --g2: linear-gradient(
+    135deg,
+    rgba(236, 72, 153, 0.2),
+    rgba(245, 158, 11, 0.15)
+  );
+  --g3: linear-gradient(
+    135deg,
+    rgba(6, 182, 212, 0.2),
+    rgba(59, 130, 246, 0.15)
+  );
+  --g4: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.2),
+    rgba(236, 72, 153, 0.15)
+  );
 }
 
 /* ═══════════════════════════════════════
@@ -363,15 +458,31 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 80% at 70% 60%, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+    radial-gradient(
+      ellipse 80% 60% at 50% 30%,
+      rgba(59, 130, 246, 0.08) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 70% 60%,
+      rgba(139, 92, 246, 0.06) 0%,
+      transparent 60%
+    );
   pointer-events: none;
 }
 
 :root.dark .hero::before {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 80% at 70% 60%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+    radial-gradient(
+      ellipse 80% 60% at 50% 30%,
+      rgba(59, 130, 246, 0.12) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 70% 60%,
+      rgba(139, 92, 246, 0.1) 0%,
+      transparent 60%
+    );
 }
 
 /* Grid overlay */
@@ -571,13 +682,26 @@ onUnmounted(() => {
 }
 
 @keyframes scroll-pulse {
-  0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
-  50% { opacity: 1; transform: scaleY(1); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 @keyframes hint-fade-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -639,7 +763,11 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.1),
+    rgba(139, 92, 246, 0.1)
+  );
   margin-bottom: 1.5rem;
   font-size: 1.6rem;
 }
