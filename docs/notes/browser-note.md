@@ -232,4 +232,3 @@
   // 监听过时特性
   observer.observe({ types: ['deprecation'] });
   ```
-

@@ -1272,3 +1272,117 @@ promise.then(value => console.log(value)); // 输出：done
   arr.cap(3); // arr 现在为 [1, 2, 3]
   ```
 
+## ECMA 2025 (ES16)
+
+### Iterator Helpers
+
++ 为 `Iterator.prototype` 添加了一系列类似数组方法的操作，无需先将迭代器转换为数组
+
+  ```js
+  const iter = [1, 2, 3, 4, 5].values();
+
+  // map: 映射每个值
+  iter.map(x => x * 2); // Iterator { 2, 4, 6, 8, 10 }
+
+  // filter: 过滤
+  iter.filter(x => x > 2); // Iterator { 3, 4, 5 }
+
+  // take: 取前 N 个
+  iter.take(3); // Iterator { 1, 2, 3 }
+
+  // drop: 跳过前 N 个
+  iter.drop(2); // Iterator { 3, 4, 5 }
+
+  // toArray: 转为数组
+  iter.map(x => x * 2).toArray(); // [2, 4, 6, 8, 10]
+
+  // forEach / some / every / find / reduce 等
+  iter.some(x => x > 3); // true
+  ```
+
+### Promise.try()
+
++ 将同步函数包装为 Promise，自动捕获同步抛出的错误
+
+  ```js
+  // 以前
+  new Promise((resolve) => {
+    resolve(mightThrow());
+  }).catch(handleError);
+
+  // 现在
+  Promise.try(() => mightThrow())
+    .then(result => console.log(result))
+    .catch(handleError);
+  ```
+
+### RegExp.escape()
+
++ 转义字符串中的正则特殊字符，避免注入攻击
+
+  ```js
+  const userInput = 'Hello. How are you?';
+  const escaped = RegExp.escape(userInput);
+  console.log(escaped); // "Hello\\. How are you\\?"
+
+  new RegExp(escaped).test(userInput); // true
+  ```
+
+### Import Attributes
+
++ 标准化导入属性语法，替代之前的 import assertions
+
+  ```js
+  import json from './data.json' with { type: 'json' };
+  import config from './config.json' with { type: 'json' };
+  ```
+
+### Float16Array
+
++ 新增 16 位浮点数 TypedArray，适用于 GPU/机器学习场景
+
+  ```js
+  const arr = new Float16Array([1.5, 2.5, 3.5]);
+  console.log(arr); // Float16Array [1.5, 2.5, 3.5]
+  ```
+
+### Explicit Resource Management
+
++ 使用 `using` 声明自动管理资源，离开作用域时自动释放
+
+  ```js
+  {
+    using file = await openFile('data.txt');
+    const content = await file.read();
+    console.log(content);
+    // file 会自动关闭
+  }
+  ```
+
+### ArrayBuffer.prototype.transfer
+
++ 转移 ArrayBuffer 的所有权，无需复制数据
+
+  ```js
+  const buffer = new ArrayBuffer(1024);
+  const transferred = buffer.transfer();
+  // buffer 现在已被分离（detached），无法再使用
+  console.log(transferred.byteLength); // 1024
+  ```
+
+### Set 集合方法
+
++ 为 Set 新增集合运算方法
+
+  ```js
+  const a = new Set([1, 2, 3]);
+  const b = new Set([2, 3, 4]);
+
+  a.union(b);              // Set {1, 2, 3, 4}
+  a.intersection(b);       // Set {2, 3}
+  a.difference(b);         // Set {1}
+  a.symmetricDifference(b); // Set {1, 4}
+  a.isSubsetOf(b);         // false
+  a.isSupersetOf(b);       // false
+  a.isDisjointFrom(b);     // false
+  ```

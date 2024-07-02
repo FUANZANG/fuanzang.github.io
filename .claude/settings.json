@@ -36,7 +36,10 @@
       "Bash(git -C /Users/Suiking/Downloads/Person/fuanzang.github.io commit -m \"fix: homepage layout and clean permissions\")",
       "Read(//Users/Suiking/Library/CloudStorage/OneDrive-个人/文档/Notes/**)",
       "Bash(sed -n '/^## 性能优化$/,/^## /p' /Users/Suiking/Library/CloudStorage/OneDrive-个人/文档/Notes/Notes.md | tail -n +2 | sed '/^## /,$d')",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "WebSearch",
+      "WebFetch(domain:tc39.es)",
+      "WebFetch(domain:ecma-international.org)"
     ],
     "additionalDirectories": [
       "/tmp",

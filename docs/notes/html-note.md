@@ -99,4 +99,3 @@
   <embed src="./example.swf" type="application/x-shockwave-flash">
 </object>
 ```
-
