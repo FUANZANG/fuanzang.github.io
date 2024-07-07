@@ -7,9 +7,9 @@
 + 作用域
   + 全局作用域
   + 函数作用域
-  + 块级作用（es6新增）
+  + 块级作用域（es6新增）
     + 块，就是 {} 包裹起来的一个范围，比如if或者for中的{}
-+ let 和 var 有另外一个区别，let 不会进行变量声明提升
++ let 和 var 有另外一个区别，let 存在暂时性死区（TDZ），在声明前访问会抛出 ReferenceError，而 var 声明提升后值为 undefined
 + const 在 let 上添加了一个只读的效果 声明的时候必须同时赋初值
 
 ### 数组的解构
@@ -27,7 +27,7 @@ const obj = { name: 'zs', age: 18 }
 const { name } = obj
 console.log(name) // zs
 
-// 连续结构赋值 从接口中结构出data 然后解构出content 并重命名为 title
+// 连续解构赋值 从接口中解构出data 然后解构出content 并重命名为 title
 let { data:{content: title} } = await axios.get('/api/data')
 ```
 
@@ -36,7 +36,7 @@ let { data:{content: title} } = await axios.get('/api/data')
 ```js
 const name = "tom"
 const str = `hey,${name},${1 + 1},${Math.random()}`
-console.log(str) // hey,tom,2,0.6840647891683806'
+console.log(str) // hey,tom,2,0.6840647891683806
 ```
 
 ### 模板字符串串标签函数
@@ -164,7 +164,7 @@ console.log(obj) // { 3: 18, name: 'tom', bar: 'bar', sayHi: λ }
 
   ```js
   // 对象扩展方法
-  Object.assign 方法
+  // Object.assign 方法
 
   const source1 = {
     a: 123,
@@ -234,7 +234,7 @@ class Person{
 }
 const p1 = new Person('Tom', 19)
 console.log(p1)
-pi.sayHi()
+p1.sayHi()
 ```
 
 ### 静态成员
@@ -272,8 +272,8 @@ class Person{
 }
 class Student extends Person {
   constructor(name, age, number){
-    super(name, age),
-    this.number = number,
+    super(name, age);
+    this.number = number;
   }
   hello(){
     super.sayHi()
@@ -312,7 +312,7 @@ const arr = [1, 3, 4, 4, 5, 6, 6]
 
 const b = Array.from(new Set(arr))
 // 或者
-const b = [...new Set(arr)]
+const c = [...new Set(arr)]
 
 console.log(b) // [1, 3, 4, 5, 6]
 ```
@@ -373,10 +373,10 @@ console.log(obj[Symbol()]) // undefined
 console.log(obj.name) // 'zs'
 console.log(obj) // { name: 'zs', Symbol(): 789 }
 
-const obj = {
+const obj2 = {
   [Symbol.toStringTag]: "XObject"
 }
-console.log(obj.toString()) // '[object XObject]'
+console.log(obj2.toString()) // '[object XObject]'
 // Object.prototype.toString() 方法是一个内置的实例方法，它返回一个表示对象的字符串。在没有自定义 Symbol.toStringTag 属性的情况下，toString() 方法通常返回一个类似于 "[object Type]" 的字符串，其中 Type 是对象的内部类名。例如，对于一个普通的对象，toString() 方法会返回 "[object Object]"。
 // 然而，当你为一个对象定义了 Symbol.toStringTag 属性时，你可以自定义 toString() 方法的输出。这个属性的作用是提供一个标签，该标签将被 toString() 方法用于构造返回的字符串
 ```
@@ -434,6 +434,20 @@ for (const item of obj) { //  is not iterable
 ### 幂运算符**
 
 + a**b 指数运算符，它与 Math.pow(a, b)相同
+
+  ```js
+  2 ** 2 // 4
+  2 ** 3 // 8
+  // 右结合：多个指数运算符连用时，是从最右边开始计算的
+  2 ** 3 ** 2 // 相当于 2 ** (3 ** 2) = 512
+
+  // 可以与等号结合，形成赋值运算符（**=）
+  let a = 1.5;
+  a **= 2; // 等同于 a = a * a;
+
+  let b = 4;
+  b **= 3; // 等同于 b = b * b * b;
+  ```
 
 ## ECMA 2017 (ES8)
 
@@ -628,9 +642,9 @@ for (const item of obj) { //  is not iterable
 
 ## ECMA 2019 (ES10)
 
-### Optional catch binding 可选定的 catch
+### Optional catch binding 可选的 catch
 
-+ 新特性允许在catch语句中使用一个简单的占位符，而无需声明一个命名的异常变量
++ 新特性允许在catch语句中省略异常变量，而无需声明一个命名的异常变量
   
   ```js
   try{
@@ -639,10 +653,10 @@ for (const item of obj) { //  is not iterable
     // 处理异常 但实际上并不需要使用error变量
   }
 
-  // 现在可以使用 _ 占位
+  // ES2019 可以直接省略参数
   try {
     // 异步操作
-  } catch (_) {
+  } catch {
     // 处理异常 不需要使用error变量
   }  
  
@@ -650,12 +664,21 @@ for (const item of obj) { //  is not iterable
 
 ### JSON superset 更多的JSON支持
 
-+ 以前，如果我需要在JSON中使用一些复杂的数据类型，例如日期对象或者正则表达式，我需要手动将它们转换为字符串，并在需要的时候再进行解析。这样的处理方式非常繁琐，容易出错。
++ ES2019 之前，JSON 是 ECMAScript 的一个子集，但有两个字符在 JSON 字符串中合法而在 JS 字符串字面量中不合法：行分隔符 ` `（U+2028）和段落分隔符 ` `（U+2029）。
 
-+ 现在，有了JSON superset，我可以直接在JSON中使用更多的JavaScript语法元素，而不需要手动进行转换。这让我能够更方便地处理复杂的数据结构，提高了开发效率。
++ ES2019 将这两个字符纳入 JS 字符串字面量的合法字符范围，使得 JSON 真正成为 ECMAScript 的严格子集。
 
-  + 另外，JSON superset还引入了一些有趣的功能。例如，我可以在JSON中使用注释，这让我的代码更加清晰易懂。
-  + 另外，我还可以在JSON中使用尾逗号，这样当我在后续添加、删除或者调整数据时，不会破坏JSON的结构。
++ 这意味着现在可以直接在 JS 代码中使用包含 U+2028 和 U+2029 的字符串，而无需转义：
+
+  ```js
+  // ES2019 之前需要转义
+  const str = "Line1 Line2"  // SyntaxError
+
+  // ES2019 之后可以直接使用
+  const str = "Line1 Line2"  // 正常
+  ```
+
++ 注意：JSON 标准本身仍然**不支持**注释和尾逗号，这一特性只是消除了 JSON 和 JS 字符串之间的不一致。
 
 ### 新增 Array 的 flat() 方法和 flatMap()
 
@@ -741,7 +764,7 @@ for (const item of obj) { //  is not iterable
 
 ## ECMA 2020 (ES11)
 
-### ?.  ??  ||=  ??=  &&= 运算符的使用
+### ?.  ?? 运算符的使用
 
 ```javascript
 
@@ -788,32 +811,6 @@ var a = obj ?? {}
   } else {
     a = obj;
   }
-
-// ??=  空赋值运算符
-// 逻辑空赋值运算符 (x ??= y) 仅在 x 是 null 或 undefined 时对其赋值
-let a = 0;
-a ??= 1;
-console.log(a); // 0
- 
-let b = null;
-b ??= 1;
-console.log(b); // 1
-
-// 指数运算符 **
-2 ** 2 // 4
-2 ** 3 // 8
-//这个运算符的一个特点是右结合，而不是常见的左结合。多个指数运算符连用时，是从最右边开始计算的。
-2 ** 3 ** 2 // 相当于 2 ** (3 ** 2)
-// 512
-
-// 指数运算符可以与等号结合，形成一个新的赋值运算符（**=）
-let a = 1.5;
-a **= 2;
-// 等同于 a = a * a;
-
-let b = 4;
-b **= 3;
-// 等同于 b = b * b * b;
 
 // 链判断运算符
 // 编程实务中，如果读取对象内部的某个属性，往往需要判断一下，属性的上层对象是否存在。比如，读取message.body.user.firstName这个属性，安全的写法是写成下面这样
@@ -868,33 +865,6 @@ const animationDuration = response.settings?.animationDuration ?? 300;
 // 上面代码中，如果response.settings是null或undefined，或者response.settings.animationDuration是null或undefined，就会返回默认值300。也就是说，这一行代码包括了两级属性的判断。
 
 
-//将逻辑运算符与赋值运算符进行结合。
-
-// 或赋值运算符
-x ||= y
-// 等同于
-x || (x = y)
-
-// 与赋值运算符
-x &&= y
-// 等同于
-x && (x = y)
-
-// Null 赋值运算符
-x ??= y
-// 等同于
-x ?? (x = y)
-// 这三个运算符||=、&&=、??=相当于先进行逻辑运算，然后根据运算结果，再视情况进行赋值运算。
-
-// 它们的一个用途是，为变量或属性设置默认值。
-
-// 老的写法
-user.id = user.id || 1;
-
-// 新的写法
-user.id ||= 1;
-// 上面示例中，user.id属性如果不存在，则设为1，新的写法比老的写法更紧凑一些。
-
 ```
 
 ### globalThis 全局对象
@@ -914,33 +884,6 @@ user.id ||= 1;
   + Promise.all()：它会等待所有的Promise都运行完毕之后返回，如果其中有一个Promise被rejected，那么整个Promise.all()都会被rejected。在这种情况下，如果有一个Promise被rejected，其他的Promise的结果也都获取不了。
   
   + Promise.allSettled(): 这个方法会等待所有的Promise结束，不管他们是否被rejected,所以可以获得所有的结果
-
-### 私有属性
-
-+ 使用 # 标志 在类外部不可访问
-
-  ```js
-  class Person{
-    // 公有属性
-    name;
-    // 私有属性
-    #age;
-    #weight;
-    constructor(name, age, weight){
-      this.name = name;
-      this.#age = age;
-      this.#weight = weight;
-    }
-    // 类内部通过方法可以访问私有属性
-    intro(){
-      console.log(this.name);
-      console.log(this.#age);
-      console.log(this.#weight);
-    }
-  }
-  const girl = new Person('zs', 18, '45kg')
-  console.log(girl) // Person { name: 'zs' } 私有属性外部不可访问
-  ```
 
 ### 动态 import
 
@@ -1005,6 +948,23 @@ user.id ||= 1;
   a &&= b; //  a = a && b;
   a ||= b; //  a = a || b;
   a ??= b; //  a = a ?? b;
+
+  // 它们的一个用途是，为变量或属性设置默认值。
+
+  // 老的写法
+  user.id = user.id || 1;
+
+  // 新的写法
+  user.id ||= 1;
+
+  // ??= 空赋值运算符，仅在 x 是 null 或 undefined 时对其赋值
+  let a = 0;
+  a ??= 1;
+  console.log(a); // 0 (0 不是 null/undefined，不赋值)
+
+  let b = null;
+  b ??= 1;
+  console.log(b); // 1
   ```
 
 ### WeakRef 弱引用
@@ -1106,6 +1066,77 @@ user.id ||= 1;
   }
   ```
 
+### 私有属性
+
++ 使用 # 标志 在类外部不可访问
+
+  ```js
+  class Person{
+    // 公有属性
+    name;
+    // 私有属性
+    #age;
+    #weight;
+    constructor(name, age, weight){
+      this.name = name;
+      this.#age = age;
+      this.#weight = weight;
+    }
+    // 类内部通过方法可以访问私有属性
+    intro(){
+      console.log(this.name);
+      console.log(this.#age);
+      console.log(this.#weight);
+    }
+  }
+  const girl = new Person('zs', 18, '45kg')
+  console.log(girl) // Person { name: 'zs' } 私有属性外部不可访问
+  ```
+
+### Error Cause
+
++ 允许在创建 Error 时通过 `cause` 选项指定原始错误，便于错误链追踪
+
+  ```js
+  try {
+    fetchData();
+  } catch (err) {
+    throw new Error('获取数据失败', { cause: err });
+  }
+  ```
+
+### Class Static Block
+
++ 类中可以使用 `static {}` 块进行复杂的静态成员初始化
+
+  ```js
+  class MyClass {
+    static value;
+    static {
+      // 在静态块中执行复杂的初始化逻辑
+      try {
+        this.value = loadConfig();
+      } catch {
+        this.value = defaultValue;
+      }
+    }
+  }
+  ```
+
+### 私有字段的 in 检查（Ergonomic brand checks）
+
++ 使用 `#field in obj` 检查对象是否拥有某个私有字段
+
+  ```js
+  class Person {
+    #name;
+    constructor(name) { this.#name = name; }
+    static isPerson(obj) {
+      return #name in obj; // true if obj is a Person instance
+    }
+  }
+  ```
+
 ## ECMA 2023 (ES14)
 
 ### findLast() findLastIndex() 从后向前遍历数组
@@ -1118,25 +1149,27 @@ user.id ||= 1;
 + 不改变原数组，返回一个原数组的拷贝
 + 具体用法见 JSNote 数组方法
 
+### Symbols as WeakMap Keys
+
++ 允许使用 Symbol 作为 WeakMap 的键（之前只允许对象）
+
+  ```js
+  const wm = new WeakMap();
+  const sym = Symbol('myKey');
+  wm.set(sym, 'value');
+  console.log(wm.get(sym)); // 'value'
+  ```
+
+### Hashbang Grammar
+
++ 允许 JS 文件以 `#!` 开头（shebang），使其可以直接作为脚本执行
+
+  ```js
+  #!/usr/bin/env node
+  console.log('Hello from script!');
+  ```
+
 ## ECMA 2024 (ES15)
-
-### 记录与元组
-
-+ 记录（Record）类似于对象，但其属性是不可变的。可以使用 # 符号来创建记录
-  `const record = #{ a: 1, b: 2 };`
-
-+ 元组（Tuple）类似于数组，但其元素是不可变的。可以使用 # 符号来创建元组
-  `const tuple = #[1, 2, 3];`
-
-### 哈希集合和哈希映射（Hash Collections）
-
-+ HashSet 和 HashMap，提供了更高效的数据存储和访问方式，尤其在需要快速查找和删除操作时表现出色
-
-+ **HashSet**：类似于 Set，但使用哈希表实现，具有更快的查找速度
-  `const hashSet = new HashSet([1, 2, 3]);`
-
-+ **HashMap**：类似于 Map，但使用哈希表实现，键值对查找速度更快
-  `const hashMap = new HashMap([['key1', 'value1'], ['key2', 'value2']]);`
 
 ### Object.groupBy 和 Map.groupBy 用于根据指定的条件将对象和映射分组
 
@@ -1193,49 +1226,7 @@ promise.then(value => console.log(value)); // 输出：done
 
   ```js
   const invalidStr = '\uD800';
-  console.log(invalidStr.toWellFormed()); // 输出：�（替换字符）
-  ```
-
-### 异步迭代器改进（Async Iteration Enhancements）
-
-+ 为了简化异步数据流的处理，ES2024 对异步迭代器进行了改进，提供了新的 take 和 drop 方法，使得对异步数据流的处理更加直观
-
-+ take：获取前 N 个元素
-
-  ```js
-  for await (const item of asyncIterable.take(5)) {
-    console.log(item); 
-  }
-  ```
-
-+ drop：跳过前 N 个元素
-
-  ```js
-  for await (const item of asyncIterable.drop(3)) {
-    console.log(item);
-  }
-  ```
-
-### 顶级 await（Top-Level Await）
-
-+ ES2024 进一步完善了顶级 await 的功能，使得在模块的顶级作用域中可以直接使用 await，从而简化了异步代码的编写
-
-  ```js
-  const response = await fetch('https://api.example.com/data');
-  const data = await response.json();
-  console.log(data);
-  ```
-
-### 逻辑赋值运算符改进（Logical Assignment Operators Enhancements）
-
-+ 逻辑赋值运算符（例如 &&=, ||=, ??=）在 ES2024 中得到了改进，增加了对短路求值和赋值操作的支持，使代码更简洁
-
-  ```js
-  let a = 1;
-  let b = null;
-
-  a &&= 2; // 等同于 if (a) a = 2;
-  b ??= 3; // 等同于 if (b == null) b = 3;
+  console.log(invalidStr.toWellFormed()); // 输出：（替换字符）
   ```
 
 ### Atomics.waitAsync 是一种新的异步等待机制，允许在多线程环境中等待特定条件变为真
@@ -1263,13 +1254,28 @@ promise.then(value => console.log(value)); // 输出：done
   console.log(regex.test('A')); // 输出：true
   ```
 
-### 元素上限（Element Cap）
+### ArrayBuffer.prototype.transfer
 
-+ 为了更好地控制数组和集合的大小，ES2024 引入了元素上限功能。通过 Array.prototype.cap 和 Set.prototype.cap 方法，可以限制数组和集合的最大长度。
++ 转移 ArrayBuffer 的所有权，无需复制数据
 
   ```js
-  const arr = [1, 2, 3, 4, 5];
-  arr.cap(3); // arr 现在为 [1, 2, 3]
+  const buffer = new ArrayBuffer(1024);
+  const transferred = buffer.transfer();
+  // buffer 现在已被分离（detached），无法再使用
+  console.log(transferred.byteLength); // 1024
+  ```
+
+### Resizable and Growable ArrayBuffers
+
++ 允许创建可调整大小的 ArrayBuffer，无需重新分配内存
+
+  ```js
+  const buffer = new ArrayBuffer(1024, { maxByteLength: 2048 });
+  console.log(buffer.resizable); // true
+  console.log(buffer.byteLength); // 1024
+
+  buffer.resize(2048);
+  console.log(buffer.byteLength); // 2048
   ```
 
 ## ECMA 2025 (ES16)
@@ -1350,6 +1356,8 @@ promise.then(value => console.log(value)); // 输出：done
 
 + 使用 `using` 声明自动管理资源，离开作用域时自动释放
 
+> ⚠️ 注意：此特性已到达 Stage 4，但 TC39 预计发布于 **ES2027**，尚未正式纳入任何年度标准。
+
   ```js
   {
     using file = await openFile('data.txt');
@@ -1359,15 +1367,43 @@ promise.then(value => console.log(value)); // 输出：done
   }
   ```
 
-### ArrayBuffer.prototype.transfer
+### RegExp Modifiers
 
-+ 转移 ArrayBuffer 的所有权，无需复制数据
++ 允许在正则表达式的局部范围内使用修饰符（如 `i`、`m`、`s`）
 
   ```js
-  const buffer = new ArrayBuffer(1024);
-  const transferred = buffer.transfer();
-  // buffer 现在已被分离（detached），无法再使用
-  console.log(transferred.byteLength); // 1024
+  // (?i:...) 在局部范围内启用忽略大小写
+  const regex = /(?i:foo)bar/;
+  console.log(regex.test('FOObar')); // true
+  console.log(regex.test('fooBAR')); // false (BAR 不在修饰符范围内)
+
+  // (?-i:...) 在局部范围内禁用忽略大小写
+  const regex2 = /foo(?-i:bar)/i;
+  console.log(regex2.test('FOOBAR')); // true
+  console.log(regex2.test('FOObar')); // false
+  ```
+
+### JSON Modules
+
++ 支持使用 `with { type: 'json' }` 直接导入 JSON 文件为模块
+
+  ```js
+  import data from './data.json' with { type: 'json' };
+  console.log(data.name);
+  ```
+
+### Duplicate Named Capture Groups
+
++ 允许在不同的正则分支中使用相同的命名捕获组
+
+  ```js
+  // 以前：命名捕获组不能重名
+  // /(?<year>\d{4})-\d{2}|(\d{2})-(?<year>\d{4})/  // SyntaxError
+
+  // ES2025：允许在不同分支中重复命名
+  const regex = /(?<year>\d{4})-\d{2}-\d{2}|\d{2}-\d{2}-(?<year>\d{4})/;
+  const match = '2025-01-15'.match(regex);
+  console.log(match.groups.year); // '2025'
   ```
 
 ### Set 集合方法
