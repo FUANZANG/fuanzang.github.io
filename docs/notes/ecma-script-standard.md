@@ -1422,3 +1422,117 @@ promise.then(value => console.log(value)); // 输出：done
   a.isSupersetOf(b);       // false
   a.isDisjointFrom(b);     // false
   ```
+
+## ECMA 2026 (ES17)
+
+### Upsert（Map 原子性插入/更新）
+
++ 为 `Map` 新增 `getOrInsert()` 和 `getOrInsertComputed()` 方法
++ 如果键已存在则返回现有值，不存在则插入新值，一步到位，无需先 `has()` 再 `set()`
+
+  ```js
+  const map = new Map([['a', 1]]);
+
+  // getOrInsert：键不存在时插入指定值
+  map.getOrInsert('a', 99);  // 1（已存在，不覆盖）
+  map.getOrInsert('b', 2);   // 2（不存在，插入）
+
+  // getOrInsertComputed：键不存在时通过回调计算值
+  map.getOrInsertComputed('c', (key) => key.length); // 1
+  ```
+
+### JSON.parse source text access
+
++ `JSON.parse` 新增 reviver 回调参数 `context`，可访问原始 JSON 文本信息
++ 用于更精确的错误报告、source map 支持等场景
+
+  ```js
+  const json = '{"name": "tom", "age": 18}';
+  JSON.parse(json, (key, value, context) => {
+    console.log(context.source); // 原始文本片段
+    return value;
+  });
+  ```
+
+### Iterator Sequencing
+
++ 将多个迭代器串联组合成一个新的迭代器序列
+
+  ```js
+  const a = [1, 2].values();
+  const b = [3, 4].values();
+  const seq = Iterator.from(a).chain(b);
+
+  for (const v of seq) {
+    console.log(v); // 1, 2, 3, 4
+  }
+  ```
+
+### Uint8Array to/from Base64 and Hex
+
++ 原生支持 `Uint8Array` 与 Base64、Hex 字符串互转，不再需要手写转换逻辑
+
+  ```js
+  const bytes = new Uint8Array([72, 101, 108, 108, 111]);
+
+  // 转 Base64
+  const b64 = bytes.toBase64();  // "SGVsbG8="
+
+  // Base64 转回
+  const decoded = Uint8Array.fromBase64(b64); // Uint8Array [72, 101, 108, 108, 111]
+
+  // 转 Hex
+  const hex = bytes.toHex();     // "48656c6c6f"
+  const fromHex = Uint8Array.fromHex(hex);
+  ```
+
+### Math.sumPrecise
+
++ 精确求和，避免浮点数精度丢失（基于 Kahan 求和算法）
+
+  ```js
+  // 传统方式
+  0.1 + 0.2              // 0.30000000000000004
+
+  // Math.sumPrecise 接收可迭代对象
+  Math.sumPrecise([0.1, 0.2])           // 0.3
+  Math.sumPrecise([0.1, 0.1, 0.1])      // 0.3
+  Math.sumPrecise(new Float64Array([1e16, 1, -1e16])) // 1（传统求和得 0）
+  ```
+
+### Error.isError
+
++ 判断一个值是否为 Error 实例
++ 替代 `instanceof Error`，在跨 realm（iframe、Worker）场景下更可靠
+
+  ```js
+  Error.isError(new Error('oops'));    // true
+  Error.isError(new TypeError('bad')); // true
+  Error.isError('not an error');       // false
+  Error.isError(null);                 // false
+
+  // 跨 iframe 也能正确判断（instanceof 会失败）
+  ```
+
+### Array.fromAsync
+
++ 从异步可迭代对象创建数组，类似 `Array.from()` 的异步版本
++ 返回一个 Promise，resolve 的值为收集到的数组
+
+  ```js
+  // 异步生成器
+  async function* generateIds() {
+    yield 1;
+    await delay(100);
+    yield 2;
+    await delay(100);
+    yield 3;
+  }
+
+  const ids = await Array.fromAsync(generateIds());
+  console.log(ids); // [1, 2, 3]
+
+  // 也支持映射函数（第二个参数）
+  const doubled = await Array.fromAsync(generateIds(), x => x * 2);
+  console.log(doubled); // [2, 4, 6]
+  ```
