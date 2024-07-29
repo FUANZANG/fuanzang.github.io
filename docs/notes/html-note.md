@@ -56,7 +56,7 @@
 <!-- 为map定义名字，与img图片锚定 -->
 <map name="mapTest">
   <!-- 圆形 -->
-  <area shape="circle" coords="x, y, 直径" target="_blank" href="" alt="">
+  <area shape="circle" coords="x, y, 半径" target="_blank" href="" alt="">
   <!-- 矩形 -->
   <area shape="rect" coords="左上角x, 左上角y, 右下角x, 右下角y" href="" alt="">
   <!-- 多边形 -->
@@ -94,7 +94,7 @@
 <!-- data: 嵌入资源; type: MIME类型 -->
 <object data="./example.swf" type="application/x-shockwave-flash" width="100%" height="100%">
   <!-- 参数是通过params传递 额外信息用 name , 值是 value -->
-  <params name="quality" value="high"></params>  
+  <param name="quality" value="high">  
   <!-- 兼容性写法 如果不能加载object 将使用embed -->
   <embed src="./example.swf" type="application/x-shockwave-flash">
 </object>

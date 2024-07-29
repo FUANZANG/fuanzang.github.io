@@ -10,7 +10,9 @@
   // 尖括号语法
   let someValue: any = "this is a string";
   let strLength: number = (<string>someValue).length;
+  ```
 
+  ```ts
   // as语法
   let someValue: any = "this is a string";
   let strLength: number = (someValue as string).length;
@@ -18,7 +20,7 @@
 
 ## 类型守卫
 
-+ 类型守卫是一种特殊的类型谓词，用于在运行时检查对象的类型，以确保对象具有特定的属性或方法。
++ 类型谓词是实现类型守卫的一种方式，格式为 `value is Type`
 
   ```ts
   function isString(value: any): value is string {
@@ -130,7 +132,7 @@
 
 ## 泛型
 
-+ 泛型用于定义函数、接口或类，可以在运行时确定具体的类型。
++ 泛型用于定义函数、接口或类，可以在编译时确定具体的类型。
 
   ```ts
   function identity<T>(arg: T): T {
@@ -201,10 +203,10 @@
   Required // 转换为必选
   Readonly // 转换为只读
   Pick<P, K extends keyof P> // 筛选
-  Record<K, string> // 映射，非常常用，一般等同于 AnyObject
+  Record<K, string> // 映射类型，将所有键K对应的值设为string
   // Exclude是Diff类型的一种实现
   // 可以用 Pick<T, Exclude<keyof T, K>> 来定义 Omit<T,K>
-  Exclude<T,U> // 从T中剔除可以复制给U的类型
+  Exclude<T,U> // 从T中剔除可以赋值给U的类型
   Extract<T,U> // 提取剔除的
   NonNullable // 剔除null undefined
   ReturnType // 获取函数返回值类型

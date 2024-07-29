@@ -50,13 +50,13 @@
 }
 /* 轨道背景的样式 */
 &::-webkit-scrollbar-track {
-  // box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  /* box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); */
   border-radius: 2px;
   background: rgba(0, 0, 0, 0.1);
 }
 /* 上下按钮的样式 */
 &::-webkit-scrollbar-button{
-  xxx: xxx;
+  属性名: 属性值;
 }
 ```
 
@@ -73,7 +73,7 @@
 
 ## BFC 块级格式化上下文
 
-+ `BFC` 是一块 **独立的** 渲染区域 它规定了在该区域中 常规流块盒的布局不同的BFC区域进行渲染时互不干扰
++ `BFC` 是一块 **独立的** 渲染区域，它规定了在该区域中常规流块盒的布局，不同的BFC区域进行渲染时互不干扰
 + 创建BFC的元素的 特点：
   + 隔绝了他内部和外部的联系 内部渲染不会影响到外部
   + 自动高度需要计算浮动元素
@@ -96,7 +96,7 @@
 + 千位：如果是内联样式，记1，否则记0
 + 百位：选择器中所有id选择器的数量相加
 + 十位：选择器中所有类选择器、属性选择器、伪类选择器的数量相加
-+ 个位；选择器中所有元素选择器、伪元素选择器的数量相加
++ 个位：选择器中所有元素选择器、伪元素选择器的数量相加
 
 ## 更多的选择器
 
@@ -108,18 +108,18 @@
   这四个连用时，需要按照顺序，即love hate：爱恨法则
 
 + 更多伪类选择器
-  + `first-child` 选中元素并且该元素必须是第一个子元素
-  + `first-of-type` 选中子元素的第一个选择的元素
-  + `last-child`
-  + `last-of-type`
-  + `nth-child` 选中指定的第几个子元素
+  + `:first-child` 选中元素并且该元素必须是第一个子元素
+  + `:first-of-type` 选中子元素的第一个选择的元素
+  + `:last-child`
+  + `:last-of-type`
+  + `:nth-child` 选中指定的第几个子元素
     + 2n (even) / 2n+1 (odd)
-  + `nth-of-type` 选中指定的子元素中第几个某类型的元素
+  + `:nth-of-type` 选中指定的子元素中第几个某类型的元素
 
 + 更多伪元素选择器
-  + `first-letter` 选中元素的第一个字母
-  + `first-line` 选中元素的第一行文字
-  + `selection` 选中被用户框选的文字
+  + `::first-letter` 选中元素的第一个字母
+  + `::first-line` 选中元素的第一行文字
+  + `::selection` 选中被用户框选的文字
 
 ## 文本省略
 
@@ -133,7 +133,7 @@
 }
 ```
 
-## CSS样式表达式
+## Sass/SCSS 预处理器
 
 ### 定义变量
 
@@ -244,7 +244,7 @@ div {
 }
 
 #sidebar {
-  width: double(5px)
+  width: double(5px);
 }
 ```
 
@@ -299,7 +299,7 @@ $font-sizes: (
   lg: 14px,
 );
 
-font-size: map-get($font-sizes, 'md')
+font-size: map-get($font-sizes, 'md');
 /* Sass 的 Map 函数还有 map-has-key(map, key)，map-keys(map)，map-merge(map1, map2)，map-remove(map, keys…)，map-values(map)。目前感觉map-get()用得多一些。 */
 ```
 
@@ -468,7 +468,7 @@ x {
   gap: 10px;
   x-item{
     /* row-start/column-start/row-end/column-end */
-    grid-area: 2/3;
+    grid-area: 2/3/4/5;
   }
 }
 ```
@@ -507,7 +507,7 @@ x {
 /* 可以与绝对长度的单位结合使用 */
 .container {
   display: grid;
-  grid-template-row: 150px 1fr 2fr;
+  grid-template-rows: 150px 1fr 2fr;
   grid-template-columns: 1fr 1fr;
 }
 ```
@@ -830,7 +830,7 @@ html {
 
 ## 参考线-深入理解字体
 
-font-size、line-hight、vertical-align、font-family
+font-size、line-height、vertical-align、font-family
 
 + 文字是通过一些文字设计软件设计的 比如fontforge 制作文字时 会有几根参考线 不同的文字类型 参考线不一样 同一种文字 参考线一致
 
@@ -852,9 +852,9 @@ font-size、line-hight、vertical-align、font-family
   + baseline 该元素的基线与父元素的基线对齐
   + super 该元素的基线与父元素的上基线对齐
   + sub 该元素的基线与父元素的下基线对齐
-  + text-top 该元素的vertical-area的顶边 对齐父元素的text-top
+  + text-top 该元素的virtual-area的顶边 对齐父元素的text-top
   + text-bottom 该元素的virtual-area的底边 对齐父元素的text-bottom
-  + top 该元素的virtual-area的底边 对齐line-box的顶边
+  + top 该元素的virtual-area的顶边 对齐line-box的顶边
   + bottom 该元素的virtual-area的底边 对齐line-box的底边
   + middle 该元素的中线 content-area的一半 与父元素的x字母高度一半的位置对齐
   + 行盒组合起来 可以形成多行 每一行的区域叫 line-box 它的顶边是该行内所有行盒最高顶边 底边是该行盒的最低底边
@@ -897,7 +897,7 @@ font-size、line-hight、vertical-align、font-family
 ## initial 使用元素的默认值
 
 ```css
-font-style{
+.font-style{
   line-height: initial
 }
 ```
@@ -920,7 +920,7 @@ ul{
 + 将属性设置为浏览器的默认样式
 
 ```css
-default{
+.default{
   all: revert 
 }
 ```

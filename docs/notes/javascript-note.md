@@ -6,7 +6,7 @@
 
 ```js
 function createFetchWithTimeout(timeout = 1000){
-  return function (url, option){
+  return function (url, options){
     return new Promise((resolve, reject) => {
       const singleController = new AbortController()
       fetch(url, {
@@ -37,7 +37,7 @@ function createFetchWithTimeout(timeout = 1000){
 + 在目前 chrome 的实现中，至少包含了下面的队列
   + `延时队列`：用于存放计时器到达后的回调任务，**优先级「中」**
   + `交互队列`：用于存放用户操作后产生的事件处理任务，**优先级「高」**
-  + `微队列`：用户存放需要最快执行的任务，**优先级「最高」**
+  + `微队列`：用于存放需要最快执行的任务，**优先级「最高」**
 + 添加任务到微队列的主要方式主要是使用 `Promise`、`MutationObserver`
 
 ## Service Worker
@@ -61,7 +61,7 @@ function createFetchWithTimeout(timeout = 1000){
 ## JS多线程开启方案和解决思路
 
 + `Web Workers` 是浏览器提供的API，允许在后台线程中运行JavaScript代码，从而不阻塞主线程
-+ 与主线通信的方式使用`postMessage()`方法在`Web Worker`和`主线程`之间发送和接收数据
++ 与主线程通信的方式使用`postMessage()`方法在`Web Worker`和`主线程`之间发送和接收数据
 + 优势：提高响应性能、允许并行计算等; 限制：如无法直接操作DOM
 
 + `Web Worker`是运行在浏览器后台的线程，可以执行JavaScript代码，但不能直接操作DOM
@@ -179,7 +179,7 @@ function createFetchWithTimeout(timeout = 1000){
       import child from './child.vue'
 
       const name = ref('天天鸭')
-      </>
+      </script>
       <!-- 子组件 -->
       <template>
         <div>{{ props.name }}</div>
@@ -236,14 +236,12 @@ function createFetchWithTimeout(timeout = 1000){
       app.config.globalProperties.$bus = new mitt()
     + 传参出去的使用方法
       import mitt from 'mitt'
-      const emitter = mitt()
+      const emitter = new mitt()
       emitter.emit('自定义的事件名称','参数')
-    + 接收参数的使用方法
-      import mitt from 'mitt'
-      const emitter = mitt()
-      emitter.on('自定义的事件名称', '参数' )
+    + 接收参数的使用方法（注意：emit和on必须使用同一个mitt实例，实际项目中应通过全局挂载或共享模块导出同一实例）
+      emitter.on('自定义的事件名称', (data) => { console.log(data) })
 
-  + `$attrs` 在vue2里面中除了`$attrs`，还有`$listeners`；但vue3直接把`$listeners`合并到 `$attrs` 里面了
+  + `$attrs` 在vue2中除了`$attrs`，还有`$listeners`；但vue3直接把`$listeners`合并到 `$attrs` 里面了
     + `$attrs`主要作用是接收没在props里面定义，但父组件又传了过来的属性
       import { defineProps, useAttrs } from 'vue'
       const myAttrs = useAttrs() 接收没在 props 里的值
@@ -287,9 +285,9 @@ function createFetchWithTimeout(timeout = 1000){
     </script>
     ```
 
-  + v-model 其实语法糖，如下两行代码作用是一样, 上面是下面的简写
-    `<chile v-model:title="title" />`
-    `<chile :title="title" @update:title="title = $event" />`
+  + v-model 其实是语法糖，如下两行代码作用是一样, 上面是下面的简写
+    `<child v-model:title="title" />`
+    `<child :title="title" @update:title="title = $event" />`
 
     ```vue
     <!-- 父组件：直接使用v-model传参 -->
@@ -315,8 +313,8 @@ function createFetchWithTimeout(timeout = 1000){
       
       // 子组件触发使用
       const myClick = () => {
-        emit("update:name", "改个新名字"){
-        emit("update:num", "换个新号码")}
+        emit("update:name", "改个新名字")
+        emit("update:num", "换个新号码")
       }
     </script>
     ```
@@ -357,7 +355,7 @@ function createFetchWithTimeout(timeout = 1000){
     + 祖组件
       import { ref, provide } from 'vue';
       const name = ref('天天鸭');
-      provide('name', name.value)
+      provide('name', name)
     + 孙组件
       import { inject } from 'vue'
       const name = inject('name')
@@ -376,17 +374,16 @@ function createFetchWithTimeout(timeout = 1000){
     console.log(route.query) 
     ```
 
-    + `params` 传参 **4.1.4 (2022-08-22) 删除了param这种方式**
+    + `params` 传参 **4.1.4 (2022-08-22) 删除了param这种方式** ~~（已废弃，以下代码仅供参考）~~
 
     ```js
-    // 传递方 
-    const query = { id: 9527, name: '天天鸭' }
-    router.push({ path: '/user', query })
-
+    // 传递方（已废弃：vue-router 4.x 已移除 params 传参方式）
+    // router.push({ name: 'user', params: { id: 9527, name: '天天鸭' } })
+    
     // 接收方
-    import { useRoute} from 'vue-router'
-    const route = useRoute()
-    console.log(route.query)
+    // import { useRoute } from 'vue-router'
+    // const route = useRoute()
+    // console.log(route.params)
     ```
 
     + `state` 传参
@@ -409,7 +406,7 @@ function createFetchWithTimeout(timeout = 1000){
 3. 无法拷贝特殊的对象属性：JSON.stringify()不会拷贝对象的原型链上的属性。
 4. 无法处理日期对象：将日期对象转换为JSON字符串后再使用JSON.parse()解析时，日期对象会变成字符串，而不是重新生成日期对象。
 5. 无法处理正则表达式对象：正则表达式对象在转换为JSON字符串后会变成空对象。
-6. 无法处理undefined和function：JSON.stringify()会将undefined和函数直接转换为null。
+6. 无法处理undefined和function：JSON.stringify()在序列化数组时会将undefined和函数转换为null，但在序列化对象时，值为undefined或函数的属性会被直接忽略/移除。
 7. 无法处理Infinity和NaN：JSON.stringify()会将Infinity和NaN转换为null。
 
 ## 复杂数组去重
@@ -436,14 +433,14 @@ console.log([...uniqueObjects]); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'B
 
 
 // 使用 reduce 方法也可以实现这个功能，通过构建一个新数组，其中每个 id 只出现一次。
-const objects = [
+const objects2 = [
   { id: 1, name: 'Alice' },
   { id: 2, name: 'Bob' },
   { id: 1, name: 'Charlie' }, // 重复的 id
   { id: 3, name: 'Diana' }
 ];
 
-const uniqueObjects = objects.reduce((acc, current) => {
+const uniqueObjects2 = objects2.reduce((acc, current) => {
   const exists = acc.some(obj => obj.id === current.id);
   if (!exists) {
     acc.push(current);
@@ -451,10 +448,10 @@ const uniqueObjects = objects.reduce((acc, current) => {
   return acc;
 }, []);
 
-console.log(uniqueObjects); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Diana' }]
+console.log(uniqueObjects2); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Diana' }]
 ```
 
-## /n 换行处理
+## \n 换行处理
 
 ```javascript
 // 在Vue中，可以使用CSS中的white-space属性来处理换行。将该属性设置为pre-line可以保留文本中的换行符，并根据需要进行换行。 
@@ -519,7 +516,7 @@ Object.defineProperty(person,'sex',{
 
 console.log(person) // { name:"码农", age: 18, sex: "男"}
 
-// 第三个参数里面还有6个配置控住属性: 
+// 第三个参数里面还有6个配置控制属性: 
 // writable：      是否可重写 
 // value：         当前值 
 // get：           读取时内部调用的函数
@@ -528,19 +525,19 @@ console.log(person) // { name:"码农", age: 18, sex: "男"}
 // configurable：  是否可再次修改配置项
 
 
-let  person = {
+let  person2 = {
   name:"码农",
   age: 18
 }
 
-Object.defineProperty(person,'sex',{
+Object.defineProperty(person2,'sex',{
   value:"男",       // 设置属性值
   enumerable:true,  // 控制属性是否可以枚举，默认值是false (遍历获取该值)
   writable:true,    // 控制属性是否可以被修改，默认值是false
   configurable:true // 控制属性是否可以被删除，默认值是false
 })
 
-console.log(person) // 可以通过 person.sex 来修改设置的值
+console.log(person2) // 可以通过 person2.sex 来修改设置的值
 
 // 还有最重要的两个属性 set和get（即存取器描述：定义属性如何被存取）
 // 当使用了getter或setter方法，不允许使用writable和value这两个属性(如果使用，报错)
@@ -548,26 +545,26 @@ console.log(person) // 可以通过 person.sex 来修改设置的值
 // set 是设置值的时候的方法，类型为 function ，设置值的时候会被调用，undefined
 // get或set不是必须成对出现，任写其一就可以
 let number = 18
-let person = {
+let person3 = {
   name:'码农',
   sex:'男',
 }
  
-Object.defineProperty(person, 'age', {
-  // 当有人读取person的age属性时，get函数(getter)就会被调用，且返回值就是age的值
+Object.defineProperty(person3, 'age', {
+  // 当有人读取person3的age属性时，get函数(getter)就会被调用，且返回值就是age的值
   get(){
     console.log('有人读取age属性了')
     return number
   },
-  // 当有人修改person的age属性时，set函数(setter)就会被调用，且会收到修改的具体值
+  // 当有人修改person3的age属性时，set函数(setter)就会被调用，且会收到修改的具体值
   set(value) {
     console.log('有人修改了age属性，且值是', value)
     number = value
   }
 })
  
-person.age // 有人读取age属性了 18
-person.age = 20 // 有人修改了age属性，且值是 20
+person3.age // 有人读取age属性了 18
+person3.age = 20 // 有人修改了age属性，且值是 20
 
 ```
 
@@ -752,7 +749,7 @@ function sortNumbers() {
 // rest参数的写法
 const sortNumbers = (...numbers) => numbers.sort();
 
-// 4.res参数中的变量代表一个数组,所以数组特有的方法都可以用于这个变量.下面是一个利用rest参数改写数组push方法的例子
+// 4.rest参数中的变量代表一个数组,所以数组特有的方法都可以用于这个变量.下面是一个利用rest参数改写数组push方法的例子
 function push(array, ...items){
   //forEach为每一个
   items.forEach(function(item){
@@ -901,7 +898,7 @@ filter() 方法
 
 var ages = [32, 33, 16, 40];
 
-obj = ages.filter((age)=>{
+const obj = ages.filter((age)=>{
   return age >= 18;
 })
 
@@ -914,7 +911,7 @@ obj = ages.filter((age)=>{
 // find 获取数组中第一个值为 18 或更大的元素的值
 var ages = [3, 10, 18, 20];
 
-obj = ages.find((age) => {
+const obj = ages.find((age) => {
   return age >= 18;
 })
 
@@ -927,7 +924,7 @@ obj = ages.find((age) => {
 // findIndex 获取数组中第一个值等于或大于 18 的元素的索引：
 var ages = [3, 10, 18, 20];
 
-obj = ages.findIndex((age) => {
+const obj = ages.findIndex((age) => {
   return age >= 18;
 })
 
@@ -1076,7 +1073,7 @@ export const encodeSpecialChar = (char) => {
   })
 }
 
-let parmas = {
+let params = {
  columns: [
   {
    label: '表头',
@@ -1925,7 +1922,7 @@ canScroll() {
 
   ```javascript
     // 给某个表单中的时间转化为 cron 表达式
-    parseCorn(form) {
+    parseCron(form) {
       var ctData = new Array();
       ctData["seconds"] = "0";
       ctData["minutes"] = "*";
@@ -1953,7 +1950,7 @@ canScroll() {
       } else {
         // 0 0 0 [1-31|L] * ? 每月
         treatmentTime();
-        ctData["day"] = form.mouth;
+        ctData["day"] = form.month;
         ctData["week"] = "?";
       }
       for (var i = 0; i < ds.length; i++) {
@@ -1962,9 +1959,9 @@ canScroll() {
       return springTimeStr;
     },
 
-    parseCornToForm(form, corn) {
-      //传入一个corn表达式
-      var rds = corn.trim().split(" ");
+    parseCronToForm(form, cron) {
+      //传入一个cron表达式
+      var rds = cron.trim().split(" ");
       if (rds.length == 6) {
         if (rds[1].length == 1) {
           rds[1] = "0" + rds[1];
@@ -1986,9 +1983,9 @@ canScroll() {
             break;
           default:
             // 0 0 0 [1-31] * ? 每月
-            this.$set(form, "effectivetime1", "everyMouth");
+            this.$set(form, "effectivetime1", "everyMonth");
             this.$set(form, "effectivetime2", time);
-            this.$set(form, "mouth", rds[3] * 1);
+            this.$set(form, "month", rds[3] * 1);
         }
       }
     },
@@ -1997,7 +1994,7 @@ canScroll() {
 ## forEach 重组对象
 
 ```javascript
-[
+const arr = [
   {
     id: "22952099195946f49dc0cff26783d36e",
     type_id: "5c6d8b779cd947a7b8eaeb56acfa52ca",
@@ -2331,7 +2328,7 @@ str.charAt(str.length - 1) // o
       :filter-node-method="filterNode"
       :default-expanded-keys="defaultExpandIds"
       node-key="id"
-      @node-click="handelNodeClick"
+      @node-click="handleNodeClick"
       @node-expand="handleNodeExpand"
       @node-collapse="handleNodeCollapse"
       highlight-current
@@ -2395,9 +2392,9 @@ export default {
     },
   },
   created() {
-    if (sessionStorage.getItem("ipTreeId", this.defaultExpandIds)) {
+    if (sessionStorage.getItem("ipTreeId")) {
       let treeIds = sessionStorage
-        .getItem("ipTreeId", this.defaultExpandIds)
+        .getItem("ipTreeId")
         .split(",");
       treeIds.map((item) => {
         this.defaultExpandIds.push(item);

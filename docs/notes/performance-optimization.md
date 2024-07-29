@@ -334,10 +334,10 @@ function _runTask(task, resolve) {
   requestIdleCallback((idle) => {
     if (idle.timeRemaining() > 0) {
       task()
-      callback()
+      resolve()
     } else {
       // 递归调用到下一帧的空闲时间，不会对渲染造成阻塞
-      _runTask(task, callback)
+      _runTask(task, resolve)
     }
   })
 }

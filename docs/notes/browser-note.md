@@ -104,7 +104,7 @@
   const target = document.getElementById('app');
 
   const options = {
-    root: rootTarget, // 相对于某个元素进行遮挡计算
+    root: null, // 相对于某个元素进行遮挡计算，传入具体DOM元素；传null则相对于浏览器视口
     rootMargin: '0px', // 进行计算的边界范围，通过rootMargin可以实现提前计算或延迟计算（相对于root原本尺寸）的效果
     threshold: 0.5 // 触发callback时的遮挡比例，0.5代表元素被遮挡50%时触发callback。由于浏览器事件循环机制的影响，callback触发时遮挡比例通常不会是精确的50%。
   };
@@ -132,13 +132,13 @@
     };
     ```
 
-    > 在上面的配置中，通过配置rootMargin为100px在target距离root元素100px时即可判定为被遮挡，通过threshold设置为0.7，当遮挡比例查过70%时执行callback。
+    > 在上面的配置中，通过配置rootMargin为100px在target距离root元素100px时即可判定为被遮挡，通过threshold设置为0.7，当遮挡比例超过70%时执行callback。
 
   + `entry` callback第一个param是entry对象构成的array，entry包含了触发callback时DOM的位置信息
 
 ## ResizeObserver
 
-+ 用于监听DOM尺寸变化的observer，当DOM尺寸变化是执行callback
++ 用于监听DOM尺寸变化的observer，当DOM尺寸变化时执行callback
 
 + 基本使用
 

@@ -13,7 +13,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /.(|ts|tsx|js|jsx)$/,
+        test: /\.(ts|tsx|js|jsx)$/,
         include: path.resolve(__dirname, '../src'),
         use: ['thread-loader', 'babel-loader'],
         exclude: /node_modules/,
@@ -61,7 +61,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /.jsx?$/,
+        test: /\.jsx?$/,
         use: [
           {
             loader: 'babel-loader',
@@ -84,7 +84,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /.jsx?$/,
+        test: /\.jsx?$/,
         use: [
           'cache-loader',
           "babel-loader"

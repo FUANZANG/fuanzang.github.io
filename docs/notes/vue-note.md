@@ -2,7 +2,7 @@
 
 ## unplugin-auto-import 自动引入
 
-+ 支持vue, vue-router, vue-i18n, @[[[[vueuse]]]]/head, @vueuse/core等自动引入
++ 支持vue, vue-router, vue-i18n, @vueuse/head, @vueuse/core等自动引入
 + 安装 `npm i -D unplugin-auto-import`
 + 配置
 
@@ -24,7 +24,7 @@
 
 ## unplugin-vue-define-options 配置name
 
-+ Vue3 中配置组件的name 3.3版本支持了defineOption 不需要额外安装插件
++ Vue3 中配置组件的name 3.3版本支持了defineOptions 不需要额外安装插件
 + 安装 `npm install unplugin-vue-define-options -D`
 + 配置
 
@@ -112,7 +112,7 @@
 
   <script>
   export default {
-    props: ['value'],
+    props: ['modelValue'],
     created(){
       // 没在props接收的值都在 $attrs 中
       console.log(this.$attrs)
@@ -137,7 +137,6 @@
         <el-select>
           <el-option label="1" value="1" />
           <el-option label="2" value="3" />
-          <el-option label="2" value="3" />
         </el-select>
       </template>
     </MyInput>
@@ -151,10 +150,10 @@
   + v-model本质上是一个语法糖，它背后其实包含两个操作：
     + v-bind 绑定一个属性
     + v-on 监听一个事件
-  + 对于input元素，v-model会自动绑定value和input事件，v-model的value会和input元素的value同步，v-model的input事件会和input元素的input事件同步
+  + 对于input元素，v-model会自动绑定value和input事件，v-model 在原生 input 上等价于 :value + @input 的语法糖
   + vue3的 v-model 是modelValue 和 update:modelValue 两个属性，modelValue 用于绑定数据，update:modelValue 用于监听数据变化并更新视图
 
-+ 对于v-model 的修改 由于要保证单项数据流 本质上是使用的 computed来处理 modelValue 和 update:modelValue
++ 对于v-model 的修改 由于要保证单向数据流 本质上是使用的 computed来处理 modelValue 和 update:modelValue
 
   ```js
   // 封装一个 useVModel.js
@@ -170,7 +169,7 @@
           return cacheMap.get(props[propName])
         }
         // 如果没有缓存，创建一个新代理对象。该代理用于拦截对 props[propName] 的访问和修改
-        return new Proxy(props[propName], {
+        const proxy = new Proxy(props[propName], {
           get(target, key){
             return Reflect.get(target, key)
           },
