@@ -28,29 +28,31 @@ export default defineConfig({
       ],
       '/notes/': [
         {
-          text: '性能优化',
-          items: [
-            { text: '前端性能优化', link: '/notes/performance-optimization' },
-            { text: 'Webpack 构建优化', link: '/notes/webpack-optimization' }
-          ]
-        },
-        {
           text: '前端基础',
           items: [
             { text: 'HTML', link: '/notes/html-note' },
             { text: 'CSS', link: '/notes/css-note' },
             { text: 'JavaScript', link: '/notes/javascript-note' },
             { text: 'TypeScript', link: '/notes/typescript-note' },
-            { text: 'Vue', link: '/notes/vue-note' }
+            { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
+            { text: '浏览器原理', link: '/notes/browser-note' }
           ]
         },
         {
-          text: '进阶',
+          text: '框架与工程化',
+          collapsed: false,
           items: [
-            { text: '浏览器', link: '/notes/browser-note' },
-            { text: 'Node', link: '/notes/node-note' },
-            { text: '正则与校验', link: '/notes/regex-and-validation' },
-            { text: 'ECMA Script 标准', link: '/notes/ecma-script-standard' }
+            { text: 'Vue', link: '/notes/vue-note' },
+            { text: '前端性能优化', link: '/notes/performance-optimization' },
+            { text: 'Webpack 构建优化', link: '/notes/webpack-optimization' }
+          ]
+        },
+        {
+          text: '后端与工具',
+          collapsed: false,
+          items: [
+            { text: 'Node.js', link: '/notes/node-note' },
+            { text: '正则与校验', link: '/notes/regex-and-validation' }
           ]
         }
       ]
