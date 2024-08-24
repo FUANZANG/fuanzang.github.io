@@ -2,6 +2,1150 @@
 
 [JavaScript 教程](https://wangdoc.com/javascript/)
 
+## 数据类型与类型转换
+
+### 原始类型与引用类型
+
+7 种原始类型：`string`、`number`、`boolean`、`null`、`undefined`、`symbol`、`bigint`
+
+引用类型：`Object`、`Array`、`Function`、`Date`、`RegExp`、`Map`、`Set` 等
+
+```js
+// 原始类型按值传递，引用类型按引用传递
+let a = 1
+let b = a
+b = 2 // a 仍为 1
+
+let obj1 = { x: 1 }
+let obj2 = obj1
+obj2.x = 2 // obj1.x 也变为 2
+```
+
+### typeof 的坑
+
+```js
+typeof null        // 'object'（历史遗留 bug）
+typeof function(){} // 'function'（规范特殊处理）
+typeof []          // 'object'
+typeof undefined   // 'undefined'
+```
+
+### instanceof 原理
+
+沿原型链查找，检查构造函数的 `prototype` 是否出现在实例的 `__proto__` 链上：
+
+```js
+function myInstanceof(left, right) {
+  let proto = Object.getPrototypeOf(left)
+  while (proto) {
+    if (proto === right.prototype) return true
+    proto = Object.getPrototypeOf(proto)
+  }
+  return false
+}
+```
+
+### 隐式类型转换规则
+
+| 转换目标 | 规则示例 |
+|---------|---------|
+| ToBoolean | `''`→false, `0`→false, `null`→false, `undefined`→false, `NaN`→false，其余→true |
+| ToNumber | `true`→1, `false`→0, `''`→0, `'123'`→123, `null`→0, `undefined`→NaN |
+| ToString | `null`→'null', `undefined`→'undefined', `[]`→'', `[1,2]`→'1,2' |
+
+### == vs ===
+
+```js
+// == 会进行隐式转换，=== 不会
+[] == false    // true  → [].toString()===''→''==0→0==0
+null == undefined // true（规范特殊规定）
+'0' == false   // true  → '0'→0→0==0
+NaN == NaN     // false（NaN 不等于任何值）
+0 == ''        // true
+0 == '0'       // true
+```
+
+## 作用域与闭包
+
+### 作用域层级
+
+- **全局作用域**：顶层声明的变量
+- **函数作用域**：`var` 声明的变量，函数内可见
+- **块级作用域**：`let`/`const` 声明的变量，`{}` 内可见
+
+### 作用域链查找
+
+从当前作用域逐级向上查找，直到全局作用域：
+
+```js
+var x = 10
+function outer() {
+  var y = 20
+  function inner() {
+    var z = 30
+    console.log(x + y + z) // 沿作用域链找到 x, y, z
+  }
+  inner()
+}
+```
+
+### 闭包定义与原理
+
+闭包 = 函数 + 其引用的词法环境。内部函数持有对外部变量的引用。
+
+```js
+function createCounter() {
+  let count = 0
+  return {
+    increment() { return ++count },
+    getCount() { return count }
+  }
+}
+const counter = createCounter()
+counter.increment() // 1
+counter.getCount()  // 1
+```
+
+### 闭包应用场景
+
+**数据私有化：**
+```js
+function createWallet(initial) {
+  let balance = initial
+  return {
+    deposit(amount) { balance += amount },
+    getBalance() { return balance }
+  }
+}
+```
+
+**函数柯里化：**
+```js
+function curry(fn) {
+  return function curried(...args) {
+    if (args.length >= fn.length) return fn(...args)
+    return (...args2) => curried(...args, ...args2)
+  }
+}
+const add = curry((a, b, c) => a + b + c)
+add(1)(2)(3) // 6
+```
+
+**防抖与节流：**
+```js
+function debounce(fn, delay) {
+  let timer
+  return function(...args) {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+```
+
+### 闭包内存泄漏风险
+
+闭包会阻止被引用变量的垃圾回收，需注意：
+- 及时将不用的闭包引用设为 `null`
+- 避免在循环中创建大量闭包
+- DOM 引用导致的循环引用（老版本 IE）
+
+## this 指向
+
+### 4 种绑定规则
+
+| 规则 | 触发条件 | this 指向 |
+|------|---------|----------|
+| 默认绑定 | 独立函数调用 | 非严格模式→window，严格模式→undefined |
+| 隐式绑定 | `obj.fn()` | 调用点的前一个对象 `obj` |
+| 显式绑定 | `fn.call(obj)` | 传入的对象 `obj` |
+| new 绑定 | `new Fn()` | 新创建的实例对象 |
+
+```js
+function greet() { console.log(this.name) }
+const user = { name: 'Alice', greet }
+
+greet()          // 默认绑定 → undefined (或 window.name)
+user.greet()     // 隐式绑定 → 'Alice'
+greet.call(user) // 显式绑定 → 'Alice'
+new greet()      // new 绑定 → 新实例
+```
+
+### call / apply / bind 区别
+
+```js
+fn.call(ctx, arg1, arg2)      // 立即执行，逐个传参
+fn.apply(ctx, [arg1, arg2])   // 立即执行，数组传参
+const bound = fn.bind(ctx)     // 返回新函数，不立即执行
+```
+
+### 箭头函数的 this
+
+箭头函数没有自己的 `this`，继承外层词法作用域的 `this`：
+
+```js
+const obj = {
+  name: 'Bob',
+  greet: () => console.log(this.name),  // this 指向外层（window/module）
+  greet2() {
+    const inner = () => console.log(this.name) // this → obj
+    inner()
+  }
+}
+```
+
+### this 丢失的常见坑
+
+```js
+const obj = {
+  name: 'Alice',
+  getName() { return this.name }
+}
+
+// 坑1：赋值丢失
+const fn = obj.getName
+fn() // undefined（默认绑定）
+
+// 坑2：回调丢失
+setTimeout(obj.getName, 100) // undefined
+
+// 解决方案：bind 或箭头函数
+setTimeout(obj.getName.bind(obj), 100)
+setTimeout(() => obj.getName(), 100)
+```
+
+## 原型与原型链
+
+### 三角关系
+
+```
+实例对象.__proto__  →  构造函数.prototype
+构造函数.prototype.constructor  →  构造函数
+实例对象.constructor  →  构造函数（通过原型链）
+```
+
+```js
+function Person(name) { this.name = name }
+const p = new Person('Tom')
+
+p.__proto__ === Person.prototype         // true
+Person.prototype.constructor === Person  // true
+p.constructor === Person                 // true（沿原型链找到）
+```
+
+### 原型链查找机制
+
+访问属性时，沿 `__proto__` 链逐级查找，直到 `null`：
+
+```js
+p.name        // 实例自身
+p.toString()  // 实例没有 → Person.prototype 没有 → Object.prototype 找到
+p.xxx         // 整条链都没有 → undefined
+```
+
+### Object.create() vs new
+
+```js
+// Object.create：纯原型继承，不执行构造函数
+const proto = { greet() { return 'hi' } }
+const obj = Object.create(proto)
+
+// new：执行构造函数 + 设置原型
+function Fn() { this.x = 1 }
+const inst = new Fn() // 执行了 Fn 内部代码
+```
+
+### 继承的实现方式
+
+```js
+// ES6 class（推荐）
+class Animal {
+  constructor(name) { this.name = name }
+  speak() { return `${this.name} makes a sound` }
+}
+class Dog extends Animal {
+  speak() { return `${this.name} barks` }
+}
+
+// 组合继承（ES5）
+function Parent(name) { this.name = name }
+Parent.prototype.sayName = function() { return this.name }
+function Child(name, age) {
+  Parent.call(this, name)  // 继承属性
+  this.age = age
+}
+Child.prototype = Object.create(Parent.prototype)
+Child.prototype.constructor = Child
+```
+
+### hasOwnProperty vs in
+
+```js
+const obj = { a: 1 }
+obj.hasOwnProperty('a')        // true（仅检查自身）
+obj.hasOwnProperty('toString') // false
+'a' in obj                     // true（自身+原型链）
+'toString' in obj              // true（原型链上有）
+```
+
+## 执行上下文与变量提升
+
+### 执行上下文栈（EC Stack）
+
+```
+[ 全局执行上下文 ]          ← 栈底
+[ foo() 执行上下文 ]
+[ bar() 执行上下文 ]        ← 栈顶（当前执行）
+```
+
+每次函数调用创建新的执行上下文压栈，执行完毕出栈。
+
+### 变量提升：var vs let/const
+
+```js
+console.log(a) // undefined（var 提升声明，但不提升赋值）
+var a = 1
+
+console.log(b) // ReferenceError: Cannot access 'b' before initialization
+let b = 2      // TDZ（暂时性死区）
+
+console.log(c) // ReferenceError（const 同样有 TDZ）
+const c = 3
+```
+
+### 函数声明 vs 函数表达式
+
+```js
+// 函数声明：整体提升（声明+定义）
+hoisted() // ✅ 可以调用
+function hoisted() { return 'ok' }
+
+// 函数表达式：仅 var 提升变量名，值为 undefined
+notHoisted() // ❌ TypeError: notHoisted is not a function
+var notHoisted = function() { return 'ok' }
+```
+
+### 经典题目
+
+```js
+var a = 1
+function foo() {
+  console.log(a) // undefined（局部 var a 提升，遮蔽外层）
+  var a = 2
+}
+foo()
+
+// 等价于：
+function foo() {
+  var a       // 提升
+  console.log(a) // undefined
+  a = 2
+}
+```
+
+## Promise 深入
+
+### 状态机
+
+```
+pending → fulfilled（成功，不可变）
+pending → rejected（失败，不可变）
+```
+
+状态一旦变更不可逆转，且只能变更一次。
+
+### 链式调用原理
+
+`.then()` 始终返回一个新的 Promise：
+
+```js
+Promise.resolve(1)
+  .then(v => v + 1)    // 返回 Promise<2>
+  .then(v => v * 3)    // 返回 Promise<6>
+  .then(v => console.log(v)) // 6
+```
+
+### 常用组合方法
+
+```js
+// Promise.all：全部成功才成功，任一失败即失败（并发请求）
+Promise.all([fetchA(), fetchB()]).then(([a, b]) => { /* 并行结果 */ })
+
+// Promise.race：取最快完成的结果（超时控制）
+Promise.race([fetchData(), timeout(5000)])
+
+// Promise.allSettled：等待全部完成，不短路
+Promise.allSettled([api1(), api2()]).then(results => {
+  results.forEach(r => console.log(r.status, r.value || r.reason))
+})
+
+// Promise.any：任一成功即成功，全部失败才失败
+Promise.any([cdn1(), cdn2(), cdn3()]).then(fastest => {})
+```
+
+### async/await 错误处理
+
+```js
+// try/catch 方式
+async function loadUser() {
+  try {
+    const res = await fetch('/api/user')
+    const data = await res.json()
+    return data
+  } catch (err) {
+    console.error('加载失败', err)
+  }
+}
+
+// wrapper 函数方式（避免 try/catch 嵌套）
+function to(promise) {
+  return promise.then(data => [null, data]).catch(err => [err, null])
+}
+const [err, data] = await to(fetch('/api/user'))
+if (err) return handleError(err)
+```
+
+### 常见反模式
+
+```js
+// ❌ 嵌套地狱（失去 Promise 链的优势）
+getUser().then(user => {
+  getOrders(user.id).then(orders => {
+    getDetails(orders[0].id).then(details => { /* ... */ })
+  })
+})
+
+// ✅ 链式调用
+const user = await getUser()
+const orders = await getOrders(user.id)
+const details = await getDetails(orders[0].id)
+
+// ❌ 忘记 await（返回 Promise 而非值）
+async function bad() {
+  const data = fetch('/api') // 没有 await！
+  return data.json() // data 是 Promise，不是 Response
+}
+```
+
+## 事件循环深入
+
+### 宏任务与微任务的执行顺序
+
+JavaScript 的事件循环中，任务被分为两类：**宏任务（Macrotask）** 和 **微任务（Microtask）**。
+
+- **宏任务**：`setTimeout`、`setInterval`、I/O、UI 渲染、`setImmediate`（Node.js）
+- **微任务**：`Promise.then/catch/finally`、`MutationObserver`、`queueMicrotask()`、`process.nextTick`（Node.js）
+
+**执行顺序规则**：
+1. 执行当前同步代码（属于第一个宏任务）
+2. 同步代码执行完毕后，清空所有微任务队列
+3. 执行一个宏任务
+4. 再次清空所有微任务队列
+5. 如此循环
+
+### 浏览器事件循环流程
+
+```
+┌─────────────────────────────┐
+│   执行全局同步代码（宏任务）    │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│   检查微任务队列是否为空？     │
+│   不为空 → 依次执行所有微任务   │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│   是否需要 UI 渲染？           │
+│   是 → 执行渲染              │
+└──────────────┬──────────────┘
+               ↓
+┌─────────────────────────────┐
+│   从宏任务队列取出一个任务执行  │
+└──────────────┬──────────────┘
+               ↓
+           回到微任务检查...
+```
+
+### 经典面试题
+
+```js
+console.log('1')
+
+setTimeout(() => {
+  console.log('2')
+  Promise.resolve().then(() => console.log('3'))
+}, 0)
+
+Promise.resolve().then(() => {
+  console.log('4')
+  setTimeout(() => console.log('5'), 0)
+}).then(() => console.log('6'))
+
+console.log('7')
+
+// 输出顺序：1 → 7 → 4 → 6 → 2 → 3 → 5
+```
+
+**解析**：
+1. 同步代码先执行：输出 `1`、`7`
+2. 微任务队列：`Promise.then` 回调输出 `4`，产生新的 `then` 和 `setTimeout`
+3. 继续清空微任务：输出 `6`
+4. 宏任务：`setTimeout` 回调输出 `2`，产生微任务
+5. 清空微任务：输出 `3`
+6. 下一个宏任务：输出 `5`
+
+### 浏览器 vs Node.js 事件循环差异
+
+| 特性 | 浏览器 | Node.js（libuv） |
+|------|--------|-----------------|
+| 宏任务队列 | 单队列 | 多个阶段（timers、poll、check 等） |
+| 微任务执行时机 | 每个宏任务后 | 每个阶段切换时及回调执行后 |
+| `process.nextTick` | 无 | 优先级高于其他微任务 |
+| `setImmediate` | 无 | 在 check 阶段执行 |
+| `setTimeout(fn, 0)` | 最小 4ms 延迟 | 在 timers 阶段执行，无最小延迟限制 |
+
+## 深拷贝实现
+
+### structuredClone()（现代浏览器原生方案，推荐）
+
+```js
+const original = {
+  name: '张三',
+  date: new Date(),
+  regex: /hello/gi,
+  nested: { arr: [1, 2, { a: 3 }] },
+  map: new Map([['key', 'value']]),
+  set: new Set([1, 2, 3]),
+}
+
+// 原生深拷贝，支持大多数内置类型
+const cloned = structuredClone(original)
+
+console.log(cloned.date instanceof Date) // true
+console.log(cloned.map instanceof Map)   // true
+console.log(cloned.nested === original.nested) // false（完全独立）
+
+// 支持循环引用
+const obj = { a: 1 }
+obj.self = obj
+const clonedObj = structuredClone(obj)
+console.log(clonedObj.self === clonedObj) // true
+```
+
+> **注意**：`structuredClone()` 不能拷贝函数、DOM 节点、Symbol、以及某些特殊对象（如 `WeakMap`）。
+
+### 手写递归深拷贝（处理循环引用）
+
+```js
+function deepClone(obj, cache = new WeakMap()) {
+  // 基本类型和 null 直接返回
+  if (obj === null || typeof obj !== 'object') return obj
+
+  // 处理循环引用
+  if (cache.has(obj)) return cache.get(obj)
+
+  // 处理特殊类型
+  if (obj instanceof Date) return new Date(obj)
+  if (obj instanceof RegExp) return new RegExp(obj.source, obj.flags)
+  if (obj instanceof Map) {
+    const map = new Map()
+    cache.set(obj, map)
+    obj.forEach((val, key) => map.set(deepClone(key, cache), deepClone(val, cache)))
+    return map
+  }
+  if (obj instanceof Set) {
+    const set = new Set()
+    cache.set(obj, set)
+    obj.forEach(val => set.add(deepClone(val, cache)))
+    return set
+  }
+
+  // 处理数组和普通对象
+  const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
+  cache.set(obj, clone)
+
+  for (const key of Reflect.ownKeys(obj)) {
+    clone[key] = deepClone(obj[key], cache)
+  }
+
+  return clone
+}
+
+// 使用示例
+const original = { a: 1, b: { c: 2 } }
+original.b.self = original.b // 循环引用
+const cloned = deepClone(original)
+console.log(cloned.b.self === cloned.b) // true
+console.log(cloned.b === original.b) // false
+```
+
+### JSON.parse(JSON.stringify()) 的局限性
+
+| 问题 | 示例 |
+|------|------|
+| 无法处理 `undefined` | `{ a: undefined }` → `{}` |
+| 无法处理函数 | `{ fn: () => {} }` → `{}` |
+| 无法处理 `Symbol` | `{ [Symbol()]: 1 }` → `{}` |
+| `Date` 变成字符串 | `{ d: new Date() }` → `{ d: "2024-..." }` |
+| `RegExp` 变成空对象 | `{ r: /abc/ }` → `{ r: {} }` |
+| 无法处理循环引用 | 直接报错 `TypeError` |
+| `NaN`/`Infinity` 变成 `null` | `{ n: NaN }` → `{ n: null }` |
+
+**解决方案**：优先使用 `structuredClone()`，需要兼容旧环境时使用手写递归深拷贝。
+
+## 迭代器与生成器
+
+### Symbol.iterator 协议
+
+```js
+// 内置可迭代对象：Array、Map、Set、String、arguments、NodeList
+const arr = [1, 2, 3]
+const iterator = arr[Symbol.iterator]()
+
+console.log(iterator.next()) // { value: 1, done: false }
+console.log(iterator.next()) // { value: 2, done: false }
+console.log(iterator.next()) // { value: 3, done: false }
+console.log(iterator.next()) // { value: undefined, done: true }
+```
+
+### 可迭代协议 vs 迭代器协议
+
+| 协议 | 要求 | 用途 |
+|------|------|------|
+| **可迭代协议** | 对象实现 `[Symbol.iterator]()` 方法，返回一个迭代器 | 能被 `for...of` 遍历 |
+| **迭代器协议** | 对象实现 `next()` 方法，返回 `{ value, done }` | 定义遍历的具体行为 |
+
+```js
+// 自定义可迭代对象
+const range = {
+  from: 1,
+  to: 5,
+  [Symbol.iterator]() {
+    let current = this.from
+    const last = this.to
+    return {
+      next() {
+        return current <= last
+          ? { value: current++, done: false }
+          : { value: undefined, done: true }
+      }
+    }
+  }
+}
+
+for (const num of range) {
+  console.log(num) // 1, 2, 3, 4, 5
+}
+```
+
+### for...of 原理
+
+```js
+// for...of 内部等价于：
+const arr = ['a', 'b', 'c']
+const iterator = arr[Symbol.iterator]()
+
+while (true) {
+  const { value, done } = iterator.next()
+  if (done) break
+  console.log(value)
+}
+```
+
+### Generator 函数基础
+
+```js
+function* fibonacci() {
+  let a = 0, b = 1
+  while (true) {
+    yield a;
+    [a, b] = [b, a + b]
+  }
+}
+
+const fib = fibonacci()
+console.log(fib.next().value) // 0
+console.log(fib.next().value) // 1
+console.log(fib.next().value) // 1
+console.log(fib.next().value) // 2
+console.log(fib.next().value) // 3
+
+// 传值与返回值
+function* calculator() {
+  const x = yield '请输入 x'
+  const y = yield '请输入 y'
+  return x + y
+}
+
+const calc = calculator()
+console.log(calc.next())      // { value: '请输入 x', done: false }
+console.log(calc.next(10))    // { value: '请输入 y', done: false }
+console.log(calc.next(20))    // { value: 30, done: true }
+```
+
+### Generator 应用场景（异步流程控制）
+
+```js
+// 用 Generator 实现异步流程控制（类 co 库原理）
+function co(genFn) {
+  const gen = genFn()
+  return new Promise((resolve, reject) => {
+    function step(arg) {
+      let result
+      try {
+        result = gen.next(arg)
+      } catch (e) {
+        return reject(e)
+      }
+      if (result.done) return resolve(result.value)
+      Promise.resolve(result.value).then(step, reject)
+    }
+    step()
+  })
+}
+
+// 使用
+co(function* () {
+  const user = yield fetch('/api/user').then(r => r.json())
+  const posts = yield fetch(`/api/posts?uid=${user.id}`).then(r => r.json())
+  console.log(user, posts)
+  return posts
+}).then(posts => console.log('完成', posts))
+```
+
+## 错误处理
+
+### try/catch/finally
+
+```js
+function parseJSON(str) {
+  try {
+    return JSON.parse(str)
+  } catch (error) {
+    console.error('解析失败:', error.message)
+    return null
+  } finally {
+    // 无论成功与否都会执行
+    console.log('解析操作结束')
+  }
+}
+
+// try/catch 只能捕获同步错误和 async/await 中的异步错误
+// 无法捕获：setTimeout 回调中的错误、未处理的 Promise 异常
+```
+
+### Error 类型体系
+
+| 类型 | 触发场景 | 示例 |
+|------|----------|------|
+| `Error` | 基类，通用错误 | `new Error('出错了')` |
+| `TypeError` | 值类型不符合预期 | `null.foo`、`undefined()` |
+| `RangeError` | 值超出有效范围 | `new Array(-1)`、递归爆栈 |
+| `SyntaxError` | 代码语法错误 | `eval('{')` |
+| `ReferenceError` | 引用未定义变量 | `console.log(xyz)` |
+| `URIError` | URI 处理函数参数错误 | `decodeURIComponent('%')` |
+| `EvalError` | `eval()` 使用错误（现代已少见） | 保留用于向后兼容 |
+
+```js
+try {
+  null.toString()
+} catch (e) {
+  console.log(e instanceof TypeError) // true
+  console.log(e.name)    // "TypeError"
+  console.log(e.message) // "Cannot read properties of null"
+  console.log(e.stack)   // 完整的调用栈信息
+}
+```
+
+### 自定义 Error 类
+
+```js
+class ValidationError extends Error {
+  constructor(message, field) {
+    super(message)
+    this.name = 'ValidationError'
+    this.field = field
+  }
+}
+
+class HttpError extends Error {
+  constructor(status, message) {
+    super(message)
+    this.name = 'HttpError'
+    this.status = status
+  }
+}
+
+// 使用
+function validateAge(age) {
+  if (typeof age !== 'number') {
+    throw new ValidationError('年龄必须是数字', 'age')
+  }
+  if (age < 0 || age > 150) {
+    throw new ValidationError('年龄超出范围', 'age')
+  }
+}
+
+try {
+  validateAge('abc')
+} catch (e) {
+  if (e instanceof ValidationError) {
+    console.log(`字段 ${e.field} 校验失败: ${e.message}`)
+  }
+}
+```
+
+### 全局错误捕获
+
+```js
+// 浏览器 - 捕获同步错误和异步错误（setTimeout 等）
+window.onerror = function(message, source, lineno, colno, error) {
+  console.log('全局捕获:', message, error?.stack)
+  // 上报错误到监控平台
+  return true // 阻止默认行为
+}
+
+// 浏览器 - 捕获未处理的 Promise rejection
+window.onunhandledrejection = function(event) {
+  console.log('未处理的 Promise 异常:', event.reason)
+  event.preventDefault() // 阻止控制台报错
+}
+
+// 浏览器 - 捕获资源加载错误（img、script 等）
+window.addEventListener('error', (event) => {
+  if (event.target !== window) {
+    console.log('资源加载失败:', event.target.src || event.target.href)
+  }
+}, true) // 必须用捕获阶段
+
+// Node.js
+process.on('uncaughtException', (err) => {
+  console.error('未捕获的异常:', err)
+  // 记录日志后优雅退出
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未处理的 Promise 拒绝:', reason)
+})
+```
+
+### Promise 全局错误处理
+
+```js
+// 推荐方式：在每个 Promise 链末尾添加 catch
+fetchData()
+  .then(processData)
+  .then(saveData)
+  .catch(err => {
+    console.error('请求链路出错:', err)
+    showErrorMessage(err.message)
+  })
+
+// 全局兜底（防止遗漏的未处理 rejection）
+window.addEventListener('unhandledrejection', (event) => {
+  // 生产环境中上报到 Sentry 等平台
+  reportError(event.reason)
+  event.preventDefault()
+})
+```
+
+## WeakMap 与 WeakSet
+
+### 弱引用特性
+
+```js
+// WeakMap 的键必须是对象，且是弱引用
+// 当键对象没有其他引用时，会被垃圾回收，对应的键值对自动移除
+const wm = new WeakMap()
+
+let obj = { name: '张三' }
+wm.set(obj, '一些关联数据')
+
+console.log(wm.get(obj)) // '一些关联数据'
+
+obj = null // 原对象没有其他引用了
+// 下次 GC 后，wm 中对应的条目会被自动清除
+```
+
+### vs Map/Set 对比
+
+| 特性 | Map | WeakMap | Set | WeakSet |
+|------|-----|---------|-----|---------|
+| 键/值类型 | 任意 | 键必须是对象 | 任意 | 必须是对象 |
+| 弱引用 | ❌ | ✅（键） | ❌ | ✅ |
+| 可遍历 | ✅ | ❌ | ✅ | ❌ |
+| `size` 属性 | ✅ | ❌ | ✅ | ❌ |
+| `forEach` | ✅ | ❌ | ✅ | ❌ |
+| 支持的方法 | get/set/has/delete/clear | get/set/has/delete | add/has/delete/clear | add/has/delete |
+| 垃圾回收影响 | 无 | 键对象可能被回收 | 无 | 元素可能被回收 |
+
+### 应用场景
+
+```js
+// 场景1：缓存计算结果（避免内存泄漏）
+const cache = new WeakMap()
+
+function expensiveCalc(obj) {
+  if (cache.has(obj)) {
+    console.log('命中缓存')
+    return cache.get(obj)
+  }
+  const result = /* 复杂计算 */ obj.value * 2
+  cache.set(obj, result)
+  return result
+}
+
+// 场景2：为 DOM 元素关联数据（元素移除后自动清理）
+const domData = new WeakMap()
+
+function bindData(element, data) {
+  domData.set(element, data)
+}
+
+function getData(element) {
+  return domData.get(element)
+}
+
+// 当 DOM 元素被移除且没有其他引用时，关联数据自动被 GC 回收
+
+// 场景3：实现私有属性
+class Counter {
+  #count = new WeakMap()
+
+  constructor() {
+    this.#count.set(this, 0)
+  }
+
+  increment() {
+    this.#count.set(this, this.#count.get(this) + 1)
+  }
+
+  get value() {
+    return this.#count.get(this)
+  }
+}
+
+// WeakSet 应用场景：跟踪对象是否已处理
+const processed = new WeakSet()
+
+function processItem(item) {
+  if (processed.has(item)) return // 避免重复处理
+  processed.add(item)
+  // 处理逻辑...
+}
+```
+
+## 模块化
+
+### CommonJS vs ESM 详细对比
+
+| 特性 | CommonJS | ESM（ES Modules） |
+|------|----------|-------------------|
+| 语法 | `require()` / `module.exports` | `import` / `export` |
+| 加载时机 | 运行时加载（同步） | 编译时静态分析（异步） |
+| 输出方式 | 值的拷贝（浅拷贝） | 值的引用（只读绑定） |
+| `this` 指向 | 当前模块（`module.exports`） | `undefined` |
+| Tree Shaking | 不支持 | 支持 |
+| 顶层 `await` | 不支持 | 支持 |
+| 浏览器支持 | 不原生支持（需打包） | 原生支持（`<script type="module">`） |
+| 循环依赖 | 支持（返回已导出部分） | 支持（引用绑定，使用时取值） |
+
+### require vs import 执行时机
+
+```js
+// CommonJS - 运行时执行
+if (condition) {
+  const mod = require('./module') // 条件加载，运行时决定
+}
+
+// ESM - 编译时静态分析，必须在顶层
+import { foo } from './module' // 不能放在条件语句中
+
+// ESM 动态 import（运行时加载，返回 Promise）
+async function loadModule() {
+  if (condition) {
+    const mod = await import('./module')
+    mod.doSomething()
+  }
+}
+```
+
+### 循环依赖问题
+
+```js
+// === CommonJS 循环依赖 ===
+// a.js
+exports.a = 'from a'
+const b = require('./b')
+console.log('a 中拿到 b:', b.b) // undefined（b 还没执行完）
+
+// b.js
+exports.b = 'from b'
+const a = require('./a')
+console.log('b 中拿到 a:', a.a) // 'from a'
+
+// === ESM 循环依赖 ===
+// a.mjs
+export const a = 'from a'
+import { b } from './b.mjs'
+// 使用时 b 已经有值（因为是引用绑定）
+setTimeout(() => console.log('a 中拿到 b:', b), 0) // 'from b'
+
+// b.mjs
+export const b = 'from b'
+import { a } from './a.mjs'
+setTimeout(() => console.log('b 中拿到 a:', a), 0) // 'from a'
+```
+
+> **最佳实践**：尽量避免循环依赖。如果必须使用，ESM 的引用绑定机制比 CommonJS 的值拷贝更安全。
+
+### 动态 import()
+
+```js
+// 按需加载（路由懒加载）
+const routes = [
+  {
+    path: '/dashboard',
+    component: () => import('./views/Dashboard.vue')
+  },
+  {
+    path: '/settings',
+    component: () => import('./views/Settings.vue')
+  }
+]
+
+// 条件加载
+async function loadLocale(lang) {
+  const messages = await import(`./locales/${lang}.js`)
+  return messages.default
+}
+
+// 并行加载多个模块
+const [moduleA, moduleB] = await Promise.all([
+  import('./moduleA.js'),
+  import('./moduleB.js')
+])
+
+// 解构导入
+const { default: Component, namedExport } = await import('./component.js')
+```
+
+## 内存管理
+
+### 垃圾回收机制
+
+#### 标记清除法（Mark-and-Sweep）
+
+```
+工作原理：
+1. 标记阶段：从根对象（Global Object、当前执行上下文等）出发，遍历所有可达对象并标记
+2. 清除阶段：遍历堆内存，回收所有未被标记的对象
+3. 现代引擎（V8）使用分代回收 + 增量标记等优化策略
+
+根对象（GC Roots）包括：
+- 全局对象（window / global）
+- 当前函数的局部变量和参数
+- 调用栈中所有函数的变量和参数
+```
+
+#### 引用计数法及循环引用问题
+
+```js
+// 引用计数法：对象被引用次数为 0 时回收
+// 问题：循环引用导致引用计数永远不为 0
+
+function circularReference() {
+  const obj1 = {}
+  const obj2 = {}
+  obj1.ref = obj2  // obj2 引用计数 = 1
+  obj2.ref = obj1  // obj1 引用计数 = 1
+  // 函数结束后，obj1 和 obj2 互相引用，计数都不为 0
+  // 引用计数法无法回收这两个对象 → 内存泄漏
+}
+
+// 现代浏览器已不使用纯引用计数法
+// 但旧版 IE（IE6-8）的 DOM/BOM 对象使用引用计数，容易导致泄漏
+```
+
+### 常见内存泄漏场景
+
+```js
+// 1. 意外的全局变量
+function leak() {
+  // 忘记写 var/let/const，隐式创建全局变量
+  data = '大量数据' // 等同于 window.data = '大量数据'
+}
+
+// 2. 未清除的定时器
+const timer = setInterval(() => {
+  const element = document.getElementById('node')
+  // element 和回调中的闭包阻止相关数据被回收
+  element.innerHTML = JSON.stringify(hugeObject)
+}, 1000)
+// 如果页面切换但未 clearInterval，数据永远无法回收
+
+// 3. 闭包引起的泄漏
+function createClosure() {
+  const hugeData = new Array(1000000).fill('x')
+  return function() {
+    // 闭包持有 hugeData 的引用
+    console.log(hugeData.length)
+  }
+}
+const fn = createClosure() // hugeData 无法被 GC 回收
+
+// 4. 分离的 DOM 引用
+let detachedNode
+function removeElement() {
+  const parent = document.getElementById('parent')
+  const child = document.getElementById('child')
+  detachedNode = child  // JS 变量仍然引用着 DOM 节点
+  parent.removeChild(child) // DOM 中已移除，但 JS 中仍持有引用
+  // 即使父节点被回收，child 因为 detachedNode 的存在无法被回收
+}
+
+// 5. console.log 保留引用
+function processData() {
+  const hugeData = new Array(1000000)
+  console.log(hugeData) // 某些浏览器 DevTools 打开时会保留引用
+  // 生产环境应该移除或禁用 console
+}
+```
+
+### Chrome DevTools 内存分析简述
+
+```
+常用工具：
+
+1. Memory 面板 → Heap Snapshot（堆快照）
+   - 拍摄内存快照，查看当前页面所有对象的内存占用
+   - 对比两次快照可发现内存增长（疑似泄漏）
+   - 关注 Detached DOM（已分离的 DOM 节点）
+
+2. Memory 面板 → Allocation Timeline（分配时间线）
+   - 记录一段时间内的内存分配情况
+   - 找到分配大量内存的代码位置
+
+3. Memory 面板 → Allocation Sampling（分配采样）
+   - 低开销的内存分析方式
+   - 适合长时间运行的性能分析
+
+4. Performance 面板
+   - 录制运行时性能，观察 JS Heap Size 变化曲线
+   - 如果曲线持续上升且不回落，可能存在内存泄漏
+
+排查步骤：
+1. 打开 DevTools → Memory → 拍摄 Heap Snapshot (快照1)
+2. 执行可能泄漏的操作（如打开/关闭弹窗多次）
+3. 手动触发 GC（点击垃圾桶图标）
+4. 再拍摄 Heap Snapshot (快照2)
+5. 选择 Comparison 视图对比两个快照
+6. 按 Size Delta 排序，找到增长最多的对象类型
+7. 展开查看具体对象的 Retainers（谁在引用它）
+8. 定位到代码中的泄漏点
+```
+
 ## 给fetch添加超时功能
 
 ```js
@@ -160,244 +1304,6 @@ function createFetchWithTimeout(timeout = 1000){
     console.log('Value from shared memory:', value);
   };
   ```
-
-## Vue3
-
-### 通讯方式
-
-+ 组件传值
-  + 父传子：父组件通过冒号绑定，子组件通过 `const props = defineProps({xxx:{type: xxx,default: xxx}})` 接收 然后通过props.xxx使用
-
-    ```vue
-      <!-- 父组件 --> 
-      <template>
-        <child :name="name"></child>
-      </template>
-
-      <script setup>
-      import { ref } from 'vue'
-      import child from './child.vue'
-
-      const name = ref('天天鸭')
-      </script>
-      <!-- 子组件 -->
-      <template>
-        <div>{{ props.name }}</div>
-      </template>
-
-      <script setup>
-      import { defineProps } from 'vue'
-      const props = defineProps({
-        name: {
-          type: String,
-          default: '',
-        },
-      })
-      </script>
-    ```
-
-  + 子传父：子组件用 `const emits = defineEmits(['触发的方法'])` 注册某个在父组件的事件 然后通过emits('触发的事件',参数) 触发父组件事件并且带上参数
-
-      ```vue
-      <!-- 子组件 -->
-      <template>
-        <div ></div>
-      </template>
-
-      <script setup>
-      import { ref, defineEmits } from 'vue'
-
-      const name = ref('天天鸭')
-      const emits = defineEmits(['addEvent'])
-      const handleSubmit = () => {
-        emits('addEvent', name.value)
-      }
-      </script>
-      <!-- 父组件 -->
-      <template>
-        <child @addEvent="handle"></child>
-      </template>
-
-      <script setup>
-      import { ref } from 'vue'
-      import child from './child.vue'
-
-      const handle = value => {
-        console.log(value); // '天天鸭'
-      }
-      </script>
-      ```
-  
-  + 兄弟传值：vue2 是`EventBus`事件总线跨组件实现 vue3使用的是`mitt.js`插件实现
-    + 引入：npm install --save mitt
-    + 在main.js文件进行全局挂载, $bus是自定义属性名
-      import mitt from "mitt"
-      const app = createApp(App)
-      app.config.globalProperties.$bus = new mitt()
-    + 传参出去的使用方法
-      import mitt from 'mitt'
-      const emitter = new mitt()
-      emitter.emit('自定义的事件名称','参数')
-    + 接收参数的使用方法（注意：emit和on必须使用同一个mitt实例，实际项目中应通过全局挂载或共享模块导出同一实例）
-      emitter.on('自定义的事件名称', (data) => { console.log(data) })
-
-  + `$attrs` 在vue2中除了`$attrs`，还有`$listeners`；但vue3直接把`$listeners`合并到 `$attrs` 里面了
-    + `$attrs`主要作用是接收没在props里面定义，但父组件又传了过来的属性
-      import { defineProps, useAttrs } from 'vue'
-      const myAttrs = useAttrs() 接收没在 props 里的值
-  
-  + `refs` 传参: 父组件通过在子组件上定义 ref='ref名称'，然后const ref名称 = ref(null)，就能通过ref名称操控子组件的属性和方法（子组件用defineExpose对外暴露才能被操控）
-
-    ```vue
-    <!-- 父组件代码 -->
-    <template>
-      <child ref="myref"></child>
-      <button @click="myClick">点击</button>
-    </template>
-
-    <script setup>
-      import child from "./child.vue"
-      import { ref } from "vue"
-      const myref = ref(null)
-      const myClick = () => {
-        console.log(myref.value.name) // 直接获取到子组件的属性
-        myref.value.chileMethod()      // 直接调用子组件的方法
-      }
-    </script>
-
-    <!-- 子组件代码 用defineExpose对外暴露才能被操控 -->
-    <template>
-      <div></div>
-    </template>
-
-    <script setup>
-      import { defineExpose } from "vue"
-
-      const chileMethod = () =>{
-        console.log("我是方法")
-      }
-      const name = ref('天天鸭')
-
-      defineExpose({    // 对外暴露
-        name,
-        chileMethod
-      })
-    </script>
-    ```
-
-  + v-model 其实是语法糖，如下两行代码作用是一样, 上面是下面的简写
-    `<child v-model:title="title" />`
-    `<child :title="title" @update:title="title = $event" />`
-
-    ```vue
-    <!-- 父组件：直接使用v-model传参 -->
-    <template>
-      <child v-model:name="name" v-model:num="num"></child>
-    </template>
-
-    <script setup>
-      import child from "./child.vue"
-      import { ref, reactive } from "vue"
-      const name = ref("天天鸭")
-      const num = ref("2222")
-    </script>
-
-    <!-- 子组件：通过 defineEmits获取到然后用emit("update:修改的属性", 修改的内容)进行修改父组件的内容 -->
-    <template>
-      <button @click="myClick">点击</button>
-    </template>
-
-    <script setup>
-      import { defineEmits } from "vue"
-      const emit = defineEmits(["name","num"])
-      
-      // 子组件触发使用
-      const myClick = () => {
-        emit("update:name", "改个新名字")
-        emit("update:num", "换个新号码")
-      }
-    </script>
-    ```
-
-    + `defineModel()宏`的简单说明：父子组件的数据双向绑定，不用emit和props的繁重代码，版本要求：必须要3.4+
-
-    ```vue
-    <!-- 实例 -->
-    <!-- 父组件代码： 用v-model在子组件身上绑定showDevice属性，该属性用于通知子组件是否打开弹窗。 -->
-    <template>
-      <child v-if="showDevice" v-model="showDevice"></child>
-    </template>
-
-    <script setup>
-        import child from "./child.vue"
-        import { ref } from "vue"
-
-        const showDevice = ref(false) // 控制子组件的显示和隐藏
-    </script>
-
-    <!-- 子组件代码： 如下的handleClickCancel方法，通过defineModel宏声明一个model，点击按钮能直接通知父组件修改属性。 -->
-    <template>
-    <button @click="handleClickCancel">点击取消子组件弹窗</button>
-    </template>
-
-    <script setup>
-      import { defineModel } from 'vue'
-      const model = defineModel()                       // 写法一
-      // const model = defineModel({ type: Boolean })   // 写法二 也可以用声明类型的方法
-
-      const handleClickCancel = () => {
-        model.value = false
-      }
-    </script>
-    ```
-  
-  + provide/inject 依赖注入 可以实现多层组件传递数据
-    + 祖组件
-      import { ref, provide } from 'vue';
-      const name = ref('天天鸭');
-      provide('name', name)
-    + 孙组件
-      import { inject } from 'vue'
-      const name = inject('name')
-
-  + 路由传参
-    + `query` 传参
-
-    ```js
-    // 传递方
-    const query = { id: 9527, name: '天天鸭' }
-    router.push({ path: '/user', query })
-
-    // 接收方
-    import { useRoute} from 'vue-router'
-    const route = useRoute()
-    console.log(route.query) 
-    ```
-
-    + `params` 传参 **4.1.4 (2022-08-22) 删除了param这种方式** ~~（已废弃，以下代码仅供参考）~~
-
-    ```js
-    // 传递方（已废弃：vue-router 4.x 已移除 params 传参方式）
-    // router.push({ name: 'user', params: { id: 9527, name: '天天鸭' } })
-    
-    // 接收方
-    // import { useRoute } from 'vue-router'
-    // const route = useRoute()
-    // console.log(route.params)
-    ```
-
-    + `state` 传参
-
-    ```js
-    // 发送方
-    const state= { name: '天天鸭' }
-    router.push({ path: '/user', state })
-
-    // 接收方直接使用
-    console.log(history?.state?.name)
-    ```
-
-  + vuex、pinia、浏览器缓存 都可以进行传参
 
 ## JSON.stringify 深拷贝的缺点
 
