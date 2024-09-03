@@ -9,7 +9,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
-      { text: '笔记', link: '/notes/performance-optimization' },
+      { text: '笔记', link: '/notes/html-note' },
       { text: '博客', link: '/blog/hello-world' }
     ],
 

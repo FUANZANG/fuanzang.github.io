@@ -315,7 +315,7 @@ onUnmounted(() => {
         <p class="hero-subtitle">个人知识库 &amp; 博客</p>
         <p class="hero-tagline">记录学习 · 分享思考 · 展示作品</p>
         <div class="hero-actions">
-          <a href="/notes/performance-optimization" class="action-btn primary"
+          <a href="/notes/html-note" class="action-btn primary"
             >开始阅读</a
           >
           <a href="/blog/hello-world" class="action-btn ghost">浏览博客</a>
