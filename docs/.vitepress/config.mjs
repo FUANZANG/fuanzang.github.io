@@ -6,6 +6,11 @@ export default defineConfig({
   lang: 'zh-CN',
   base: '/',
 
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+  ],
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
