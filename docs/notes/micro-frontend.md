@@ -301,3 +301,188 @@
 
 + 全局样式（如 reset.css、UI 库全局样式）容易穿透沙箱
 + 解决：子应用避免写全局样式，或使用 Shadow DOM 隔离
+
+## 状态保持（实战经验）
+
+微前端的状态保持是工作中最容易踩坑的地方。子应用切换时组件卸载，状态默认丢失。
+
+### 状态分类与策略
+
+| 状态类型 | 生命周期 | 推荐方案 |
+|---------|---------|---------|
+| 路由状态 | 需跨刷新 | URL 参数 / History API |
+| 用户态 / Token | 需跨刷新 + 跨应用 | 全局状态 + localStorage |
+| 业务数据（列表、详情） | 子应用内 | 子应用 store + sessionStorage 兜底 |
+| 跨应用共享数据 | 跨应用实时同步 | initGlobalState / CustomEvent |
+| 表单草稿 | 子应用切换不丢 | sessionStorage 或 keep-alive |
+
+### 场景一：子应用切换后回来，表单数据丢了
+
++ **问题**：用户在 A 子应用填了一半表单，切到 B 子应用再切回来，表单空了
++ **原因**：子应用卸载时组件销毁，组件内 `ref()`/`reactive()` 状态丢失
++ **解决**：
+
+  ```js
+  // 方案 1：表单数据实时存 sessionStorage
+  const formKey = `draft_${appName}_${route.path}`
+
+  // 初始化时恢复
+  const saved = sessionStorage.getItem(formKey)
+  if (saved) Object.assign(formData, JSON.parse(saved))
+
+  // 表单变化时保存（加防抖）
+  watch(formData, (val) => {
+    sessionStorage.setItem(formKey, JSON.stringify(val))
+  }, { deep: true })
+
+  // 提交成功后清除
+  function onSubmit() {
+    sessionStorage.removeItem(formKey)
+  }
+  ```
+
+  ```vue
+  <!-- 方案 2：wujie 直接用 keepAlive，子应用不销毁 -->
+  <WujieVue name="app-a" url="http://localhost:8081" :alive="true" />
+  ```
+
+### 场景二：登录态 / Token 跨子应用共享
+
++ **问题**：主应用登录后，子应用拿不到 Token；或者 Token 刷新了子应用还在用旧的
++ **解决**：
+
+  ```js
+  // 主应用：全局状态管理 Token
+  const actions = initGlobalState({
+    token: localStorage.getItem('token'),
+    userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}'),
+  })
+
+  // Token 刷新后同步
+  async function refreshToken() {
+    const { token } = await api.refresh()
+    localStorage.setItem('token', token)
+    actions.setGlobalState({ token }) // 通知所有子应用
+  }
+
+  // 子应用：监听 Token 变化
+  export async function mount(props) {
+    // 拿到初始 Token
+    const { token } = props.getGlobalState()
+    axios.defaults.headers.Authorization = `Bearer ${token}`
+
+    // 监听后续变化
+    props.onGlobalStateChange((state) => {
+      axios.defaults.headers.Authorization = `Bearer ${state.token}`
+    })
+  }
+  ```
+
++ **注意**：Token 过期时的刷新竞争问题 — 多个子应用同时发现 401，不能每个都去刷新。用 Promise 单例或全局锁：
+
+  ```js
+  // 共享的 refreshToken Promise，避免并发刷新
+  let refreshPromise = null
+  function sharedRefresh() {
+    if (!refreshPromise) {
+      refreshPromise = refreshToken().finally(() => {
+        refreshPromise = null
+      })
+    }
+    return refreshPromise
+  }
+  ```
+
+### 场景三：子应用 A 改了数据，子应用 B 没更新
+
++ **问题**：A 子应用里修改了用户信息，切到 B 子应用还是旧数据
++ **解决**：
+
+  ```js
+  // 方案 1：CustomEvent 事件总线（框架无关）
+  // 子应用 A 修改后发布
+  window.dispatchEvent(new CustomEvent('user:updated', {
+    detail: { name: '新名字', avatar: '...' }
+  }))
+
+  // 子应用 B 监听
+  window.addEventListener('user:updated', (e) => {
+    store.commit('UPDATE_USER', e.detail)
+  })
+
+  // 方案 2：qiankun initGlobalState
+  actions.setGlobalState({ userInfo: newUserInfo })
+  // 所有监听的子应用自动收到
+  ```
+
++ **注意**：子应用卸载时记得 `removeEventListener`，否则内存泄漏
+
+### 场景四：页面刷新后状态全丢
+
++ **问题**：全局状态存在内存里，刷新后子应用拿到的是空值
++ **解决**：全局状态 + localStorage 双写
+
+  ```js
+  // 封装一个带持久化的全局状态
+  function createPersistedState(key, initial) {
+    const saved = localStorage.getItem(key)
+    const state = saved ? JSON.parse(saved) : initial
+
+    const actions = initGlobalState(state)
+
+    // 每次变更自动持久化
+    actions.onGlobalStateChange((newState) => {
+      localStorage.setItem(key, JSON.stringify(newState))
+    })
+
+    return actions
+  }
+
+  const globalState = createPersistedState('app:global', {
+    token: '',
+    userInfo: {},
+    permissions: [],
+  })
+  ```
+
+### 场景五：子应用加载顺序 & 状态竞争
+
++ **问题**：子应用 mount 时主应用的全局状态还没准备好（比如权限列表还没拉完）
++ **解决**：
+
+  ```js
+  // 子应用 mount 时等全局状态 ready
+  export async function mount(props) {
+    const state = props.getGlobalState()
+
+    if (!state.permissions?.length) {
+      // 等主应用准备好
+      await new Promise((resolve) => {
+        props.onGlobalStateChange((s) => {
+          if (s.permissions?.length) resolve()
+        })
+      })
+    }
+
+    // 此时权限数据已就绪，正常渲染
+    render(props)
+  }
+  ```
+
+### 实战总结
+
+```
+状态保持决策树：
+
+  需要跨刷新吗？
+  ├── 是 → localStorage / sessionStorage / URL
+  └── 否 → 内存就行
+        │
+        需要跨应用吗？
+        ├── 是 → initGlobalState / CustomEvent
+        └── 否 → 子应用自己的 store
+              │
+              切换回来需要保留吗？
+              ├── 是 → sessionStorage 兜底 / keepAlive
+              └── 否 → 不管，让它重建
+```
