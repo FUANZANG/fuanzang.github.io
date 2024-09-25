@@ -50,6 +50,7 @@ export default defineConfig({
             { text: 'Vue', link: '/notes/vue-note' },
             { text: '前端性能优化', link: '/notes/performance-optimization' },
             { text: 'Webpack 构建优化', link: '/notes/webpack-optimization' },
+            { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
             { text: '微前端', link: '/notes/micro-frontend' }
           ]
         },
