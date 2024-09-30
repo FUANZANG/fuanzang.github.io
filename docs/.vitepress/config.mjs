@@ -51,6 +51,7 @@ export default defineConfig({
             { text: '前端性能优化', link: '/notes/performance-optimization' },
             { text: 'Webpack 性能优化', link: '/notes/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
+            { text: 'Webpack vs Vite', link: '/notes/webpack-vs-vite' },
             { text: '微前端', link: '/notes/micro-frontend' }
           ]
         },
