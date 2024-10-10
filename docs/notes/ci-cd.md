@@ -350,3 +350,294 @@ jobs:
   ```yaml
   - run: echo "::add-mask::$MY_SECRET"
   ```
+
+## GitLab CI/CD
+
++ 配置写在项目根目录的 `.gitlab-ci.yml`，推送到 GitLab 自动执行
++ 核心概念：Pipeline → Stage → Job
+
+### 基本结构
+
+```yaml
+# .gitlab-ci.yml
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: '20'
+
+# 缓存 node_modules
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - .npm/
+
+# 通用安装步骤（被后续 job 复用）
+.setup: &setup
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+
+# Lint
+lint:
+  stage: lint
+  image: node:20-alpine
+  <<: *setup
+  script:
+    - npm run lint
+
+# Test
+test:
+  stage: test
+  image: node:20-alpine
+  <<: *setup
+  script:
+    - npm run test -- --coverage
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)%/'  # 提取覆盖率
+
+# Build
+build:
+  stage: build
+  image: node:20-alpine
+  <<: *setup
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 7 days
+
+# 部署（仅 main 分支）
+deploy:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build
+  script:
+    - apk add --no-cache rsync openssh
+    - rsync -avz --delete dist/ user@server:/var/www/app/
+  only:
+    - main
+  environment:
+    name: production
+    url: https://example.com
+```
+
+### 常用关键字
+
+| 关键字 | 用途 |
+|--------|------|
+| `stages` | 定义阶段顺序 |
+| `image` | 指定 Docker 镜像 |
+| `script` | 执行命令 |
+| `artifacts` | 传递构建产物 |
+| `cache` | 缓存文件（跨 Pipeline） |
+| `only` / `except` | 分支/标签过滤 |
+| `rules` | 更灵活的条件控制（替代 only/except） |
+| `environment` | 部署环境 |
+| `needs` | Job 依赖（DAG 模式，不等待同 stage） |
+| `retry` | 失败自动重试 |
+| `timeout` | 超时时间 |
+
+### rules 条件控制
+
+```yaml
+deploy-staging:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: always
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual  # MR 中手动触发
+    - when: never
+
+deploy-production:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual  # 生产环境手动触发
+```
+
+### 变量管理
+
+```yaml
+variables:
+  # 非敏感变量直接写
+  VITE_APP_TITLE: 'My App'
+
+deploy:
+  script:
+    # 敏感变量在 GitLab Settings → CI/CD → Variables 中配置
+    - echo $DEPLOY_TOKEN  # 自动注入，不会打印到日志
+    - npm run build
+      -- --mode $CI_ENVIRONMENT_NAME
+```
+
++ **Protected Variables**：仅在 protected 分支/tag 可用
++ **Masked Variables**：日志中自动隐藏值
+
+### Docker 构建 & 推送
+
+```yaml
+docker-build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    # 打 latest 标签（仅 main 分支）
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+        docker push $CI_REGISTRY_IMAGE:latest
+      fi
+```
+
+## Jenkins
+
++ 配置通过 `Jenkinsfile`（Pipeline as Code）或 Web UI 管理
++ 核心概念：Pipeline → Stage → Step
+
+### Jenkinsfile（声明式语法）
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        NODE_HOME = tool 'NodeJS-20'
+        PATH      = "${NODE_HOME}/bin:${env.PATH}"
+    }
+
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Install') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm run test -- --coverage'
+            }
+            post {
+                always {
+                    // 收集测试报告
+                    junit 'test-results/*.xml'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'deploy-key',
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
+                    sh '''
+                        rsync -avz --delete \
+                          -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
+                          dist/ user@server:/var/www/app/
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            // 部署成功通知
+            echo '✅ 部署成功'
+        }
+        failure {
+            echo '❌ 构建失败'
+        }
+        always {
+            // 清理工作空间
+            cleanWs()
+        }
+    }
+}
+```
+
+### Jenkinsfile（脚本式语法）
+
+```groovy
+node {
+    def nodeHome = tool 'NodeJS-20'
+    env.PATH = "${nodeHome}/bin:${env.PATH}"
+
+    stage('Checkout') {
+        checkout scm
+    }
+
+    stage('Install') {
+        sh 'npm ci'
+    }
+
+    // 并行执行
+    stage('Quality') {
+        parallel(
+            'Lint': { sh 'npm run lint' },
+            'Test': { sh 'npm run test' }
+        )
+    }
+
+    stage('Build') {
+        sh 'npm run build'
+        archiveArtifacts artifacts: 'dist/**', fingerprint: true
+    }
+
+    stage('Deploy') {
+        if (env.BRANCH_NAME == 'main') {
+            input message: '确认部署到生产环境？', ok: '部署'
+            sh 'rsync -avz dist/ user@server:/var/www/app/'
+        }
+    }
+}
+```
+
+### Jenkins vs GitLab CI vs GitHub Actions
+
+| | Jenkins | GitLab CI | GitHub Actions |
+|---|---------|-----------|---------------|
+| **配置方式** | Jenkinsfile (Groovy) | .gitlab-ci.yml | YAML |
+| **运行环境** | 自建服务器 | 自建/GitLab.com | GitHub 托管 |
+| **学习曲线** | 高（Groovy 语法） | 中 | 低 |
+| **插件生态** | 非常丰富（1500+） | 内置为主 | Marketplace |
+| **Docker 支持** | 需要配置 | 原生支持 | 原生支持 |
+| **维护成本** | 高（服务器、插件更新） | 中 | 低（SaaS） |
+| **适用场景** | 复杂流程、老项目 | 企业自建 GitLab | 开源/GitHub 项目 |
+
+### 踩坑经验
+
++ **Jenkins 的 Groovy 沙箱**：声明式 Pipeline 默认在沙箱中运行，很多 Groovy 语法被禁止，需要用 `@NonCPS` 或在 Script Approval 中审批
++ **环境变量注入**：Jenkins 用 `withCredentials` 注入敏感信息，不要直接写在 Jenkinsfile 里
++ **并发构建**：配置 `disableConcurrentBuilds()` 避免同分支并发部署冲突
++ **Workspace 清理**：每次构建后 `cleanWs()`，避免残留文件影响下次构建
