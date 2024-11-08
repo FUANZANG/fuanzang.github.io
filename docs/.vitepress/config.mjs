@@ -63,6 +63,13 @@ export default defineConfig({
             { text: 'Node.js', link: '/notes/node-note' },
             { text: '正则与校验', link: '/notes/regex-and-validation' }
           ]
+        },
+        {
+          text: 'AI 与工程化',
+          collapsed: false,
+          items: [
+            { text: '前端对接 AI', link: '/notes/ai-frontend-integration' }
+          ]
         }
       ]
     },
