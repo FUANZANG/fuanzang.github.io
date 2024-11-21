@@ -37,6 +37,7 @@ export default defineConfig({
           items: [
             { text: 'HTML', link: '/notes/html-note' },
             { text: 'CSS', link: '/notes/css-note' },
+            { text: '响应式与自适应', link: '/notes/responsive-design' },
             { text: 'JavaScript', link: '/notes/javascript-note' },
             { text: 'TypeScript', link: '/notes/typescript-note' },
             { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
