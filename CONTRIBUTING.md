@@ -13,8 +13,8 @@
 ```
 
 - `type`（必需）：提交类型
-- `scope`（可选）：影响范围
-- `subject`（必需）：简短描述
+- `scope`（可选）：影响范围，简单改动可省略
+- `subject`（必需）：简短描述，使用中文
 
 ## 常用类型
 
@@ -35,24 +35,27 @@
 
 ```bash
 # 新功能
-feat(docs): add blog section with markdown support
+feat(notes): 新增 H5 响应式布局笔记
 
 # 修复 bug
-fix(theme): resolve scroll-hint cut off by VPContent padding
+fix(theme): 修复侧边栏在移动端的溢出问题
 
 # 重构
-refactor(home): simplify GSAP scroll animations
+refactor(home): 精简首页动画逻辑
 
 # 文档
-docs(readme): update installation guide
+docs(readme): 更新安装说明
 
 # 构建
-chore(deps): upgrade vitepress to v1.6.4
+chore(deps): 升级 vitepress 到 v1.6.4
+
+# 简单改动可省略 scope
+fix: 修复首页导航链接
 ```
 
 ## 规则
 
-1. `subject` 使用**小写**开头，不加句号
-2. `subject` 不超过 50 个字符
+1. `subject` 使用中文描述
+2. `subject` 不加句号
 3. `body` 每行不超过 72 个字符
-4. 使用**现在时**（"add feature" 而非 "added feature"）
+4. `scope` 可选，复杂改动建议加上以便区分
