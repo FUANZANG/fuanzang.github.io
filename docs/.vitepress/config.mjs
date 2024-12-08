@@ -48,7 +48,9 @@ export default defineConfig({
           text: '框架与工程化',
           collapsed: false,
           items: [
-            { text: 'Vue', link: '/notes/vue-note' },
+            { text: 'Vue 总览', link: '/notes/vue-note' },
+            { text: 'Vue 2 (Options API)', link: '/notes/vue2-note' },
+            { text: 'Vue 3 (Composition API)', link: '/notes/vue3-note' },
             { text: '前端性能优化', link: '/notes/performance-optimization' },
             { text: 'Webpack 性能优化', link: '/notes/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
