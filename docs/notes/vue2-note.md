@@ -815,3 +815,488 @@ export default {
 };
 </script> 
 ```
+
+---
+
+## Vue 2 → Vue 3 迁移备忘
+
+> 维护老项目迁移时的坑点速查，按影响程度排序。
+
+### 1. 实例与挂载
+
+```js
+// ❌ Vue 2
+import Vue from 'vue'
+import App from './App.vue'
+Vue.config.productionTip = false
+new Vue({ render: h => h(App) }).$mount('#app')
+
+// ✅ Vue 3
+import { createApp } from 'vue'
+import App from './App.vue'
+createApp(App).mount('#app')
+```
+
++ `new Vue()` → `createApp()`
++ `Vue.config.productionTip` 移除
++ 全局 API 从 `Vue.xxx` 改为 `app.xxx`（如 `Vue.use` → `app.use`）
+
+### 2. 全局 API 变更
+
+```js
+// ❌ Vue 2 — 全局污染，所有实例共享
+Vue.component('MyComponent', { /* ... */ })
+Vue.directive('focus', { /* ... */ })
+Vue.mixin({ /* ... */ })
+Vue.use(plugin)
+Vue.prototype.$http = axios
+
+// ✅ Vue 3 — 挂载到 app 实例，不污染全局
+const app = createApp(App)
+app.component('MyComponent', { /* ... */ })
+app.directive('focus', { /* ... */ })
+app.mixin({ /* ... */ })
+app.use(plugin)
+app.config.globalProperties.$http = axios
+```
+
+### 3. `$on` / `$off` / `$once` 移除 → 用 mitt
+
+```js
+// ❌ Vue 2 — 实例方法，已移除
+this.$on('event', handler)
+this.$emit('event', data)
+this.$off('event', handler)
+
+// ✅ Vue 3 — 用 mitt 替代
+import mitt from 'mitt'
+const emitter = mitt()
+
+// 发送
+emitter.emit('event', data)
+// 监听
+emitter.on('event', handler)
+// 取消
+emitter.off('event', handler)
+// 监听一次（mitt 没有 $once，手动实现）
+const onceHandler = (data) => {
+  handler(data)
+  emitter.off('event', onceHandler)
+}
+emitter.on('event', onceHandler)
+```
+
+### 4. `$children` 移除 → 用 `$refs`
+
+```js
+// ❌ Vue 2 — $children 已移除
+this.$children[0].someMethod()
+
+// ✅ Vue 3 — 用 ref + defineExpose
+// 父组件
+<ChildComp ref="childRef" />
+const childRef = ref(null)
+childRef.value.someMethod()
+
+// 子组件需要主动暴露
+defineExpose({ someMethod })
+```
+
+### 5. `.sync` 修饰符移除 → `v-model:xxx`
+
+```html
+<!-- ❌ Vue 2 -->
+<ChildComp :title.sync="pageTitle" />
+<!-- 等价于 -->
+<ChildComp :title="pageTitle" @update:title="pageTitle = $event" />
+
+<!-- ✅ Vue 3 — 直接用 v-model 带参数 -->
+<ChildComp v-model:title="pageTitle" />
+<ChildComp v-model:visible="showDialog" />
+```
+
+```js
+// Vue 2 子组件
+this.$emit('update:title', newValue)
+
+// Vue 3 子组件 — 写法一样，但声明方式不同
+const emit = defineEmits(['update:title'])
+emit('update:title', newValue)
+```
+
+### 6. `$listeners` 合并到 `$attrs`
+
+```js
+// ❌ Vue 2 — $attrs 和 $listeners 分开
+<ChildComp v-bind="$attrs" v-on="$listeners" />
+
+// ✅ Vue 3 — $listeners 移除，全部在 $attrs 里
+<ChildComp v-bind="$attrs" />
+```
+
+```js
+// Vue 2
+console.log(this.$attrs)    // 未声明的 props
+console.log(this.$listeners) // 未声明的事件监听器
+
+// Vue 3
+console.log(this.$attrs)    // 未声明的 props + 事件监听器，合在一起了
+// script setup 中
+const attrs = useAttrs()
+```
+
+### 7. `$set` / `$delete` 移除 → 直接赋值
+
+```js
+// ❌ Vue 2 — 因为 Object.defineProperty 的限制，需要 $set
+this.$set(this.obj, 'newKey', value)
+this.$set(this.arr, index, value)
+this.$delete(this.obj, 'key')
+
+// ✅ Vue 3 — Proxy 响应式，直接操作即可
+this.obj.newKey = value
+this.arr[index] = value
+delete this.obj.key
+```
+
+### 8. `$destroy` 移除
+
+```js
+// ❌ Vue 2 — 手动销毁实例
+vm.$destroy()
+
+// ✅ Vue 3 — 用 app.unmount()
+app.unmount()
+```
+
+### 9. Filters 移除 → 用 computed / 方法
+
+```js
+// ❌ Vue 2
+<template>
+  <p>{{ price | currency }}</p>
+</template>
+filters: {
+  currency(val) { return `¥${val.toFixed(2)}` }
+}
+
+// ✅ Vue 3 — 用计算属性或方法
+<template>
+  <p>{{ formatCurrency(price) }}</p>
+</template>
+<script setup>
+const formatCurrency = (val) => `¥${val.toFixed(2)}`
+</script>
+```
+
+> 💡 全局 filter 也移除了，建议封装成工具函数统一导入。
+
+### 10. EventBus → mitt / provide-inject
+
+```js
+// ❌ Vue 2 — 全局事件总线
+// main.js
+Vue.prototype.$bus = new Vue()
+// 组件 A
+this.$bus.$emit('event', data)
+// 组件 B
+this.$bus.$on('event', (data) => { /* ... */ })
+
+// ✅ Vue 3 方案一：mitt（推荐简单场景）
+// bus.js
+import mitt from 'mitt'
+export const emitter = mitt()
+// 组件 A
+import { emitter } from './bus'
+emitter.emit('event', data)
+// 组件 B
+emitter.on('event', (data) => { /* ... */ })
+
+// ✅ Vue 3 方案二：provide/inject（推荐组件树内通讯）
+// 祖先组件
+import { provide, ref } from 'vue'
+const data = ref('hello')
+provide('sharedData', data)
+// 后代组件
+import { inject } from 'vue'
+const data = inject('sharedData')
+```
+
+### 11. Vue CLI → Vite 迁移
+
+```js
+// ❌ Vue CLI — vue.config.js
+module.exports = {
+  devServer: { port: 3000 },
+  configureWebpack: { /* webpack 配置 */ }
+}
+
+// ✅ Vite — vite.config.js / vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+export default defineConfig({
+  plugins: [vue()],
+  server: { port: 3000 }
+})
+```
+
+**迁移要点：**
++ `vue.config.js` → `vite.config.js`
++ `process.env.VUE_APP_XXX` → `import.meta.env.VITE_XXX`
++ `.env` 文件前缀从 `VUE_APP_` 改为 `VITE_`
++ 静态资源引用：`require('./img.png')` → `new URL('./img.png', import.meta.url).href`
++ `babel.config.js` → Vite 默认用 esbuild，一般不需要 Babel
++ CSS 预处理器直接装依赖即可（`sass`、`less` 等）
++ 路径别名：webpack 的 `@` → Vite 需要同时配 `resolve.alias`
+
+```js
+// vite.config.js 路径别名
+import path from 'path'
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
+  }
+})
+```
+
+### 12. Element UI → Element Plus
+
+| 对比项 | Element UI (Vue 2) | Element Plus (Vue 3) |
+|--------|-------------------|---------------------|
+| 包名 | `element-ui` | `element-plus` |
+| 引入 | `Vue.use(ElementUI)` | `app.use(ElementPlus)` |
+| 图标 | `<i class="el-icon-edit" />` | `<el-icon><Edit /></el-icon>` |
+| 图标引入 | 内置，无需额外安装 | 需要 `@element-plus/icons-vue` |
+| 组件 API | 部分用 `.sync` | 统一用 `v-model:xxx` |
+| 弹窗 | `visible.sync` | `v-model` |
+| 表格 | `type="expand"` 写法不变 | 基本兼容 |
+| 表单验证 | `this.$refs.form.validate()` | 写法一致，返回 Promise |
+
+```js
+// ❌ Vue 2 + Element UI
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+Vue.use(ElementUI)
+
+// ✅ Vue 3 + Element Plus
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+app.use(ElementPlus)
+// 注册所有图标（按需注册也行）
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+```
+
+**常见组件 API 变更：**
+
+```html
+<!-- 弹窗：.sync → v-model -->
+<!-- ❌ Vue 2 -->
+<el-dialog :visible.sync="dialogVisible" />
+<!-- ✅ Vue 3 -->
+<el-dialog v-model="dialogVisible" />
+
+<!-- 抽屉 -->
+<!-- ❌ Vue 2 -->
+<el-drawer :visible.sync="drawerVisible" />
+<!-- ✅ Vue 3 -->
+<el-drawer v-model="drawerVisible" />
+
+<!-- 图标 -->
+<!-- ❌ Vue 2 -->
+<el-button icon="el-icon-search" />
+<!-- ✅ Vue 3 -->
+<el-button :icon="Search" />
+<!-- script setup 中 -->
+import { Search } from '@element-plus/icons-vue'
+```
+
+### 13. Vuex → Pinia
+
+```js
+// ❌ Vue 2 + Vuex
+import Vue from 'vue'
+import Vuex from 'vuex'
+Vue.use(Vuex)
+const store = new Vuex.Store({
+  state: { count: 0 },
+  mutations: { INCREMENT(state) { state.count++ } },
+  actions: { increment({ commit }) { commit('INCREMENT') } },
+  getters: { doubleCount: state => state.count * 2 }
+})
+// 组件中
+this.$store.commit('INCREMENT')
+this.$store.dispatch('increment')
+
+// ✅ Vue 3 + Pinia
+import { defineStore } from 'pinia'
+export const useCounterStore = defineStore('counter', {
+  state: () => ({ count: 0 }),
+  getters: { doubleCount: (state) => state.count * 2 },
+  actions: {
+    increment() { this.count++ }  // 不需要 mutation 了
+  }
+})
+// 组件中
+import { useCounterStore } from '@/stores/counter'
+const counter = useCounterStore()
+counter.increment()  // 直接调 action
+```
+
+**迁移要点：**
++ `mutations` 移除 → 直接写 `actions` 修改 state
++ `commit` / `dispatch` 区分消除 → 统一 `action()`
++ `mapState` / `mapActions` 等辅助函数 → 直接解构 `storeToRefs(store)`
++ 模块化 → 每个 store 就是独立文件，不需要 `modules`
+
+```js
+// ❌ Vuex 组件中解构
+import { mapState, mapActions } from 'vuex'
+computed: mapState(['count']),
+methods: mapActions(['increment'])
+
+// ✅ Pinia 组件中解构
+import { storeToRefs } from 'pinia'
+const counter = useCounterStore()
+const { count, doubleCount } = storeToRefs(counter) // 保持响应式
+const { increment } = counter  // action 直接解构
+```
+
+### 14. Vue Router 3 → Vue Router 4
+
+```js
+// ❌ Vue 2 + Vue Router 3
+import VueRouter from 'vue-router'
+Vue.use(VueRouter)
+const router = new VueRouter({
+  mode: 'history',  // hash 模式默认不写
+  routes
+})
+
+// ✅ Vue 3 + Vue Router 4
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+const router = createRouter({
+  history: createWebHistory(),     // 原 mode: 'history'
+  // history: createWebHashHistory(), // 原 mode: 'hash'
+  routes
+})
+```
+
+**变更要点：**
++ `mode: 'history'` → `history: createWebHistory()`
++ `mode: 'hash'` → `history: createWebHashHistory()`
++ `router.onReady(cb)` → `router.isReady().then(cb)`
++ `params` 传参移除（4.1.4+）→ 用 `query` 或 `state`
++ 通配符 `*` → 用 `/:pathMatch(.*)*`
++ 路由守卫中 `next()` 可选（推荐用 `return` 替代）
+
+```js
+// ❌ Vue Router 3 — 通配路由
+{ path: '*', component: NotFound }
+
+// ✅ Vue Router 4
+{ path: '/:pathMatch(.*)*', component: NotFound }
+
+// ❌ Vue Router 3 — 守卫
+router.beforeEach((to, from, next) => {
+  if (!isAuth) return next('/login')
+  next()
+})
+
+// ✅ Vue Router 4 — 推荐 return 代替 next
+router.beforeEach((to, from) => {
+  if (!isAuth) return '/login'
+  // 不写 return 等价于 next()
+})
+```
+
+### 15. 其他移除/变更速查
+
+| 移除项 | Vue 2 用法 | Vue 3 替代方案 |
+|--------|-----------|---------------|
+| `$on` / `$off` / `$once` | 实例事件 | mitt 库 |
+| `$children` | 访问子组件 | `$refs` + `defineExpose` |
+| `$listeners` | 事件监听器 | 合并到 `$attrs` |
+| `$set` / `$delete` | 响应式操作 | 直接赋值/删除 |
+| `$destroy` | 销毁实例 | `app.unmount()` |
+| `$isServer` | 判断 SSR | `import.meta.env.SSR` |
+| `$scopedSlots` | 作用域插槽 | 统一用 `$slots` |
+| `.native` 修饰符 | 原生事件 | 移除，自动识别 |
+| `.sync` 修饰符 | 双向绑定 | `v-model:xxx` |
+| `inline-template` | 内联模板 | 移除 |
+| `keyCode` 修饰 | `@keyup.13` | `@keyup.enter` |
+| `data` 合并 | 可返回对象 | 必须返回函数 |
+| `filters` | 过滤器 | computed / 方法 |
+| `beforeCreate` / `created` | 生命周期 | `setup()` 替代 |
+| `beforeDestroy` | 生命周期 | `onBeforeUnmount` |
+| `destroyed` | 生命周期 | `onUnmounted` |
+| `renderError` | 错误处理 | `onErrorCaptured` |
+| `mixins` | 逻辑复用 | Composables (组合式函数) |
+
+### 16. mixins → Composables
+
+```js
+// ❌ Vue 2 — mixins 复用逻辑（命名冲突、来源不明）
+// useMouseMixin.js
+export default {
+  data() {
+    return { x: 0, y: 0 }
+  },
+  mounted() {
+    window.addEventListener('mousemove', e => {
+      this.x = e.clientX
+      this.y = e.clientY
+    })
+  }
+}
+// 组件中使用
+mixins: [useMouseMixin]
+
+// ✅ Vue 3 — Composables 组合式函数（来源清晰、无命名冲突）
+// useMouse.js
+import { ref, onMounted, onUnmounted } from 'vue'
+export function useMouse() {
+  const x = ref(0)
+  const y = ref(0)
+  const handler = (e) => {
+    x.value = e.clientX
+    y.value = e.clientY
+  }
+  onMounted(() => window.addEventListener('mousemove', handler))
+  onUnmounted(() => window.removeEventListener('mousemove', handler))
+  return { x, y }
+}
+// 组件中使用
+import { useMouse } from './useMouse'
+const { x, y } = useMouse()
+```
+
+### 17. 迁移工具
+
++ **[@vue/compat](https://v3-migration.vuejs.org/migration-build.html)** — 官方兼容构建，Vue 2 写法在 Vue 3 上运行，控制台会输出废弃 API 警告，逐步迁移
++ **[vue-codemod](https://github.com/vuejs/codemod-transform-vue)** — 自动转换 Vue 2 语法到 Vue 3
++ 安装兼容模式：`npm install @vue/compat@^3.2`
+
+```js
+// vite.config.js — 启用兼容模式
+import vue from '@vitejs/plugin-vue'
+export default defineConfig({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          compatConfig: {
+            MODE: 2  // 启用 Vue 2 兼容模式
+          }
+        }
+      }
+    })
+  ]
+})
+```
+
+> 💡 **推荐迁移策略：** 先上 `@vue/compat` 跑起来 → 逐个修复控制台警告 → 关闭兼容模式 → 切换到标准 Vue 3 模式。
