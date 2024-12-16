@@ -2362,6 +2362,319 @@ const dialogTitle = ref('编辑信息')
 
 ---
 
+## 16. Vue 3.3~3.5 新特性
+
+> Vue 3 在 3.3、3.4、3.5 版本中引入了多个实用新特性，按版本整理如下。
+
+### 版本速查
+
+| 特性 | 引入版本 | 稳定版本 |
+|------|---------|---------|
+| `defineSlots()` | 3.3 | 3.3 |
+| `defineOptions()` | 3.3 | 3.3 |
+| 泛型组件 | 3.3 | 3.3 |
+| `toValue()` | 3.3 | 3.3 |
+| `defineModel()` | 3.3 (实验) | **3.4** |
+| `v-bind` 简写 | 3.4 | 3.4 |
+| `useTemplateRef()` | 3.4 (实验) | **3.5** |
+| `useId()` | 3.4 (实验) | **3.5** |
+| 响应式 Props 解构 | 3.3 (实验) | **3.5** |
+| `onWatcherCleanup()` | 3.5 | 3.5 |
+| 延迟 Teleport | 3.5 | 3.5 |
+
+### useTemplateRef() (3.5+)
+
+显式声明模板 ref，比传统的 `ref(null)` + 同名变量方式更安全、更清晰。
+
+```vue
+<template>
+  <input ref="inputRef" />
+  <MyComp ref="compRef" />
+</template>
+
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+// ✅ 3.5+ 推荐写法 — 类型安全，明确绑定
+const input = useTemplateRef<HTMLInputElement>('inputRef')
+const comp = useTemplateRef<InstanceType<typeof MyComp>>('compRef')
+
+onMounted(() => {
+  input.value?.focus()
+  comp.value?.someMethod()
+})
+</script>
+```
+
+```vue
+<!-- ❌ 旧写法 — 变量名必须和 ref 属性名一致，容易出错 -->
+<script setup>
+import { ref } from 'vue'
+const inputRef = ref(null) // 变量名必须叫 inputRef
+onMounted(() => {
+  inputRef.value?.focus()
+})
+</script>
+```
+
+> 💡 `useTemplateRef` 返回的是 `ShallowRef`，只在 ref 绑定的 DOM/组件变化时更新，不会追踪内部属性变化。
+
+### useId() (3.5+)
+
+生成 SSR 安全的唯一 ID，主要用于无障碍 (a11y) 场景。
+
+```vue
+<template>
+  <label :for="id">用户名</label>
+  <input :id="id" type="text" />
+</template>
+
+<script setup lang="ts">
+import { useId } from 'vue'
+
+const id = useId()
+// 输出类似: "v-0"  "v-1" 等，SSR 和客户端保证一致
+</script>
+```
+
++ 解决 SSR 水合 (hydration) 时 ID 不匹配的问题
++ 每个组件实例有独立 ID，不同实例之间不冲突
++ 常用于 `aria-labelledby`、`aria-describedby` 等无障碍属性
+
+### defineSlots() (3.3+)
+
+在 `<script setup>` 中声明插槽类型，提供 IDE 提示和类型检查。
+
+```vue
+<script setup lang="ts">
+// 声明插槽类型 — 父组件使用插槽时会有类型提示
+defineSlots<{
+  default(props: { item: string; index: number }): any
+  header(): any
+  footer(props: { total: number }): any
+}>()
+</script>
+
+<template>
+  <div class="card">
+    <div class="card-header">
+      <slot name="header" />
+    </div>
+    <div class="card-body">
+      <slot item="hello" :index="0" />
+    </div>
+    <div class="card-footer">
+      <slot name="footer" :total="100" />
+    </div>
+  </div>
+</template>
+```
+
+```vue
+<!-- 父组件使用时，IDE 会提示可用的插槽名和传入的数据类型 -->
+<Card>
+  <template #header>
+    <h2>标题</h2>
+  </template>
+  <template #default="{ item, index }">
+    <p>{{ item }} - {{ index }}</p>
+  </template>
+  <template #footer="{ total }">
+    <span>共 {{ total }} 条</span>
+  </template>
+</Card>
+```
+
+### 泛型组件 (3.3+)
+
+组件支持 TypeScript 泛型，实现类型安全的数据传递。
+
+```vue
+<!-- GenericList.vue -->
+<script setup lang="ts" generic="T">
+defineProps<{
+  items: T[]
+}>()
+
+defineSlots<{
+  default(props: { item: T; index: number }): any
+}>()
+</script>
+
+<template>
+  <ul>
+    <li v-for="(item, index) in items" :key="index">
+      <slot :item="item" :index="index" />
+    </li>
+  </ul>
+</template>
+```
+
+```vue
+<!-- 父组件使用时，TypeScript 会自动推断 item 类型 -->
+<GenericList :items="users">
+  <template #default="{ item }">
+    <!-- item 自动推断为 User 类型 -->
+    <span>{{ item.name }}</span>
+    <span>{{ item.email }}</span>
+  </template>
+</GenericList>
+
+<script setup lang="ts">
+interface User { name: string; email: string }
+const users = ref<User[]>([
+  { name: '芥末', email: 'jiemo@example.com' }
+])
+</script>
+```
+
+### 响应式 Props 解构 (3.5+)
+
+直接在 `<script setup>` 中解构 props，解构出的变量保持响应式。
+
+```vue
+<script setup lang="ts">
+// ✅ 3.5+ 推荐 — 解构后仍是响应式的，还能设默认值
+const { count = 0, msg = 'hello' } = defineProps<{
+  count?: number
+  msg?: string
+}>()
+
+// 直接使用，不需要 props.count
+watch(() => count, (newVal) => {
+  console.log('count changed:', newVal)
+})
+</script>
+
+<template>
+  <p>{{ count }} - {{ msg }}</p>
+</template>
+```
+
+```vue
+<!-- ❌ 3.4 及之前 — 解构会丢失响应式 -->
+<script setup>
+const props = defineProps(['count', 'msg'])
+// 必须用 props.count 访问，不能解构
+</script>
+```
+
+> ⚠️ 注意：解构出的变量是只读的（单向绑定），不要直接修改。如需双向绑定用 `defineModel()`。
+
+### v-bind 简写 (3.4+)
+
+当属性名和变量名相同时，可以省略值。
+
+```vue
+<script setup>
+import { ref } from 'vue'
+const id = ref('my-input')
+const title = ref('请输入')
+const disabled = ref(false)
+</script>
+
+<template>
+  <!-- ✅ 3.4+ 简写 -->
+  <input :id :title :disabled />
+  <!-- 等价于 -->
+  <input :id="id" :title="title" :disabled="disabled" />
+</template>
+```
+
+> 💡 和 JS 对象简写 `{ id }` 等价于 `{ id: id }` 一样的思路。
+
+### onWatcherCleanup() (3.5+)
+
+watcher 清理函数，在 watcher 重新执行或停止时调用，替代 `onCleanup` 回调参数。
+
+```vue
+<script setup lang="ts">
+import { watch, onWatcherCleanup, ref } from 'vue'
+
+const id = ref(1)
+
+watch(id, async (newId) => {
+  const controller = new AbortController()
+
+  // 注册清理函数 — 在下次 watch 触发前 或 watch 停止时调用
+  onWatcherCleanup(() => {
+    controller.abort()
+  })
+
+  // 发起请求
+  const res = await fetch(`/api/data/${newId}`, {
+    signal: controller.signal
+  })
+  const data = await res.json()
+  console.log(data)
+})
+</script>
+```
+
+```js
+// ❌ 旧写法 — 通过 watch 的第三个参数 onCleanup
+watch(id, async (newId, oldId, onCleanup) => {
+  const controller = new AbortController()
+  onCleanup(() => controller.abort())
+  // ...
+})
+
+// ✅ 3.5+ 新写法 — onWatcherCleanup 可以在 watch 回调内的任意位置调用
+```
+
+> 💡 `onWatcherCleanup` 的好处是可以在异步函数中使用（旧写法必须在同步调用时注册 `onCleanup`）。
+
+### 延迟 Teleport (3.5+)
+
+`<Teleport defer>` 延迟目标解析，解决挂载顺序问题。
+
+```vue
+<!-- 场景：弹窗内容要 teleport 到一个容器，但该容器在弹窗之后才渲染 -->
+
+<!-- ❌ 普通 Teleport — 如果 #modal-container 还没挂载，会报错 -->
+<Teleport to="#modal-container">
+  <div class="modal">弹窗内容</div>
+</Teleport>
+
+<!-- ✅ 3.5+ defer — 等整个应用挂载完再解析目标 -->
+<Teleport defer to="#modal-container">
+  <div class="modal">弹窗内容</div>
+</Teleport>
+```
+
+> 适用场景：嵌套组件中，子组件的 Teleport 目标由父组件或其他兄弟组件渲染。
+
+### toValue() (3.3+)
+
+通用值提取工具 — 同时支持 ref 和 getter 函数的解包。
+
+```js
+import { ref, toValue } from 'vue'
+
+const count = ref(1)
+const doubled = () => count.value * 2
+
+// toValue 可以处理三种情况：
+toValue(count)    // → 1（解包 ref）
+toValue(doubled)  // → 2（执行 getter 函数）
+toValue(42)       // → 42（普通值直接返回）
+```
+
+```js
+// 实用场景：写 composable 时，参数既接受 ref 也接受普通值
+function useDouble(source) {
+  return computed(() => toValue(source) * 2)
+}
+
+const a = useDouble(ref(5))     // computed → 10
+const b = useDouble(() => 10)   // computed → 20
+const c = useDouble(3)          // computed → 6
+```
+
+> 💡 `toValue` 是 `unref` 的增强版，`unref` 只处理 ref，`toValue` 还处理 getter 函数。VueUse 的很多 API 都用了这个模式（`MaybeRefOrGetter` 类型）。
+
+---
+
 ## 附录：常用 API 速查
 
 | API | 用途 |
@@ -2387,3 +2700,8 @@ const dialogTitle = ref('编辑信息')
 | `customRef()` | 自定义 ref 逻辑 |
 | `markRaw()` | 标记对象不被代理 |
 | `toRaw()` | 获取响应式对象的原始值 |
+| `toValue()` | 解包 ref / getter 函数（3.3+） |
+| `useTemplateRef()` | 显式声明模板 ref（3.5+） |
+| `useId()` | SSR 安全唯一 ID（3.5+） |
+| `defineSlots()` | 声明插槽类型（3.3+） |
+| `onWatcherCleanup()` | watcher 清理函数（3.5+） |
