@@ -8,6 +8,162 @@
 
 ## 1. 响应式核心
 
+### 响应式原理：Object.defineProperty vs Proxy
+
+Vue 2 和 Vue 3 的响应式系统实现方式完全不同，这直接决定了两个版本的 API 设计和使用限制。
+
+#### Vue 2：Object.defineProperty
+
+```javascript
+// Vue 2 的响应式实现原理
+function defineReactive(obj, key, val) {
+  const dep = new Dep() // 每个属性一个依赖收集器
+  
+  Object.defineProperty(obj, key, {
+    get() {
+      if (Dep.target) {
+        dep.depend() // 收集依赖
+      }
+      return val
+    },
+    set(newVal) {
+      if (newVal === val) return
+      val = newVal
+      dep.notify() // 通知更新
+    }
+  })
+}
+
+// 递归遍历对象所有属性
+function observe(obj) {
+  if (typeof obj !== 'object' || obj === null) return
+  
+  Object.keys(obj).forEach(key => {
+    defineReactive(obj, key, obj[key])
+    // 递归处理嵌套对象
+    observe(obj[key])
+  })
+}
+```
+
+**Vue 2 的限制：**
+
+```javascript
+// ❌ 无法检测新增属性
+this.obj.newProp = 'value' // 不触发更新
+this.$set(this.obj, 'newProp', 'value') // 必须用 $set
+
+// ❌ 无法检测删除属性
+delete this.obj.prop // 不触发更新
+this.$delete(this.obj, 'prop') // 必须用 $delete
+
+// ❌ 数组修改检测不完整
+this.arr[0] = 'new' // 不触发更新
+this.arr.length = 0 // 不触发更新
+this.$set(this.arr, 0, 'new') // 必须用 $set
+// 或重写数组方法（Vue 2 hack 了 push/pop/shift/unshift/splice/sort/reverse）
+
+// ❌ 初始化时性能问题
+// 必须递归遍历对象所有属性，一次性全部转为响应式
+// 即使某些属性永远不会被访问，也会被处理
+```
+
+#### Vue 3：Proxy
+
+```javascript
+// Vue 3 的响应式实现原理
+function reactive(target) {
+  const handler = {
+    get(target, key, receiver) {
+      track(target, key) // 收集依赖
+      const result = Reflect.get(target, key, receiver)
+      // 懒代理：访问时才递归处理嵌套对象
+      if (typeof result === 'object' && result !== null) {
+        return reactive(result)
+      }
+      return result
+    },
+    
+    set(target, key, value, receiver) {
+      const oldValue = target[key]
+      const result = Reflect.set(target, key, value, receiver)
+      
+      if (oldValue !== value) {
+        trigger(target, key) // 触发更新
+      }
+      return result
+    },
+    
+    deleteProperty(target, key) {
+      const hadKey = hasOwn(target, key)
+      const result = Reflect.deleteProperty(target, key)
+      
+      if (hadKey && result) {
+        trigger(target, key) // 删除属性也触发更新
+      }
+      return result
+    }
+  }
+  
+  return new Proxy(target, handler)
+}
+```
+
+**Vue 3 的优势：**
+
+```javascript
+// ✅ 自动检测新增属性
+this.obj.newProp = 'value' // 自动触发更新
+
+// ✅ 自动检测删除属性
+delete this.obj.prop // 自动触发更新
+
+// ✅ 完整支持数组
+this.arr[0] = 'new' // 自动触发更新
+this.arr.length = 0 // 自动触发更新
+this.arr.push(1) // 自动触发更新
+
+// ✅ 懒代理，性能更好
+// 只有在访问某个属性时才会将其转为响应式
+// 未访问的属性不会被处理
+
+// ✅ 支持 Map/Set/WeakMap 等集合类型
+const map = reactive(new Map())
+map.set('key', 'value') // 自动触发更新
+```
+
+#### 对比总结
+
+| 对比项 | Vue 2 (Object.defineProperty) | Vue 3 (Proxy) |
+|--------|------------------------------|---------------|
+| **实现方式** | 逐个属性定义 getter/setter | 整个对象代理 |
+| **新增属性** | 不支持，需 `$set` | 自动检测 |
+| **删除属性** | 不支持，需 `$delete` | 自动检测 |
+| **数组索引修改** | 不支持，需 `$set` | 自动检测 |
+| **数组 length 修改** | 不支持 | 自动检测 |
+| **数组方法** | hack 了 7 个变异方法 | 全部原生支持 |
+| **Map/Set** | 不支持 | 完整支持 |
+| **初始化性能** | 递归遍历所有属性（慢） | 懒代理，按需处理（快） |
+| **内存占用** | 每个属性一个 Dep 实例 | 全局 WeakMap 存储依赖 |
+| **嵌套对象** | 初始化时全部递归代理 | 访问时才代理（懒代理） |
+| **深层对象性能** | 初始化慢，更新快 | 初始化快，更新也快 |
+
+**核心区别图示：**
+
+```
+Vue 2: 对象 → 递归遍历 → 每个属性定义 getter/setter → 依赖收集在 Dep
+        ↓
+        新增属性？→ 必须手动 $set（重新定义 getter/setter）
+        
+Vue 3: 对象 → Proxy 代理整个对象 → 拦截 get/set/deleteProperty
+        ↓
+        新增属性？→ 自动触发 set 拦截器
+        ↓
+        访问嵌套对象？→ 访问时才创建新的 Proxy（懒代理）
+```
+
+> 💡 **为什么 Vue 2 要用 `$set`？** 因为 `Object.defineProperty` 只能对已存在的属性定义 getter/setter，无法拦截对象的新增和删除操作。Vue 3 的 Proxy 是 ES6 标准 API，能拦截对象的所有操作，所以不再需要 `$set`。
+
 ### ref vs reactive
 
 **ref**
