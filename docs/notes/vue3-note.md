@@ -1293,7 +1293,429 @@ const list = ref([
 
 ---
 
-## 8. 组件缓存 KeepAlive
+## 8. Virtual DOM Diff 算法对比
+
+Vue 2 和 Vue 3 的 diff 算法实现完全不同，Vue 3 在性能上有显著提升。
+
+### Vue 2：双端比较 (基于 snabbdom)
+
+Vue 2 的 diff 算法基于 **snabbdom** 库改造，采用**双端比较**策略。
+
+#### 核心思路
+
+同时从新旧列表的**头尾**开始比较，有 4 个指针：
+
+```
+旧列表: [A, B, C, D]
+        ↑        ↑
+      oldStart  oldEnd
+
+新列表: [A, B, C, D]
+        ↑        ↑
+      newStart  newEnd
+```
+
+#### 四种比较
+
+```javascript
+// 四种比较方式（按优先级）
+1. oldStart vs newStart  // 头头比较
+2. oldEnd vs newEnd      // 尾尾比较
+3. oldStart vs newEnd    // 头尾比较（oldStart 移到尾部）
+4. oldEnd vs newStart    // 尾头比较（oldEnd 移到头部）
+
+// 如果四种都不匹配，用 key 去 Map 里查找
+```
+
+#### 代码实现
+
+```javascript
+// Vue 2 的 updateChildren 核心逻辑
+function updateChildren(parentElm, oldCh, newCh) {
+  let oldStartIdx = 0, oldEndIdx = oldCh.length - 1
+  let newStartIdx = 0, newEndIdx = newCh.length - 1
+  
+  let oldStartVnode = oldCh[0]
+  let oldEndVnode = oldCh[oldEndIdx]
+  let newStartVnode = newCh[0]
+  let newEndVnode = newCh[newEndIdx]
+  
+  // 建立 key → index 的 Map（用于四种比较都不匹配时的查找）
+  let oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+  
+  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+    if (oldStartVnode == null) {
+      oldStartVnode = oldCh[++oldStartIdx]
+    } else if (oldEndVnode == null) {
+      oldEndVnode = oldCh[--oldEndIdx]
+    }
+    // 四种比较
+    else if (sameVnode(oldStartVnode, newStartVnode)) {
+      patchVnode(oldStartVnode, newStartVnode)
+      oldStartVnode = oldCh[++oldStartIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      patchVnode(oldEndVnode, newEndVnode)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newEndVnode = newCh[--newEndIdx]
+    } else if (sameVnode(oldStartVnode, newEndVnode)) {
+      patchVnode(oldStartVnode, newEndVnode)
+      // oldStart 移到 oldEnd 后面
+      parentElm.insertBefore(oldStartVnode.elm, oldEndVnode.elm.nextSibling)
+      oldStartVnode = oldCh[++oldStartIdx]
+      newEndVnode = newCh[--newEndIdx]
+    } else if (sameVnode(oldEndVnode, newStartVnode)) {
+      patchVnode(oldEndVnode, newStartVnode)
+      // oldEnd 移到 oldStart 前面
+      parentElm.insertBefore(oldEndVnode.elm, oldStartVnode.elm)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else {
+      // 四种都不匹配，用 key 去 Map 查找
+      let idxInOld = oldKeyToIdx[newStartVnode.key]
+      if (idxInOld === undefined) {
+        // 新节点，创建 DOM
+        createElm(newStartVnode)
+      } else {
+        // 找到了，移动 DOM
+        let vnodeToMove = oldCh[idxInOld]
+        patchVnode(vnodeToMove, newStartVnode)
+        oldCh[idxInOld] = undefined // 标记已处理
+        parentElm.insertBefore(vnodeToMove.elm, oldStartVnode.elm)
+      }
+      newStartVnode = newCh[++newStartIdx]
+    }
+  }
+  
+  // 处理剩余节点
+  if (oldStartIdx > oldEndIdx) {
+    // 新节点多，插入
+    addVnodes(parentElm, newCh, newStartIdx, newEndIdx)
+  } else if (newStartIdx > newEndIdx) {
+    // 旧节点多，删除
+    removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
+  }
+}
+```
+
+#### 性能特点
+
+- **时间复杂度**：O(n)，但实际移动次数可能不是最优
+- **适用场景**：头尾变化较多时性能好（如列表头部插入、尾部删除）
+- **问题**：某些情况下（如列表中间大量移动），会产生不必要的 DOM 操作
+
+---
+
+### Vue 3：快速 diff (最长递增子序列)
+
+Vue 3 完全重写了 diff 算法，采用**快速 diff** 策略，基于**最长递增子序列 (LIS)** 算法。
+
+#### 核心思路
+
+```
+1. 预处理：去掉新旧列表头尾相同的部分
+2. 对中间剩余部分用 key 建立 Map
+3. 遍历新列表，找出每个节点在旧列表中的位置
+4. 用 LIS 算法找出最长递增子序列（不需要移动的节点）
+5. 只移动不在 LIS 中的节点（最少移动次数）
+```
+
+#### 代码实现
+
+```javascript
+// Vue 3 的 patchKeyedChildren 核心逻辑
+function patchKeyedChildren(c1, c2, container) {
+  // 1. 预处理：去掉头尾相同的部分
+  let i = 0, e1 = c1.length - 1, e2 = c2.length - 1
+  
+  // 从头部开始，跳过相同的前缀
+  while (i <= e1 && i <= e2) {
+    if (isSameVNodeType(c1[i], c2[i])) {
+      patch(c1[i], c2[i], container)
+    } else {
+      break
+    }
+    i++
+  }
+  
+  // 从尾部开始，跳过相同的后缀
+  while (i <= e1 && i <= e2) {
+    if (isSameVNodeType(c1[e1], c2[e2])) {
+      patch(c1[e1], c2[e2], container)
+    } else {
+      break
+    }
+    e1--
+    e2--
+  }
+  
+  // 2. 处理中间不同的部分
+  if (i > e1) {
+    // 新节点多，插入
+    mountChildren(c2.slice(i, e2 + 1), container)
+  } else if (i > e2) {
+    // 旧节点多，删除
+    unmountChildren(c1.slice(i, e1 + 1))
+  } else {
+    // 中间部分需要 diff
+    const s1 = i, s2 = i
+    const keyToNewIndexMap = new Map()
+    
+    // 建立新列表的 key → index Map
+    for (let j = s2; j <= e2; j++) {
+      keyToNewIndexMap.set(c2[j].key, j)
+    }
+    
+    // 遍历旧列表，找出需要删除/更新的节点
+    const newIndexToOldIndexMap = new Array(e2 - s2 + 1).fill(0)
+    let maxNewIndexSoFar = 0
+    
+    for (let j = s1; j <= e1; j++) {
+      const prevChild = c1[j]
+      const newIndex = keyToNewIndexMap.get(prevChild.key)
+      
+      if (newIndex === undefined) {
+        // 旧节点在新列表中不存在，删除
+        unmount(prevChild)
+      } else {
+        // 记录新旧索引关系（+1 避免 0 被当作未设置）
+        newIndexToOldIndexMap[newIndex - s2] = j + 1
+        maxNewIndexSoFar = Math.max(maxNewIndexSoFar, newIndex)
+        patch(prevChild, c2[newIndex], container)
+      }
+    }
+    
+    // 3. 用 LIS 算法找出最长递增子序列
+    const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap)
+    let j = increasingNewIndexSequence.length - 1
+    
+    // 4. 从后往前遍历，移动或插入节点
+    for (let k = newIndexToOldIndexMap.length - 1; k >= 0; k--) {
+      const newIndex = k + s2
+      const newChild = c2[newIndex]
+      
+      if (newIndexToOldIndexMap[k] === 0) {
+        // 新节点，插入
+        insert(newChild.el, container, c2[newIndex + 1]?.el)
+      } else if (j < 0 || k !== increasingNewIndexSequence[j]) {
+        // 不在 LIS 中，需要移动
+        insert(newChild.el, container, c2[newIndex + 1]?.el)
+      } else {
+        // 在 LIS 中，不需要移动
+        j--
+      }
+    }
+  }
+}
+
+// 最长递增子序列算法 (LIS)
+function getSequence(arr) {
+  const p = arr.slice()
+  const result = [0]
+  let i, j, u, v, c
+  const len = arr.length
+  
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i]
+    if (arrI !== 0) {
+      j = result[result.length - 1]
+      if (arr[j] < arrI) {
+        p[i] = j
+        result.push(i)
+        continue
+      }
+      // 二分查找
+      u = 0
+      v = result.length - 1
+      while (u < v) {
+        c = (u + v) >> 1
+        if (arr[result[c]] < arrI) {
+          u = c + 1
+        } else {
+          v = c
+        }
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0) {
+          p[i] = result[u - 1]
+        }
+        result[u] = i
+      }
+    }
+  }
+  
+  // 回溯找出完整序列
+  u = result.length
+  v = result[u - 1]
+  while (u-- > 0) {
+    result[u] = v
+    v = p[v]
+  }
+  
+  return result
+}
+```
+
+#### 性能特点
+
+- **时间复杂度**：O(n log n)（LIS 用二分查找）
+- **实际性能**：移动次数最少，DOM 操作更精准
+- **适用场景**：任何列表操作（插入、删除、排序、移动）都能高效处理
+- **优势**：即使列表中间大量移动，也能算出最优解
+
+---
+
+### 对比总结
+
+| 对比项 | Vue 2 (双端比较) | Vue 3 (快速 diff) |
+|--------|-----------------|------------------|
+| **算法** | snabbdom 改造的双端比较 | 基于最长递增子序列 (LIS) |
+| **核心思路** | 头尾四指针同时比较 | 预处理 + LIS 最少移动 |
+| **时间复杂度** | O(n) | O(n log n) |
+| **移动次数** | 可能不是最优 | **保证最少** |
+| **性能** | 头尾变化时快 | 任意位置变化都快 |
+| **代码复杂度** | 中等 | 较高（LIS 算法） |
+| **静态优化** | 无 | 编译时标记动态节点，跳过静态对比 |
+
+### 举例说明性能差异
+
+假设列表从 `[A, B, C, D, E]` 变为 `[B, A, D, C, E]`（B 和 A 交换，D 和 C 交换）：
+
+**Vue 2 双端比较：**
+```
+旧: [A, B, C, D, E]
+新: [B, A, D, C, E]
+
+1. A vs B ✗ (头头)
+2. E vs E ✓ (尾尾) → patch E
+3. A vs C ✗ (头尾)
+4. E vs D ✗ (尾头)
+5. 用 key 查找，移动 B 到头部
+6. 继续比较...
+
+实际 DOM 操作：移动 B、移动 D（共 2 次移动）
+```
+
+**Vue 3 快速 diff：**
+```
+旧: [A, B, C, D, E]
+新: [B, A, D, C, E]
+
+1. 预处理：E 相同，跳过
+2. 中间部分：旧 [A, B, C, D]，新 [B, A, D, C]
+3. 建立 Map，找出位置关系：[2, 1, 4, 3]
+4. LIS 算法：最长递增子序列是 [1, 3]（即 A 和 C）
+5. 只移动不在 LIS 中的节点：B 和 D
+
+实际 DOM 操作：移动 B、移动 D（共 2 次移动）
+```
+
+这个例子两者移动次数相同，但在更复杂的场景（如列表倒序），Vue 3 的优势更明显：
+
+**列表倒序 `[A, B, C, D]` → `[D, C, B, A]`：**
+
+- **Vue 2**：移动 D、移动 C、移动 B（3 次移动）
+- **Vue 3**：LIS 找出最长递增子序列是任意一个元素（如 A），只移动其他 3 个（3 次移动）
+
+两者移动次数相同，但 Vue 3 的 LIS 算法能保证**理论最优解**。
+
+---
+
+### Vue 3 的编译优化
+
+Vue 3 不仅在运行时 diff 算法上优化，还在**编译时**做了大量静态分析：
+
+#### PatchFlag 标记
+
+```vue
+<template>
+  <div class="static">
+    <p>{{ dynamicText }}</p>
+    <span>静态文本</span>
+    <p :class="dynamicClass">动态 class</p>
+  </div>
+</template>
+
+<!-- 编译后 -->
+<div class="static">
+  <p>{{ dynamicText }}<!-- PatchFlag: TEXT --></p>
+  <span>静态文本<!-- 无 PatchFlag，跳过 --></span>
+  <p :class="dynamicClass"><!-- PatchFlag: CLASS --></p>
+</div>
+```
+
+**PatchFlag 类型：**
+```javascript
+const PatchFlags = {
+  TEXT: 1,        // 动态文本
+  CLASS: 2,       // 动态 class
+  STYLE: 4,       // 动态 style
+  PROPS: 8,       // 动态属性
+  FULL_PROPS: 16, // 有 key 的动态属性
+  HYDRATE_EVENTS: 32, // 有事件监听
+  STABLE_FRAGMENT: 64, // 稳定的 Fragment
+  KEYED_FRAGMENT: 128, // 有 key 的 Fragment
+  UNKEYED_FRAGMENT: 256, // 无 key 的 Fragment
+  NEED_PATCH: 512, // 需要 patch
+  DYNAMIC_SLOTS: 1024, // 动态插槽
+}
+```
+
+#### 静态提升 (Static Hoisting)
+
+```vue
+<template>
+  <div>
+    <p>静态文本 1</p>
+    <p>静态文本 2</p>
+    <p>{{ dynamicText }}</p>
+  </div>
+</template>
+
+<!-- 编译后（静态节点提升到外部，只创建一次） -->
+const _hoisted_1 = createVNode("p", null, "静态文本 1")
+const _hoisted_2 = createVNode("p", null, "静态文本 2")
+
+function render(_ctx) {
+  return createVNode("div", null, [
+    _hoisted_1,
+    _hoisted_2,
+    createVNode("p", null, _ctx.dynamicText)
+  ])
+}
+```
+
+#### 树摇优化 (Tree-shaking)
+
+Vue 3 的编译输出支持 tree-shaking，未使用的 API 不会被打包：
+
+```javascript
+// 源码
+import { ref, computed, watch } from 'vue'
+
+// 如果只用了 ref，编译后只包含 ref 相关代码
+// computed 和 watch 的实现会被 tree-shaking 移除
+```
+
+---
+
+### 性能提升总结
+
+| 优化点 | Vue 2 | Vue 3 | 提升 |
+|--------|-------|-------|------|
+| **diff 算法** | 双端比较 O(n) | 快速 diff (LIS) | 移动次数最少 |
+| **静态分析** | 无 | PatchFlag 标记 | 跳过静态节点对比 |
+| **静态提升** | 无 | 静态节点只创建一次 | 减少 VNode 创建 |
+| **Tree-shaking** | 不支持 | 完整支持 | 包体积更小 |
+| **内存占用** | 较高 | 降低 ~56% | 更省内存 |
+| **初始渲染** | 较慢 | 提升 ~55% | 更快首屏 |
+| **更新性能** | 较慢 | 提升 ~133% | 更新更快 |
+
+> 💡 **Vue 3 的 diff 优化是多层面的**：不仅有运行时算法优化（LIS），还有编译时静态分析（PatchFlag、静态提升），两者结合才实现了显著的性能提升。
+
+---
+
+## 9. 组件缓存 KeepAlive
 
 `KeepAlive` 缓存不活跃的组件实例，而非销毁它们，避免重复创建和请求。
 
@@ -1390,7 +1812,7 @@ const route = useRoute()
 
 ---
 
-## 9. Teleport 传送门
+## 10. Teleport 传送门
 
 将组件的模板内容渲染到 DOM 中的**其他位置**，常用于弹窗、通知、Tooltip 等需要脱离当前层级的场景。
 
@@ -1451,7 +1873,7 @@ const showModal = ref(false)
 
 ---
 
-## 10. 过渡动画
+## 11. 过渡动画
 
 ### Transition（单元素/组件过渡）
 
@@ -1647,7 +2069,7 @@ function shuffle() {
 
 ---
 
-## 11. 自定义指令
+## 12. 自定义指令
 
 ### 钩子函数
 
@@ -1760,7 +2182,7 @@ const vDebounce: Directive<HTMLElement, Function> = {
 
 ---
 
-## 12. 异步组件
+## 13. 异步组件
 
 ### defineAsyncComponent
 
@@ -1845,7 +2267,7 @@ function onFallback() {
 
 ---
 
-## 13. 编译优化
+## 14. 编译优化
 
 ### v-once
 
@@ -1907,7 +2329,7 @@ function onFallback() {
 
 ---
 
-## 14. 插件与生态
+## 15. 插件与生态
 
 ### unplugin-auto-import
 
@@ -2176,7 +2598,7 @@ async function handleCopy() {
 
 ---
 
-## 15. 组件二次封装
+## 16. 组件二次封装
 
 ### 属性与事件传递 ($attrs)
 
@@ -2518,7 +2940,7 @@ const dialogTitle = ref('编辑信息')
 
 ---
 
-## 16. Vue 3.3~3.5 新特性
+## 17. Vue 3.3~3.5 新特性
 
 > Vue 3 在 3.3、3.4、3.5 版本中引入了多个实用新特性，按版本整理如下。
 
