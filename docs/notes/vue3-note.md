@@ -3253,6 +3253,798 @@ const c = useDouble(3)          // computed → 6
 
 ---
 
+## 18. Composables 设计模式
+
+Composable（组合式函数）是 Vue 3 中复用逻辑的核心方式，替代了 Vue 2 的 mixins。写好一个 composable 需要注意以下设计原则。
+
+### 命名规范
+
+```javascript
+// ✅ 以 use 开头，表明这是一个 composable
+useMouse()
+useStorage()
+useFetch()
+useClipboard()
+
+// ❌ 不要以 get/set/is/has 开头（这些是普通函数）
+getMouse()    // 暗示一次性获取
+setStorage()  // 暗示设置操作
+```
+
+### 基本结构
+
+```javascript
+// composables/useMouse.ts
+import { ref, onMounted, onUnmounted } from 'vue'
+
+export function useMouse() {
+  // 1. 声明响应式状态
+  const x = ref(0)
+  const y = ref(0)
+
+  // 2. 定义内部逻辑
+  function update(event: MouseEvent) {
+    x.value = event.pageX
+    y.value = event.pageY
+  }
+
+  // 3. 生命周期管理（在 composable 内部处理）
+  onMounted(() => window.addEventListener('mousemove', update))
+  onUnmounted(() => window.removeEventListener('mousemove', update))
+
+  // 4. 返回状态和方法（ref 保持响应式）
+  return { x, y }
+}
+```
+
+### 参数设计：支持 ref 和普通值
+
+```javascript
+import { ref, computed, toValue, type MaybeRefOrGetter } from 'vue'
+
+// ✅ 参数用 MaybeRefOrGetter，灵活接受 ref / getter / 普通值
+export function useDouble(source: MaybeRefOrGetter<number>) {
+  return computed(() => toValue(source) * 2)
+}
+
+// 三种调用方式都可以
+const a = useDouble(ref(5))      // 响应式
+const b = useDouble(() => 10)    // getter
+const c = useDouble(3)           // 普通值
+```
+
+### 返回值设计
+
+```javascript
+// 返回多个值时，返回对象（方便解构 + 命名清晰）
+export function useToggle(initialValue = false) {
+  const state = ref(initialValue)
+  const toggle = () => { state.value = !state.value }
+  const setTrue = () => { state.value = true }
+  const setFalse = () => { state.value = false }
+
+  return { state, toggle, setTrue, setFalse }
+}
+
+// 使用时
+const { state: isOpen, toggle: toggleDialog } = useToggle()
+```
+
+### 异步 Composable
+
+```javascript
+import { ref, watch, type Ref } from 'vue'
+
+export function useFetch<T>(url: MaybeRefOrGetter<string>) {
+  const data = ref<T | null>(null) as Ref<T | null>
+  const error = ref<Error | null>(null)
+  const loading = ref(false)
+
+  async function fetchData() {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await fetch(toValue(url))
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      data.value = await res.json()
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error(String(e))
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 监听 url 变化自动重新请求
+  watch(() => toValue(url), fetchData, { immediate: true })
+
+  // 暴露 refetch 方法
+  return { data, error, loading, refetch: fetchData }
+}
+```
+
+### 可组合的 Composable
+
+```javascript
+// useWindowFocus.ts
+import { ref, onMounted, onUnmounted } from 'vue'
+
+export function useWindowFocus() {
+  const focused = ref(document.hasFocus())
+
+  function onFocus() { focused.value = true }
+  function onBlur() { focused.value = false }
+
+  onMounted(() => {
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('blur', onBlur)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('focus', onFocus)
+    window.removeEventListener('blur', onBlur)
+  })
+
+  return { focused }
+}
+
+// useActiveUser.ts — 组合其他 composable
+import { computed, watch } from 'vue'
+import { useWindowFocus } from './useWindowFocus'
+
+export function useActiveUser(userId: Ref<string>) {
+  const { focused } = useWindowFocus()
+  const { data: user, loading } = useFetch<User>(
+    () => `/api/users/${userId.value}`
+  )
+
+  // 只有窗口聚焦时才标记为活跃
+  const isActive = computed(() => focused.value && !!user.value)
+
+  return { user, loading, isActive }
+}
+```
+
+### 实战：useLocalStorage
+
+```javascript
+import { ref, watch, type Ref } from 'vue'
+
+export function useLocalStorage<T>(key: string, defaultValue: T): Ref<T> {
+  // 读取初始值
+  const stored = localStorage.getItem(key)
+  const data = ref<T>(
+    stored ? JSON.parse(stored) : defaultValue
+  ) as Ref<T>
+
+  // 监听变化自动写入
+  watch(data, (val) => {
+    localStorage.setItem(key, JSON.stringify(val))
+  }, { deep: true })
+
+  return data
+}
+
+// 使用
+const theme = useLocalStorage('theme', 'light')
+theme.value = 'dark' // 自动写入 localStorage
+```
+
+### 设计检查清单
+
+| 检查项 | 说明 |
+|--------|------|
+| 命名以 `use` 开头 | `useXxx()` 格式 |
+| 内部管理生命周期 | `onMounted` / `onUnmounted` 在 composable 内处理 |
+| 参数接受 `MaybeRefOrGetter` | 用 `toValue()` 解包，灵活性高 |
+| 返回 ref（不是 reactive） | 方便解构不丢响应式 |
+| 返回值用对象 | 命名清晰，支持解构重命名 |
+| 处理副作用清理 | 事件监听、定时器在 `onUnmounted` 中清理 |
+| 提供 TypeScript 类型 | 导出类型，使用时有完整提示 |
+
+---
+
+## 19. 错误处理
+
+Vue 3 提供了多层错误捕获机制，从组件级到全局级层层兜底。
+
+### app.config.errorHandler — 全局错误捕获
+
+```javascript
+// main.ts
+import { createApp } from 'vue'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// 捕获所有未处理的组件错误（渲染、事件、生命周期、setup 等）
+app.config.errorHandler = (err, instance, info) => {
+  console.error('全局错误:', err)
+  console.log('出错组件:', instance?.$options?.name)
+  console.log('错误信息:', info)
+  // info 可能是：
+  // 'render function'
+  // 'watcher callback'
+  // 'setup function'
+  // 'mounted hook'
+  // 'component event handler'
+  // 等等
+  
+  // 上报到监控平台（如 Sentry）
+  // Sentry.captureException(err, { extra: { info } })
+}
+
+app.mount('#app')
+```
+
+### onErrorCaptured — 组件级错误捕获
+
+```vue
+<!-- ErrorBoundary.vue -->
+<script setup lang="ts">
+import { ref, onErrorCaptured } from 'vue'
+
+const error = ref<Error | null>(null)
+
+// 捕获所有子组件的错误
+onErrorCaptured((err: Error, instance, info: string) => {
+  error.value = err
+  console.error('子组件错误:', err, info)
+  
+  // 返回 false 阻止错误继续向上传播
+  return false
+  // 返回 true（默认）或不返回，错误会继续冒泡到父组件
+})
+</script>
+
+<template>
+  <div v-if="error" class="error-fallback">
+    <p>出错了：{{ error.message }}</p>
+    <button @click="error = null">重试</button>
+  </div>
+  <slot v-else />
+</template>
+```
+
+```vue
+<!-- 使用 ErrorBoundary -->
+<template>
+  <ErrorBoundary>
+    <MyComponent />
+  </ErrorBoundary>
+</template>
+```
+
+### ErrorBoundary 完整组件
+
+```vue
+<!-- ErrorBoundary.vue — 生产级封装 -->
+<script setup lang="ts">
+import { ref, onErrorCaptured } from 'vue'
+
+interface Props {
+  fallbackText?: string
+  maxRetries?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  fallbackText: '组件加载失败',
+  maxRetries: 3,
+})
+
+const emit = defineEmits<{
+  error: [error: Error, info: string]
+}>()
+
+const error = ref<Error | null>(null)
+const retryCount = ref(0)
+
+onErrorCaptured((err: Error, _instance, info: string) => {
+  error.value = err
+  emit('error', err, info)
+  return false // 阻止冒泡
+})
+
+function retry() {
+  retryCount.value++
+  if (retryCount.value <= props.maxRetries) {
+    error.value = null
+  }
+}
+</script>
+
+<template>
+  <div v-if="error">
+    <slot name="fallback" :error="error" :retry="retry">
+      <!-- 默认 fallback UI -->
+      <div class="error-boundary">
+        <p>{{ fallbackText }}</p>
+        <p class="error-msg">{{ error.message }}</p>
+        <button v-if="retryCount < maxRetries" @click="retry">
+          重试 ({{ retryCount }}/{{ maxRetries }})
+        </button>
+      </div>
+    </slot>
+  </div>
+  <slot v-else />
+</template>
+```
+
+```vue
+<!-- 使用 -->
+<ErrorBoundary @error="handleError" :max-retries="5">
+  <template #fallback="{ error, retry }">
+    <div>
+      <p>自定义错误 UI: {{ error.message }}</p>
+      <button @click="retry">重新加载</button>
+    </div>
+  </template>
+  <RiskyComponent />
+</ErrorBoundary>
+```
+
+### app.config.warnHandler — 全局警告捕获
+
+```javascript
+// 捕获 Vue 的运行时警告
+app.config.warnHandler = (msg, instance, trace) => {
+  // 开发环境打印，生产环境上报
+  if (import.meta.env.DEV) {
+    console.warn(`[Vue warn]: ${msg}${trace}`)
+  }
+}
+```
+
+### Promise 错误处理
+
+```javascript
+// Vue 的错误处理器不会捕获 Promise 的未处理拒绝
+// 需要单独处理
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('未处理的 Promise 拒绝:', event.reason)
+  // event.preventDefault() // 阻止默认行为
+})
+
+// 在组件中处理异步错误
+async function loadData() {
+  try {
+    const res = await fetch('/api/data')
+    data.value = await res.json()
+  } catch (err) {
+    error.value = err instanceof Error ? err : new Error(String(err))
+  }
+}
+```
+
+### 错误处理层级
+
+```
+组件内 try/catch          ← 最细粒度，推荐异步操作使用
+    ↓ 未捕获
+onErrorCaptured           ← 组件级，捕获子组件错误
+    ↓ return true
+app.config.errorHandler   ← 全局级，兜底捕获
+    ↓ 未处理
+window.onerror            ← 浏览器原生错误
+```
+
+---
+
+## 20. Render 函数 / h()
+
+当 `<template>` 无法满足需求时（如高度动态的组件结构），可以使用 render 函数直接操作 VNode。
+
+### 基本用法
+
+```vue
+<!-- 模板写法 -->
+<template>
+  <h1 class="title">{{ title }}</h1>
+</template>
+
+<!-- render 函数等价写法 -->
+<script setup lang="ts">
+import { h } from 'vue'
+
+defineProps<{ title: string }>()
+
+// render 函数接收 props
+// <script setup> 中最后一个导出的函数自动作为 render
+</script>
+
+<script lang="ts">
+export default {
+  setup(props) {
+    return () => h('h1', { class: 'title' }, props.title)
+  }
+}
+</script>
+```
+
+### h() 函数签名
+
+```javascript
+import { h } from 'vue'
+
+// h(type, props?, children?)
+
+// 基本元素
+h('div')                                    // <div></div>
+h('div', { id: 'app' })                     // <div id="app"></div>
+h('div', { id: 'app' }, 'hello')            // <div id="app">hello</div>
+h('div', { id: 'app' }, ['hello', 'world']) // 多个子节点
+h('div', null, [                            // 嵌套
+  h('span', 'child 1'),
+  h('span', 'child 2'),
+])
+
+// 组件
+import MyComp from './MyComp.vue'
+h(MyComp, { msg: 'hello' })
+h(MyComp, { msg: 'hello', onClick: handler })
+
+// Fragment（无包裹元素）
+import { Fragment } from 'vue'
+h(Fragment, null, [
+  h('p', 'first'),
+  h('p', 'second'),
+])
+```
+
+### 实战：动态标题级别
+
+```vue
+<!-- DynamicHeading.vue -->
+<script lang="ts">
+import { defineComponent, h } from 'vue'
+
+export default defineComponent({
+  props: {
+    level: {
+      type: Number,
+      default: 1,
+      validator: (v: number) => v >= 1 && v <= 6,
+    },
+  },
+  setup(props, { slots }) {
+    return () =>
+      h(
+        `h${props.level}`,
+        { class: `heading-${props.level}` },
+        slots.default?.()
+      )
+  },
+})
+</script>
+```
+
+```vue
+<!-- 使用 -->
+<DynamicHeading :level="3">三级标题</DynamicHeading>
+<!-- 渲染为 <h3 class="heading-3">三级标题</h3> -->
+```
+
+### 实战：递归树组件
+
+```vue
+<!-- TreeView.vue -->
+<script lang="ts">
+import { defineComponent, h, type PropType } from 'vue'
+
+interface TreeNode {
+  label: string
+  children?: TreeNode[]
+}
+
+export default defineComponent({
+  name: 'TreeView', // 递归组件必须有 name
+  props: {
+    nodes: {
+      type: Array as PropType<TreeNode[]>,
+      required: true,
+    },
+  },
+  setup(props) {
+    return () =>
+      h('ul', { class: 'tree-view' },
+        props.nodes.map((node) =>
+          h('li', [
+            h('span', { class: 'tree-label' }, node.label),
+            // 递归渲染子节点
+            node.children?.length
+              ? h(TreeView, { nodes: node.children })
+              : null,
+          ])
+        )
+      )
+  },
+})
+</script>
+```
+
+### 插槽在 render 函数中的使用
+
+```javascript
+setup(props, { slots }) {
+  return () => h('div', { class: 'card' }, [
+    // 具名插槽
+    h('header', slots.header?.()),
+    // 默认插槽
+    h('main', slots.default?.()),
+    // 作用域插槽
+    h('footer', slots.footer?.({ total: 100 })),
+  ])
+}
+```
+
+### resolveComponent / resolveDirective
+
+```javascript
+import { h, resolveComponent, resolveDirective, withDirectives } from 'vue'
+
+setup() {
+  return () => {
+    // 解析已注册的组件
+    const MyButton = resolveComponent('MyButton')
+    
+    // 解析指令
+    const vLoading = resolveDirective('loading')
+    
+    // 使用 withDirectives 应用指令
+    return withDirectives(
+      h(MyButton, { onClick: handler }, '提交'),
+      [[vLoading, true]] // [[directive, value, argument, modifiers]]
+    )
+  }
+}
+```
+
+### 什么时候用 render 函数？
+
+| 场景 | 推荐方式 |
+|------|---------|
+| 常规页面/组件 | `<template>` |
+| 动态标签名 (`h1`~`h6`) | render 函数 |
+| 递归树形结构 | render 函数 |
+| 高度动态的 UI 库（如 Table 列） | render 函数 |
+| 简单的条件渲染 | `<template>` + `v-if` |
+
+> 💡 **原则：能用 template 就用 template**。render 函数灵活但牺牲了可读性和编译时优化。VueUse 和 Element Plus 的底层组件会用 render，业务代码尽量用 template。
+
+---
+
+## 21. Vue 3 + TypeScript 类型技巧
+
+### 组件实例类型
+
+```typescript
+import { ref } from 'vue'
+import MyComponent from './MyComponent.vue'
+
+// 获取组件实例类型
+type MyComponentInstance = InstanceType<typeof MyComponent>
+
+// 用于 template ref
+const compRef = ref<MyComponentInstance | null>(null)
+
+// 使用时有完整的类型提示
+compRef.value?.someMethod()
+compRef.value?.someProperty
+```
+
+### Props 类型
+
+```typescript
+// 方式一：运行时声明（有类型校验）
+const props = defineProps({
+  name: { type: String, required: true },
+  count: { type: Number, default: 0 },
+  items: { type: Array as PropType<string[]>, default: () => [] },
+})
+
+// 方式二：类型声明（推荐，更简洁）
+interface Props {
+  name: string
+  count?: number
+  items?: string[]
+}
+const props = withDefaults(defineProps<Props>(), {
+  count: 0,
+  items: () => [],
+})
+
+// 方式三：3.5+ 响应式解构
+const { name, count = 0, items = [] } = defineProps<{
+  name: string
+  count?: number
+  items?: string[]
+}>()
+```
+
+### Emits 类型
+
+```typescript
+// 类型声明（推荐）
+const emit = defineEmits<{
+  change: [value: string]
+  submit: [data: { name: string; age: number }]
+  'update:modelValue': [value: boolean]
+}>()
+
+emit('change', 'new value')      // ✅ 类型安全
+emit('change', 123)              // ❌ 类型错误
+emit('submit', { name: '芥末', age: 25 }) // ✅
+```
+
+### defineModel 类型
+
+```typescript
+// 基本类型
+const model = defineModel<string>()  // Ref<string | undefined>
+
+// 带默认值
+const model = defineModel<string>({ default: '' }) // Ref<string>
+
+// 具名 model
+const title = defineModel<string>('title')
+const visible = defineModel<boolean>('visible', { default: false })
+
+// 自定义 modifier
+const model = defineModel<string, 'trim' | 'capitalize'>()
+// model 的类型: { trim: boolean, capitalize: boolean }
+```
+
+### provide / inject 类型
+
+```typescript
+import type { InjectionKey, Ref } from 'vue'
+
+// 定义类型安全的 InjectionKey
+export const UserKey: InjectionKey<Ref<User>> = Symbol('user')
+export const ThemeKey: InjectionKey<'light' | 'dark'> = Symbol('theme')
+
+// provide — 类型安全
+provide(UserKey, ref<User>({ name: '芥末' }))
+provide(ThemeKey, 'dark')
+
+// inject — 自动推断类型
+const user = inject(UserKey)     // Ref<User> | undefined
+const theme = inject(ThemeKey)   // 'light' | 'dark' | undefined
+
+// 带默认值
+const theme = inject(ThemeKey, 'light') // 'light' | 'dark'
+```
+
+### Composable 返回类型
+
+```typescript
+import type { Ref, ComputedRef } from 'vue'
+
+// 明确声明返回类型
+interface UseFetchReturn<T> {
+  data: Ref<T | null>
+  error: Ref<Error | null>
+  loading: Ref<boolean>
+  refetch: () => Promise<void>
+}
+
+export function useFetch<T>(url: string): UseFetchReturn<T> {
+  const data = ref<T | null>(null)
+  const error = ref<Error | null>(null)
+  const loading = ref(false)
+
+  async function refetch() {
+    // ...
+  }
+
+  return { data, error, loading, refetch }
+}
+```
+
+### 泛型组件
+
+```vue
+<!-- DataTable.vue -->
+<script setup lang="ts" generic="T extends Record<string, any>">
+interface Props {
+  data: T[]
+  columns: (keyof T)[]
+}
+
+defineProps<Props>()
+
+defineSlots<{
+  default(props: { row: T; index: number }): any
+  header(props: { column: keyof T }): any
+}>()
+</script>
+
+<template>
+  <table>
+    <thead>
+      <tr>
+        <th v-for="col in columns" :key="String(col)">
+          <slot name="header" :column="col">{{ String(col) }}</slot>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(row, index) in data" :key="index">
+        <td v-for="col in columns" :key="String(col)">
+          <slot :row="row" :index="index">{{ row[col] }}</slot>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+```
+
+```vue
+<!-- 使用时自动推断 T 的类型 -->
+<DataTable :data="users" :columns="['name', 'email']">
+  <template #default="{ row }">
+    <!-- row 自动推断为 User 类型 -->
+    {{ row.name }}
+  </template>
+</DataTable>
+```
+
+### 常用工具类型
+
+```typescript
+import type { ComponentPublicInstance, Ref, ComputedRef, MaybeRefOrGetter } from 'vue'
+
+// ComponentPublicInstance — 组件公共实例类型
+type MyCompInstance = ComponentPublicInstance<typeof MyComponent>
+
+// MaybeRefOrGetter — composable 参数常用
+type Source<T> = MaybeRefOrGetter<T> // Ref<T> | (() => T) | T
+
+// UnwrapRef — 解包 ref 类型
+type Unwrapped = UnwrapRef<Ref<string>> // string
+
+// ExtractPropTypes — 从 props 定义提取类型
+const propsDefinition = {
+  name: { type: String, required: true as const },
+  count: { type: Number, default: 0 },
+}
+type Props = ExtractPropTypes<typeof propsDefinition>
+// { name: string; count: number }
+```
+
+### TS 常见问题速查
+
+```typescript
+// ❌ 问题：ref 的类型推断不对
+const list = ref([]) // Ref<never[]>
+
+// ✅ 解决：显式声明类型
+const list = ref<string[]>([])
+const list = ref([] as string[])
+
+// ❌ 问题：reactive 数组类型推断
+const arr = reactive([]) // never[]
+
+// ✅ 解决：声明类型
+const arr = reactive<string[]>([])
+
+// ❌ 问题：模板 ref 可能为 null
+const inputRef = ref<HTMLInputElement | null>(null)
+inputRef.value.focus() // 报错：可能为 null
+
+// ✅ 解决：可选链
+inputRef.value?.focus()
+
+// ❌ 问题：props 解构丢响应式（3.4 及以下）
+const { msg } = defineProps(['msg'])
+watch(msg, () => {}) // 不触发
+
+// ✅ 解决（3.5+）：直接用解构
+// ✅ 解决（3.4 及以下）：用 toRefs
+const props = defineProps(['msg'])
+const { msg } = toRefs(props)
+```
+
+---
+
 ## 附录：常用 API 速查
 
 | API | 用途 |
