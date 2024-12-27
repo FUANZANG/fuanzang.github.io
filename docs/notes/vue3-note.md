@@ -4045,6 +4045,489 @@ const { msg } = toRefs(props)
 
 ---
 
+## 22. Vue Router 4 进阶
+
+基础路由传参见第 2 章「路由传参」部分，这里记录进阶用法：动态路由、权限控制、路由元信息、导航行为等。
+
+### 路由配置基础 (Vue Router 4)
+
+```javascript
+// router/index.ts
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+  },
+  {
+    path: '/user/:id',
+    name: 'User',
+    component: () => import('@/views/User.vue'),
+    props: true, // 将路由参数作为 props 传给组件
+  },
+  {
+    path: '/:pathMatch(.*)*', // 404 兜底（Vue Router 4 不再支持 *）
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+  // 滚动行为
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition  // 浏览器前进/后退时恢复位置
+    if (to.hash) return { el: to.hash, behavior: 'smooth' } // 锚点滚动
+    return { top: 0 } // 默认回到顶部
+  },
+})
+
+export default router
+```
+
+### 路由元信息 (meta)
+
+```typescript
+// 扩展 RouteMeta 类型（在 router/index.ts 或 types/router.d.ts）
+import 'vue-router'
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string          // 页面标题
+    requiresAuth?: boolean  // 是否需要登录
+    roles?: string[]        // 允许的角色
+    keepAlive?: boolean     // 是否缓存组件
+    icon?: string           // 侧边栏图标
+    hidden?: boolean        // 是否在菜单中隐藏
+    breadcrumb?: boolean    // 是否显示面包屑
+  }
+}
+```
+
+```javascript
+// 路由配置中使用
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/Dashboard.vue'),
+    meta: {
+      title: '仪表盘',
+      requiresAuth: true,
+      roles: ['admin', 'user'],
+      keepAlive: true,
+      icon: 'dashboard',
+    },
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+    meta: { title: '登录', requiresAuth: false, hidden: true },
+  },
+]
+```
+
+```vue
+<!-- 组件中访问 meta -->
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+console.log(route.meta.title)        // '仪表盘'
+console.log(route.meta.requiresAuth) // true
+</script>
+```
+
+### 动态路由 (addRoute / removeRoute)
+
+```javascript
+import router from '@/router'
+
+// 动态添加路由
+router.addRoute({
+  path: '/admin',
+  name: 'Admin',
+  component: () => import('@/views/Admin.vue'),
+  meta: { requiresAuth: true, roles: ['admin'] },
+})
+
+// 添加嵌套子路由（指定父路由 name）
+router.addRoute('Admin', {
+  path: 'users',
+  name: 'AdminUsers',
+  component: () => import('@/views/admin/Users.vue'),
+})
+
+// 删除路由
+router.removeRoute('Admin')
+
+// 检查路由是否存在
+router.hasRoute('Admin') // boolean
+```
+
+### 权限路由 — 根据角色动态生成菜单
+
+```javascript
+// router/permission.ts
+import router from '@/router'
+import { useUserStore } from '@/stores/user'
+
+// 静态路由（所有用户可访问）
+const constantRoutes: RouteRecordRaw[] = [
+  { path: '/login', name: 'Login', component: () => import('@/views/Login.vue'), meta: { hidden: true } },
+  { path: '/403', name: 'Forbidden', component: () => import('@/views/403.vue'), meta: { hidden: true } },
+]
+
+// 动态路由（根据权限过滤）
+const asyncRoutes: RouteRecordRaw[] = [
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('@/views/Dashboard.vue'),
+    meta: { title: '仪表盘', requiresAuth: true },
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('@/views/Admin.vue'),
+    meta: { title: '管理后台', requiresAuth: true, roles: ['admin'] },
+    children: [
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('@/views/admin/Users.vue'),
+        meta: { title: '用户管理', roles: ['admin'] },
+      },
+      {
+        path: 'settings',
+        name: 'AdminSettings',
+        component: () => import('@/views/admin/Settings.vue'),
+        meta: { title: '系统设置', roles: ['admin'] },
+      },
+    ],
+  },
+]
+
+// 根据用户角色过滤路由
+function filterRoutesByRole(routes: RouteRecordRaw[], roles: string[]): RouteRecordRaw[] {
+  return routes.reduce<RouteRecordRaw[]>((acc, route) => {
+    const { roles: requiredRoles } = route.meta || {}
+
+    // 没有角色限制 或 用户角色匹配
+    if (!requiredRoles || requiredRoles.some(role => roles.includes(role))) {
+      const filtered = { ...route }
+      if (route.children) {
+        filtered.children = filterRoutesByRole(route.children, roles)
+      }
+      acc.push(filtered)
+    }
+
+    return acc
+  }, [])
+}
+
+// 初始化路由（登录后调用）
+export function setupPermissionRoutes(roles: string[]) {
+  const filtered = filterRoutesByRole(asyncRoutes, roles)
+  filtered.forEach(route => router.addRoute(route))
+  
+  // 添加 404 兜底（必须在动态路由之后）
+  router.addRoute({
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { hidden: true },
+  })
+}
+```
+
+### 全局路由守卫 — 权限拦截
+
+```javascript
+// router/guard.ts
+import router from '@/router'
+import { useUserStore } from '@/stores/user'
+import NProgress from 'nprogress'
+
+// 白名单（不需要登录）
+const whiteList = ['/login', '/403']
+
+router.beforeEach(async (to, from) => {
+  NProgress.start()
+  
+  // 设置页面标题
+  document.title = to.meta.title
+    ? `${to.meta.title} - MyApp`
+    : 'MyApp'
+
+  const userStore = useUserStore()
+  const token = userStore.token
+
+  // 已登录
+  if (token) {
+    if (to.path === '/login') {
+      return '/' // 已登录访问登录页，重定向到首页
+    }
+
+    // 检查是否需要动态加载路由
+    if (!userStore.isRoutesLoaded) {
+      try {
+        await userStore.fetchUserInfo()
+        setupPermissionRoutes(userStore.roles)
+        // 重新导航（确保新路由已加载）
+        return { ...to, replace: true }
+      } catch {
+        userStore.logout()
+        return `/login?redirect=${to.path}`
+      }
+    }
+
+    // 检查角色权限
+    const requiredRoles = to.meta.roles as string[] | undefined
+    if (requiredRoles && !requiredRoles.some(role => userStore.roles.includes(role))) {
+      return '/403'
+    }
+
+    // 放行
+    return true
+  }
+
+  // 未登录
+  if (whiteList.includes(to.path) || !to.meta.requiresAuth) {
+    return true // 白名单或不需要登录的页面，放行
+  }
+
+  // 重定向到登录页，携带回调地址
+  return `/login?redirect=${to.path}`
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
+```
+
+### 路由组件缓存 (KeepAlive + RouterView)
+
+```vue
+<!-- App.vue 或 Layout.vue -->
+<template>
+  <router-view v-slot="{ Component, route }">
+    <keep-alive :include="cachedViews">
+      <component :is="Component" :key="route.path" />
+    </keep-alive>
+  </router-view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const cachedViews = ref<string[]>([])
+
+// 根据路由 meta.keepAlive 动态管理缓存
+router.beforeEach((to) => {
+  if (to.meta.keepAlive && to.name && !cachedViews.value.includes(to.name as string)) {
+    cachedViews.value.push(to.name as string)
+  }
+})
+
+// 移除缓存
+function removeCache(name: string) {
+  const index = cachedViews.value.indexOf(name)
+  if (index > -1) cachedViews.value.splice(index, 1)
+}
+</script>
+```
+
+> ⚠️ 组件必须有 `name` 且与路由 `name` 一致，`KeepAlive` 的 `include` 才能匹配。用 `defineOptions({ name: 'Dashboard' })` (3.3+) 设置。
+
+### 导航相关 API
+
+```javascript
+import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+
+// 编程式导航
+router.push('/user/123')
+router.push({ name: 'User', params: { id: '123' } })
+router.push({ path: '/search', query: { keyword: 'vue' } })
+router.replace('/login')  // 替换当前历史记录
+router.back()             // 后退
+router.forward()          // 前进
+router.go(-2)             // 后退两步
+
+// 获取当前路由信息
+console.log(route.path)     // '/user/123'
+console.log(route.params)   // { id: '123' }
+console.log(route.query)    // { keyword: 'vue' }
+console.log(route.meta)     // { title: '...', requiresAuth: true }
+console.log(route.fullPath) // '/search?keyword=vue'
+console.log(route.name)     // 'User'
+console.log(route.matched)  // 匹配的路由记录数组（嵌套路由时有多个）
+
+// 组件内守卫
+onBeforeRouteLeave((to, from) => {
+  // 离开前确认（如表单未保存）
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm('有未保存的更改，确定离开吗？')
+    if (!answer) return false // 取消导航
+  }
+})
+
+onBeforeRouteUpdate((to, from) => {
+  // 路由参数变化时（如 /user/1 → /user/2）
+  fetchUserData(to.params.id)
+})
+```
+
+### 路由过渡动画
+
+```vue
+<!-- Layout.vue -->
+<template>
+  <router-view v-slot="{ Component }">
+    <transition name="fade" mode="out-in">
+      <component :is="Component" />
+    </transition>
+  </router-view>
+</template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+```
+
+```vue
+<!-- 不同路由不同动画 -->
+<router-view v-slot="{ Component, route }">
+  <transition :name="route.meta.transition || 'fade'" mode="out-in">
+    <component :is="Component" :key="route.path" />
+  </transition>
+</router-view>
+```
+
+### 懒加载与路由分组
+
+```javascript
+// 基本懒加载
+const User = () => import('@/views/User.vue')
+
+// 路由分组（webpackChunkName / rollup 的 manualChunks）
+const routes = [
+  {
+    path: '/admin',
+    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin.vue'),
+    children: [
+      {
+        path: 'users',
+        component: () => import(/* webpackChunkName: "admin" */ '@/views/admin/Users.vue'),
+      },
+      {
+        path: 'settings',
+        component: () => import(/* webpackChunkName: "admin" */ '@/views/admin/Settings.vue'),
+      },
+    ],
+  },
+]
+
+// 预加载（鼠标悬停时提前加载）
+function prefetchRoute(path: string) {
+  const route = router.getRoutes().find(r => r.path === path)
+  if (route?.components?.default) {
+    route.components.default() // 触发 import()
+  }
+}
+```
+
+### 嵌套路由的 RouterView
+
+```vue
+<!-- Admin.vue — 管理后台布局 -->
+<template>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <router-link to="/admin/users">用户管理</router-link>
+      <router-link to="/admin/settings">系统设置</router-link>
+    </aside>
+    <main class="content">
+      <!-- 子路由渲染在这里 -->
+      <router-view />
+    </main>
+  </div>
+</template>
+```
+
+```javascript
+// 路由配置
+{
+  path: '/admin',
+  component: () => import('@/views/Admin.vue'),
+  redirect: '/admin/users', // 默认重定向
+  children: [
+    {
+      path: 'users',        // 注意：子路由不加 /
+      name: 'AdminUsers',
+      component: () => import('@/views/admin/Users.vue'),
+    },
+    {
+      path: 'settings',
+      name: 'AdminSettings',
+      component: () => import('@/views/admin/Settings.vue'),
+    },
+  ],
+}
+```
+
+### 组合式函数：useRouteQuery / useRouteParams
+
+```javascript
+// composables/useRouteQuery.ts
+import { computed, type Ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+// 双向绑定 URL query 参数
+export function useRouteQuery<T extends string>(
+  key: string,
+  defaultValue: T
+): Ref<T> {
+  const route = useRoute()
+  const router = useRouter()
+
+  return computed({
+    get: () => (route.query[key] as T) || defaultValue,
+    set: (value) => {
+      router.replace({
+        query: { ...route.query, [key]: value },
+      })
+    },
+  })
+}
+
+// 使用
+const keyword = useRouteQuery('keyword', '')
+const page = useRouteQuery('page', '1')
+
+// 修改 keyword 会自动更新 URL
+keyword.value = 'vue3' // URL 变为 ?keyword=vue3
+```
+
+---
+
 ## 附录：常用 API 速查
 
 | API | 用途 |
