@@ -1184,3 +1184,1227 @@ function MyForm() {
   )
 }
 ```
+
+---
+
+## 11. 自定义 Hooks
+
+### 设计规范
+
+```typescript
+// 1. 以 use 开头
+// 2. 返回有意义的值或方法
+// 3. 内部管理状态和副作用
+// 4. 考虑清理（返回 cleanup 函数或在 useEffect 中清理）
+
+// 命名规范
+useXxx()          // ✅ 标准命名
+getXxx()          // ❌ 这是普通函数
+handleXxx()       // ❌ 这是事件处理函数
+```
+
+### useDebounce — 防抖值
+
+```typescript
+import { useState, useEffect } from 'react'
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+
+  return debouncedValue
+}
+
+// 使用：搜索框防抖
+function SearchBox() {
+  const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebounce(keyword, 500)
+
+  useEffect(() => {
+    if (debouncedKeyword) {
+      fetchSearchResults(debouncedKeyword)
+    }
+  }, [debouncedKeyword])
+
+  return <input value={keyword} onChange={e => setKeyword(e.target.value)} />
+}
+```
+
+### useFetch — 数据请求
+
+```typescript
+import { useState, useEffect } from 'react'
+
+interface UseFetchReturn<T> {
+  data: T | null
+  loading: boolean
+  error: Error | null
+  refetch: () => void
+}
+
+function useFetch<T>(url: string): UseFetchReturn<T> {
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+  const [refetchCount, setRefetchCount] = useState(0)
+
+  const refetch = () => setRefetchCount(c => c + 1)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then(json => {
+        if (!cancelled) {
+          setData(json)
+          setLoading(false)
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(err)
+          setLoading(false)
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [url, refetchCount])
+
+  return { data, loading, error, refetch }
+}
+
+// 使用
+function UserList() {
+  const { data, loading, error, refetch } = useFetch<User[]>('/api/users')
+
+  if (loading) return <p>加载中...</p>
+  if (error) return <p>错误: {error.message} <button onClick={refetch}>重试</button></p>
+  return <ul>{data?.map(u => <li key={u.id}>{u.name}</li>)}</ul>
+}
+```
+
+### useLocalStorage — 本地存储
+
+```typescript
+import { useState, useEffect } from 'react'
+
+function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch {
+      return initialValue
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(storedValue))
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error)
+    }
+  }, [key, storedValue])
+
+  return [storedValue, setStoredValue]
+}
+
+// 使用
+function Settings() {
+  const [theme, setTheme] = useLocalStorage('theme', 'light')
+  const [language, setLanguage] = useLocalStorage('language', 'zh-CN')
+
+  return (
+    <>
+      <select value={theme} onChange={e => setTheme(e.target.value)}>
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
+      </select>
+    </>
+  )
+}
+```
+
+### useClickOutside — 点击外部
+
+```typescript
+import { useEffect, useRef } from 'react'
+
+function useClickOutside<T extends HTMLElement>(
+  handler: () => void
+): React.RefObject<T> {
+  const ref = useRef<T>(null)
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        handler()
+      }
+    }
+
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [handler])
+
+  return ref
+}
+
+// 使用：下拉菜单点击外部关闭
+function Dropdown() {
+  const [open, setOpen] = useState(false)
+  const ref = useClickOutside<HTMLDivElement>(() => setOpen(false))
+
+  return (
+    <div ref={ref}>
+      <button onClick={() => setOpen(!open)}>菜单</button>
+      {open && (
+        <ul>
+          <li>选项 1</li>
+          <li>选项 2</li>
+        </ul>
+      )}
+    </div>
+  )
+}
+```
+
+### useWindowSize — 窗口尺寸
+
+```typescript
+import { useState, useEffect } from 'react'
+
+function useWindowSize() {
+  const [size, setSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight })
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  return size
+}
+
+// 使用
+function Responsive() {
+  const { width } = useWindowSize()
+  return <p>窗口宽度: {width}px {width < 768 ? '(移动端)' : '(桌面端)'}</p>
+}
+```
+
+---
+
+## 12. 状态管理对比
+
+### 方案对比
+
+| 方案 | 适用场景 | 复杂度 | 包体积 |
+|------|---------|--------|--------|
+| `useState` | 组件内部状态 | ⭐ | 0 |
+| `useReducer` | 复杂组件状态逻辑 | ⭐⭐ | 0 |
+| Context | 跨层级共享（主题、语言） | ⭐⭐ | 0 |
+| Zustand | 中小型全局状态 | ⭐⭐ | ~1KB |
+| Jotai | 原子化状态 | ⭐⭐ | ~2KB |
+| Redux Toolkit | 大型企业应用 | ⭐⭐⭐ | ~10KB |
+
+### useReducer
+
+```tsx
+import { useReducer } from 'react'
+
+interface State {
+  count: number
+  step: number
+}
+
+type Action =
+  | { type: 'increment' }
+  | { type: 'decrement' }
+  | { type: 'setStep'; payload: number }
+  | { type: 'reset' }
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'increment':
+      return { ...state, count: state.count + state.step }
+    case 'decrement':
+      return { ...state, count: state.count - state.step }
+    case 'setStep':
+      return { ...state, step: action.payload }
+    case 'reset':
+      return { count: 0, step: 1 }
+    default:
+      return state
+  }
+}
+
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, { count: 0, step: 1 })
+
+  return (
+    <>
+      <p>Count: {state.count} (step: {state.step})</p>
+      <button onClick={() => dispatch({ type: 'increment' })}>+</button>
+      <button onClick={() => dispatch({ type: 'decrement' })}>-</button>
+      <input
+        type="number"
+        value={state.step}
+        onChange={e => dispatch({ type: 'setStep', payload: Number(e.target.value) })}
+      />
+      <button onClick={() => dispatch({ type: 'reset' })}>重置</button>
+    </>
+  )
+}
+```
+
+### Zustand（推荐）
+
+```typescript
+// stores/userStore.ts
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface UserState {
+  user: User | null
+  token: string | null
+  setUser: (user: User | null) => void
+  setToken: (token: string | null) => void
+  logout: () => void
+}
+
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      setUser: (user) => set({ user }),
+      setToken: (token) => set({ token }),
+      logout: () => set({ user: null, token: null }),
+    }),
+    { name: 'user-storage' } // 持久化到 localStorage
+  )
+)
+
+// 使用
+function UserProfile() {
+  const { user, logout } = useUserStore()
+
+  if (!user) return <Login />
+  return (
+    <div>
+      <p>{user.name}</p>
+      <button onClick={logout}>退出</button>
+    </div>
+  )
+}
+
+// 选择器（避免不必要的重渲染）
+function UserAvatar() {
+  // ✅ 只订阅 avatar，user 其他属性变化不会重渲染
+  const avatar = useUserStore(state => state.user?.avatar)
+  return <img src={avatar} />
+}
+```
+
+### Jotai（原子化状态）
+
+```typescript
+import { atom, useAtom } from 'jotai'
+
+// 定义原子
+const countAtom = atom(0)
+const doubleCountAtom = atom((get) => get(countAtom) * 2)
+
+// 异步原子
+const userAtom = atom(async () => {
+  const res = await fetch('/api/user')
+  return res.json()
+})
+
+// 使用
+function Counter() {
+  const [count, setCount] = useAtom(countAtom)
+  const [doubleCount] = useAtom(doubleCountAtom)
+
+  return (
+    <>
+      <p>{count} × 2 = {doubleCount}</p>
+      <button onClick={() => setCount(c => c + 1)}>+1</button>
+    </>
+  )
+}
+```
+
+### Redux Toolkit
+
+```typescript
+// store/index.ts
+import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux'
+
+interface TodoState {
+  items: { id: string; text: string; done: boolean }[]
+}
+
+const todoSlice = createSlice({
+  name: 'todos',
+  initialState: { items: [] } as TodoState,
+  reducers: {
+    addTodo: (state, action: PayloadAction<string>) => {
+      state.items.push({ id: Date.now().toString(), text: action.payload, done: false })
+    },
+    toggleTodo: (state, action: PayloadAction<string>) => {
+      const todo = state.items.find(t => t.id === action.payload)
+      if (todo) todo.done = !todo.done
+    },
+  },
+})
+
+export const { addTodo, toggleTodo } = todoSlice.actions
+
+export const store = configureStore({
+  reducer: {
+    todos: todoSlice.reducer,
+  },
+})
+
+// 类型
+type RootState = ReturnType<typeof store.getState>
+type AppDispatch = typeof store.dispatch
+
+export const useAppDispatch = () => useDispatch<AppDispatch>()
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+
+// 使用
+function TodoList() {
+  const todos = useAppSelector(state => state.todos.items)
+  const dispatch = useAppDispatch()
+
+  return (
+    <>
+      <button onClick={() => dispatch(addTodo('新任务'))}>添加</button>
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id} onClick={() => dispatch(toggleTodo(todo.id))}>
+            {todo.done ? '✅' : '⬜'} {todo.text}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+```
+
+---
+
+## 13. React Router 6
+
+### 基本配置
+
+```tsx
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'about', element: <About /> },
+      {
+        path: 'users',
+        element: <Users />,
+        children: [
+          { path: ':id', element: <UserDetail /> },
+        ],
+      },
+      { path: '*', element: <NotFound /> },
+    ],
+  },
+])
+
+function App() {
+  return <RouterProvider router={router} />
+}
+```
+
+### 嵌套路由与 Outlet
+
+```tsx
+import { Outlet, NavLink } from 'react-router-dom'
+
+function Layout() {
+  return (
+    <div>
+      <nav>
+        <NavLink to="/" end>首页</NavLink>
+        <NavLink to="/about">关于</NavLink>
+        <NavLink to="/users">用户</NavLink>
+      </nav>
+      <main>
+        <Outlet /> {/* 子路由渲染在这里 */}
+      </main>
+    </div>
+  )
+}
+
+// NavLink 高亮样式
+<NavLink
+  to="/users"
+  className={({ isActive }) => isActive ? 'active' : ''}
+>
+  用户
+</NavLink>
+```
+
+### 路由参数与导航
+
+```tsx
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+
+function UserDetail() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+
+  const page = searchParams.get('page') || '1'
+  const keyword = searchParams.get('keyword') || ''
+
+  return (
+    <div>
+      <p>User ID: {id}</p>
+      <p>Page: {page}</p>
+      <button onClick={() => navigate('/users')}>返回列表</button>
+      <button onClick={() => navigate(-1)}>返回上一页</button>
+      <button onClick={() => setSearchParams({ page: '2', keyword: 'vue' })}>
+        设置查询参数
+      </button>
+    </div>
+  )
+}
+```
+
+### Loader / Action（数据加载）
+
+```tsx
+import { createBrowserRouter, useLoaderData, Form, useActionData } from 'react-router-dom'
+
+// Loader：路由加载时执行（类似 Next.js 的 getServerSideProps）
+async function userLoader({ params }: { params: { id: string } }) {
+  const res = await fetch(`/api/users/${params.id}`)
+  if (!res.ok) throw new Response('Not Found', { status: 404 })
+  return res.json()
+}
+
+// Action：表单提交时执行
+async function userAction({ request }: { request: Request }) {
+  const formData = await request.formData()
+  const name = formData.get('name')
+
+  if (!name) return { error: '姓名不能为空' }
+
+  await fetch('/api/users', {
+    method: 'POST',
+    body: formData,
+  })
+
+  return redirect('/users')
+}
+
+const router = createBrowserRouter([
+  {
+    path: '/users/:id',
+    element: <UserDetail />,
+    loader: userLoader,
+    action: userAction,
+  },
+])
+
+function UserDetail() {
+  const user = useLoaderData()
+  const actionData = useActionData()
+
+  return (
+    <>
+      <h1>{user.name}</h1>
+
+      <Form method="post">
+        <input name="name" defaultValue={user.name} />
+        <button type="submit">保存</button>
+      </Form>
+
+      {actionData?.error && <p className="error">{actionData.error}</p>}
+    </>
+  )
+}
+```
+
+### 权限路由（Protected Route）
+
+```tsx
+import { Navigate, useLocation } from 'react-router-dom'
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const location = useLocation()
+
+  if (!user) {
+    // 重定向到登录页，携带回调地址
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  return <>{children}</>
+}
+
+// 路由配置
+const router = createBrowserRouter([
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin',
+    element: (
+      <ProtectedRoute>
+        <RoleGuard roles={['admin']}>
+          <AdminPanel />
+        </RoleGuard>
+      </ProtectedRoute>
+    ),
+  },
+])
+
+// 角色守卫
+function RoleGuard({ roles, children }: { roles: string[]; children: React.ReactNode }) {
+  const { user } = useAuth()
+
+  if (!roles.includes(user?.role || '')) {
+    return <Navigate to="/403" replace />
+  }
+
+  return <>{children}</>
+}
+```
+
+---
+
+## 14. 性能优化
+
+### React.memo
+
+```tsx
+import { memo } from 'react'
+
+// 默认浅比较 props，相同则跳过渲染
+const ExpensiveComponent = memo(function ExpensiveComponent({
+  data,
+  onClick,
+}: {
+  data: Item[]
+  onClick: () => void
+}) {
+  console.log('渲染 ExpensiveComponent')
+  return <div>{/* 复杂渲染 */}</div>
+})
+
+// 自定义比较函数
+const CustomCompare = memo(
+  function Component({ data }: { data: Item }) {
+    return <div>{data.name}</div>
+  },
+  (prevProps, nextProps) => {
+    // 返回 true 表示 props 相同，跳过渲染
+    return prevProps.data.id === nextProps.data.id
+  }
+)
+```
+
+### useMemo 优化计算
+
+```tsx
+function ProductList({ products, filter }: { products: Product[]; filter: string }) {
+  // 只在 products 或 filter 变化时重新计算
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter(p => p.name.includes(filter))
+      .sort((a, b) => b.sales - a.sales)
+  }, [products, filter])
+
+  return (
+    <ul>
+      {filteredProducts.map(p => (
+        <li key={p.id}>{p.name} - ¥{p.price}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+### useCallback 优化回调
+
+```tsx
+const List = memo(function List({
+  items,
+  onDelete,
+}: {
+  items: Item[]
+  onDelete: (id: string) => void
+}) {
+  return (
+    <ul>
+      {items.map(item => (
+        <Item key={item.id} item={item} onDelete={onDelete} />
+      ))}
+    </ul>
+  )
+})
+
+function App() {
+  const [items, setItems] = useState<Item[]>([])
+
+  // ✅ 用 useCallback 稳定函数引用
+  const handleDelete = useCallback((id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id))
+  }, [])
+
+  return <List items={items} onDelete={handleDelete} />
+}
+```
+
+### 代码分割 (lazy + Suspense)
+
+```tsx
+import { lazy, Suspense } from 'react'
+
+// 懒加载组件
+const Dashboard = lazy(() => import('./Dashboard'))
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </Suspense>
+  )
+}
+
+// 预加载
+const Dashboard = lazy(() => import('./Dashboard'))
+
+function HomePage() {
+  const [showDashboard, setShowDashboard] = useState(false)
+
+  const handleMouseEnter = () => {
+    // 鼠标悬停时预加载
+    import('./Dashboard')
+  }
+
+  return (
+    <button
+      onMouseEnter={handleMouseEnter}
+      onClick={() => setShowDashboard(true)}
+    >
+      打开仪表盘
+    </button>
+  )
+}
+```
+
+### 虚拟列表
+
+```tsx
+// 使用 react-window 处理大数据列表
+import { FixedSizeList } from 'react-window'
+
+function VirtualList({ items }: { items: string[] }) {
+  return (
+    <FixedSizeList
+      height={600}
+      itemCount={items.length}
+      itemSize={35}
+      width="100%"
+    >
+      {({ index, style }) => (
+        <div style={style}>
+          {items[index]}
+        </div>
+      )}
+    </FixedSizeList>
+  )
+}
+```
+
+### 优化检查清单
+
+```tsx
+// 1. 避免在渲染中创建对象/数组/函数
+// ❌
+<List
+  options={{ page: 1, size: 10 }}  // 每次渲染都是新对象
+  onClick={() => handleClick()}     // 每次渲染都是新函数
+/>
+
+// ✅
+const options = useMemo(() => ({ page: 1, size: 10 }), [])
+const handleClick = useCallback(() => handleClick(), [])
+<List options={options} onClick={handleClick} />
+
+// 2. 使用 children 避免不必要的重渲染
+// ❌
+<Parent>
+  <ExpensiveChild />
+</Parent>
+
+// ✅ Parent 用 memo 包裹，children 不会因 Parent 重渲染而重渲染
+const Parent = memo(({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>
+})
+```
+
+---
+
+## 15. 错误边界
+
+### 类组件实现
+
+```tsx
+import { Component, ErrorInfo, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+  error: Error | null
+}
+
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, errorInfo)
+    // 上报错误到监控平台
+    // Sentry.captureException(error, { extra: errorInfo })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div>
+          <h2>出错了</h2>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => this.setState({ hasError: false, error: null })}>
+            重试
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+// 使用
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <Dashboard />
+</ErrorBoundary>
+```
+
+### react-error-boundary（推荐）
+
+```tsx
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+
+function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <div role="alert">
+      <h2>出错了</h2>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>重试</button>
+    </div>
+  )
+}
+
+// 使用
+<ErrorBoundary
+  FallbackComponent={ErrorFallback}
+  onError={(error, info) => {
+    console.error(error, info)
+    // 上报错误
+  }}
+  onReset={() => {
+    // 重置导致错误的状态
+  }}
+>
+  <Dashboard />
+</ErrorBoundary>
+```
+
+### 全局错误处理
+
+```tsx
+// window.onerror 捕获未处理的错误
+window.onerror = (message, source, lineno, colno, error) => {
+  console.error('Global error:', error)
+  // 上报到监控平台
+}
+
+// window.onunhandledrejection 捕获未处理的 Promise 拒绝
+window.onunhandledrejection = (event) => {
+  console.error('Unhandled rejection:', event.reason)
+  event.preventDefault()
+}
+```
+
+---
+
+## 16. Transition 与并发特性
+
+### useTransition
+
+```tsx
+import { useTransition, useState } from 'react'
+
+function SearchResults() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<string[]>([])
+  const [isPending, startTransition] = useTransition()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setQuery(value) // 高优先级：立即更新输入框
+
+    // 低优先级：延迟更新搜索结果
+    startTransition(() => {
+      const filtered = allItems.filter(item =>
+        item.toLowerCase().includes(value.toLowerCase())
+      )
+      setResults(filtered)
+    })
+  }
+
+  return (
+    <>
+      <input value={query} onChange={handleChange} />
+      {isPending ? (
+        <Loading />
+      ) : (
+        <ul>
+          {results.map(item => <li key={item}>{item}</li>)}
+        </ul>
+      )}
+    </>
+  )
+}
+```
+
+### useDeferredValue
+
+```tsx
+import { useDeferredValue, useState, useMemo } from 'react'
+
+function SearchResults({ query }: { query: string }) {
+  // 延迟更新 query，让输入框保持响应
+  const deferredQuery = useDeferredValue(query)
+
+  const results = useMemo(() => {
+    return allItems.filter(item =>
+      item.toLowerCase().includes(deferredQuery.toLowerCase())
+    )
+  }, [deferredQuery])
+
+  return (
+    <ul>
+      {results.map(item => <li key={item}>{item}</li>)}
+    </ul>
+  )
+}
+
+function App() {
+  const [query, setQuery] = useState('')
+
+  return (
+    <>
+      <input value={query} onChange={e => setQuery(e.target.value)} />
+      <SearchResults query={query} />
+    </>
+  )
+}
+```
+
+### startTransition
+
+```tsx
+import { startTransition } from 'react'
+
+// 在事件处理函数外部使用
+function navigate(url: string) {
+  startTransition(() => {
+    window.history.pushState({}, '', url)
+  })
+}
+
+// 在 useEffect 中使用
+useEffect(() => {
+  startTransition(() => {
+    setHeavyData(computeHeavyData())
+  })
+}, [dependency])
+```
+
+### Suspense 数据加载
+
+```tsx
+import { Suspense } from 'react'
+
+// 配合 React.lazy 使用
+const Dashboard = lazy(() => import('./Dashboard'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Dashboard />
+    </Suspense>
+  )
+}
+
+// 嵌套 Suspense（渐进式加载）
+function App() {
+  return (
+    <Suspense fallback={<BigSpinner />}>
+      <Layout>
+        <Suspense fallback={<SmallSpinner />}>
+          <Dashboard />
+        </Suspense>
+        <Suspense fallback={<SmallSpinner />}>
+          <Sidebar />
+        </Suspense>
+      </Layout>
+    </Suspense>
+  )
+}
+```
+
+---
+
+## 17. React 18+ 新特性
+
+### use() — 读取 Promise 或 Context
+
+```tsx
+import { use } from 'react'
+
+// 读取 Promise（只能在组件或 Hook 中使用，不能在事件处理函数中）
+function Comments({ commentsPromise }) {
+  const comments = use(commentsPromise)
+  return (
+    <ul>
+      {comments.map(c => <li key={c.id}>{c.text}</li>)}
+    </ul>
+  )
+}
+
+// 读取 Context（可以在条件语句中使用，这是 useContext 做不到的）
+function ThemeButton() {
+  if (someCondition) {
+    const theme = use(ThemeContext)
+    return <button className={theme}>Click</button>
+  }
+  return <button>Click</button>
+}
+```
+
+### useFormStatus
+
+```tsx
+import { useFormStatus } from 'react-dom'
+
+// 获取父级 <form> 的提交状态
+function SubmitButton() {
+  const { pending, data, method } = useFormStatus()
+
+  return (
+    <button disabled={pending}>
+      {pending ? '提交中...' : '提交'}
+    </button>
+  )
+}
+
+// 使用
+function MyForm() {
+  async function handleSubmit(formData: FormData) {
+    await submitToServer(formData)
+  }
+
+  return (
+    <form action={handleSubmit}>
+      <input name="name" />
+      <SubmitButton />
+    </form>
+  )
+}
+```
+
+### useOptimistic
+
+```tsx
+import { useOptimistic, useRef } from 'react'
+
+function MessageList({ messages, sendMessage }) {
+  const [optimisticMessages, addOptimistic] = useOptimistic(
+    messages,
+    (state, newMessage: string) => [...state, { text: newMessage, sending: true }]
+  )
+
+  async function handleSend(formData: FormData) {
+    const message = formData.get('message') as string
+    addOptimistic(message) // 立即显示乐观更新
+    await sendMessage(message) // 实际发送
+  }
+
+  return (
+    <>
+      <ul>
+        {optimisticMessages.map((msg, i) => (
+          <li key={i} style={{ opacity: msg.sending ? 0.5 : 1 }}>
+            {msg.text}
+          </li>
+        ))}
+      </ul>
+      <form action={handleSend}>
+        <input name="message" />
+        <button type="submit">发送</button>
+      </form>
+    </>
+  )
+}
+```
+
+### Server Components (RSC)
+
+```tsx
+// Server Component（默认，在服务器执行）
+async function PostList() {
+  // 直接访问数据库、文件系统、环境变量
+  const posts = await db.posts.findMany()
+  const apiKey = process.env.API_KEY // 安全，不会暴露给客户端
+
+  return (
+    <ul>
+      {posts.map(post => (
+        <li key={post.id}>
+          <PostTitle id={post.id} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// Client Component（需要交互性时标记）
+'use client'
+
+import { useState } from 'react'
+
+function PostTitle({ id }: { id: string }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div>
+      <button onClick={() => setExpanded(!expanded)}>
+        {expanded ? '收起' : '展开'}
+      </button>
+      {expanded && <PostContent id={id} />}
+    </div>
+  )
+}
+```
+
+### Actions（表单提交简化）
+
+```tsx
+// 传统方式
+function Form() {
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setIsPending(true)
+    setError(null)
+
+    try {
+      const formData = new FormData(e.target as HTMLFormElement)
+      await submitToServer(formData)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" />
+      <button disabled={isPending}>提交</button>
+      {error && <p>{error}</p>}
+    </form>
+  )
+}
+
+// Actions 方式（React 19）
+function Form() {
+  const [error, submitAction, isPending] = useActionState(
+    async (prevState: string | null, formData: FormData) => {
+      try {
+        await submitToServer(formData)
+        return null
+      } catch (err) {
+        return err.message
+      }
+    },
+    null
+  )
+
+  return (
+    <form action={submitAction}>
+      <input name="name" />
+      <button disabled={isPending}>提交</button>
+      {error && <p>{error}</p>}
+    </form>
+  )
+}
+```
+
