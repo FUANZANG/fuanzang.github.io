@@ -2408,3 +2408,584 @@ function Form() {
 }
 ```
 
+---
+
+## 18. React + TypeScript
+
+### 组件类型
+
+```tsx
+// 函数组件类型
+type FC<P = {}> = React.FC<P>  // 已不推荐用 React.FC（children 问题）
+
+// 推荐：直接声明 Props 类型
+interface ButtonProps {
+  variant?: 'primary' | 'secondary'
+  size?: 'sm' | 'md' | 'lg'
+  disabled?: boolean
+  onClick?: () => void
+  children: React.ReactNode
+}
+
+function Button({ variant = 'primary', size = 'md', ...props }: ButtonProps) {
+  return <button className={`btn btn-${variant} btn-${size}`} {...props} />
+}
+```
+
+### 事件类型
+
+```tsx
+// 常用事件类型
+type MouseEventHandler = React.MouseEventHandler<HTMLButtonElement>
+type ChangeEventHandler = React.ChangeEventHandler<HTMLInputElement>
+type FormEventHandler = React.FormEventHandler<HTMLFormElement>
+type KeyboardEventHandler = React.KeyboardEventHandler<HTMLInputElement>
+
+// 具体使用
+function Form() {
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    console.log(e.currentTarget) // HTMLButtonElement
+  }
+
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    console.log(e.target.value) // string
+  }
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === 'Enter') {
+      console.log('Enter pressed')
+    }
+  }
+
+  return (
+    <form>
+      <input onChange={handleChange} onKeyDown={handleKeyDown} />
+      <button onClick={handleClick}>Click</button>
+    </form>
+  )
+}
+```
+
+### Ref 类型
+
+```tsx
+import { useRef, forwardRef } from 'react'
+
+// DOM Ref
+function Input() {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const divRef = useRef<HTMLDivElement>(null)
+
+  const focus = () => inputRef.current?.focus()
+
+  return (
+    <div ref={divRef}>
+      <input ref={inputRef} />
+    </div>
+  )
+}
+
+// forwardRef 泛型（支持自定义组件 ref 类型）
+interface FancyInputProps {
+  placeholder?: string
+}
+
+interface FancyInputHandle {
+  focus: () => void
+  clear: () => void
+}
+
+const FancyInput = forwardRef<FancyInputHandle, FancyInputProps>(
+  ({ placeholder }, ref) => {
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    useImperativeHandle(ref, () => ({
+      focus: () => inputRef.current?.focus(),
+      clear: () => { if (inputRef.current) inputRef.current.value = '' },
+    }))
+
+    return <input ref={inputRef} placeholder={placeholder} />
+  }
+)
+```
+
+### 泛型组件
+
+```tsx
+// 列表组件，自动推断 item 类型
+interface ListProps<T> {
+  items: T[]
+  renderItem: (item: T, index: number) => React.ReactNode
+  keyExtractor: (item: T) => string
+}
+
+function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={keyExtractor(item)}>{renderItem(item, index)}</li>
+      ))}
+    </ul>
+  )
+}
+
+// 使用：自动推断 T 为 User
+<List
+  items={users}
+  keyExtractor={user => user.id}
+  renderItem={user => <span>{user.name}</span>}
+/>
+```
+
+### 常见 TS 坑
+
+```tsx
+// ❌ 问题 1：children 类型
+// React.FC 不再自动包含 children（React 18+）
+const Component: React.FC = ({ children }) => <div>{children}</div> // 报错
+
+// ✅ 解决：显式声明
+interface Props {
+  children: React.ReactNode
+}
+const Component: React.FC<Props> = ({ children }) => <div>{children}</div>
+
+// ✅ 或者直接声明
+function Component({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
+}
+
+// ❌ 问题 2：可选 props 的解构
+interface Props {
+  name?: string
+  age?: number
+}
+// TypeScript 会报错：age 可能为 undefined
+function Component({ name, age = 18 }: Props) {
+  return <p>{name} - {age}</p>
+}
+
+// ✅ 解决：用 defaultProps 或在解构时给默认值
+function Component({ name = '', age = 18 }: Props) {
+  return <p>{name} - {age}</p>
+}
+
+// ❌ 问题 3：事件处理函数的 this
+class MyComponent extends React.Component {
+  handleClick() {
+    console.log(this) // undefined（严格模式）
+  }
+
+  render() {
+    return <button onClick={this.handleClick}>Click</button>
+  }
+}
+
+// ✅ 解决：用箭头函数
+class MyComponent extends React.Component {
+  handleClick = () => {
+    console.log(this) // 组件实例
+  }
+
+  render() {
+    return <button onClick={this.handleClick}>Click</button>
+  }
+}
+```
+
+---
+
+## 19. 样式方案
+
+### CSS Modules（推荐）
+
+```tsx
+// Button.module.css
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.primary {
+  background: blue;
+  color: white;
+}
+
+.secondary {
+  background: gray;
+}
+
+// Button.tsx
+import styles from './Button.module.css'
+
+function Button({ variant = 'primary', children }: ButtonProps) {
+  return (
+    <button className={`${styles.button} ${styles[variant]}`}>
+      {children}
+    </button>
+  )
+}
+
+// 或用 clsx / classnames 库
+import clsx from 'clsx'
+
+function Button({ variant = 'primary', children }: ButtonProps) {
+  return (
+    <button className={clsx(styles.button, styles[variant])}>
+      {children}
+    </button>
+  )
+}
+```
+
+### Tailwind CSS
+
+```tsx
+function Button({ variant = 'primary', size = 'md' }: ButtonProps) {
+  const baseStyles = 'rounded font-semibold transition-colors'
+
+  const variants = {
+    primary: 'bg-blue-500 text-white hover:bg-blue-600',
+    secondary: 'bg-gray-500 text-white hover:bg-gray-600',
+  }
+
+  const sizes = {
+    sm: 'px-3 py-1 text-sm',
+    md: 'px-4 py-2',
+    lg: 'px-6 py-3 text-lg',
+  }
+
+  return (
+    <button className={clsx(baseStyles, variants[variant], sizes[size])}>
+      Click me
+    </button>
+  )
+}
+```
+
+### styled-components
+
+```tsx
+import styled from 'styled-components'
+
+const StyledButton = styled.button<{ variant: 'primary' | 'secondary' }>`
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+
+  ${({ variant }) =>
+    variant === 'primary'
+      ? `
+        background: blue;
+        color: white;
+      `
+      : `
+        background: gray;
+        color: white;
+      `}
+
+  &:hover {
+    opacity: 0.8;
+  }
+`
+
+function Button({ variant = 'primary' }: { variant?: 'primary' | 'secondary' }) {
+  return <StyledButton variant={variant}>Click me</StyledButton>
+}
+```
+
+### 方案对比
+
+| 方案 | 优点 | 缺点 | 适用场景 |
+|------|------|------|---------|
+| CSS Modules | 隔离好、无运行时开销 | 不支持动态样式 | 中小型项目 |
+| Tailwind | 快速开发、无需写 CSS | HTML 臃肿、学习成本 | 快速原型、设计系统 |
+| styled-components | 动态样式、组件化 | 运行时开销、包体积大 | 复杂动态 UI |
+| CSS-in-JS (emotion) | 灵活、性能好 | 学习成本 | 大型应用 |
+
+---
+
+## 20. 数据请求
+
+### useEffect 请求的坑
+
+```tsx
+// ❌ 问题：竞态条件（race condition）
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    fetch(`/api/users/${userId}`)
+      .then(res => res.json())
+      .then(data => setUser(data))
+  }, [userId])
+
+  // 如果 userId 快速变化（1 → 2 → 3），请求 1 可能比请求 3 晚返回
+  // 导致显示错误的用户数据
+
+  return <div>{user?.name}</div>
+}
+
+// ✅ 解决：用 cleanup 函数取消过期请求
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetch(`/api/users/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled) setUser(data)
+      })
+
+    return () => { cancelled = true }
+  }, [userId])
+
+  return <div>{user?.name}</div>
+}
+
+// ✅ 更好的解决：用 AbortController
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`/api/users/${userId}`, { signal: controller.signal })
+      .then(res => res.json())
+      .then(data => setUser(data))
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          console.error(err)
+        }
+      })
+
+    return () => controller.abort()
+  }, [userId])
+
+  return <div>{user?.name}</div>
+}
+```
+
+### SWR（推荐）
+
+```tsx
+import useSWR from 'swr'
+
+const fetcher = (url: string) => fetch(url).then(res => res.json())
+
+function UserProfile({ userId }: { userId: string }) {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/users/${userId}`,
+    fetcher
+  )
+
+  if (isLoading) return <Loading />
+  if (error) return <Error message={error.message} />
+
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <button onClick={() => mutate()}>刷新</button>
+    </div>
+  )
+}
+
+// SWR 特性：
+// 1. 自动缓存和去重
+// 2. 窗口聚焦时自动重新验证
+// 3. 轮询支持
+// 4. 乐观更新
+
+// 乐观更新
+function TodoList() {
+  const { data, mutate } = useSWR('/api/todos', fetcher)
+
+  const addTodo = async (text: string) => {
+    // 乐观更新 UI
+    mutate([...data, { id: Date.now(), text, done: false }], false)
+
+    // 实际请求
+    await fetch('/api/todos', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    })
+
+    // 重新验证
+    mutate()
+  }
+
+  return <div>{/* ... */}</div>
+}
+```
+
+### React Query (TanStack Query)
+
+```tsx
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+// 查询
+function UserProfile({ userId }: { userId: string }) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => fetch(`/api/users/${userId}`).then(res => res.json()),
+    staleTime: 5 * 60 * 1000, // 5 分钟内不重新请求
+    cacheTime: 10 * 60 * 1000, // 缓存 10 分钟
+  })
+
+  if (isLoading) return <Loading />
+  if (error) return <Error message={error.message} />
+
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <button onClick={() => refetch()}>刷新</button>
+    </div>
+  )
+}
+
+// 变更
+function CreateTodo() {
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: (text: string) =>
+      fetch('/api/todos', {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      }).then(res => res.json()),
+
+    onSuccess: () => {
+      // 成功后刷新 todos 列表
+      queryClient.invalidateQueries({ queryKey: ['todos'] })
+    },
+  })
+
+  return (
+    <form onSubmit={e => {
+      e.preventDefault()
+      const formData = new FormData(e.target as HTMLFormElement)
+      mutation.mutate(formData.get('text') as string)
+    }}>
+      <input name="text" />
+      <button disabled={mutation.isPending}>
+        {mutation.isPending ? '创建中...' : '创建'}
+      </button>
+    </form>
+  )
+}
+
+// 在 App 中配置 QueryClient
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 2,
+    },
+  },
+})
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <UserProfile userId="123" />
+    </QueryClientProvider>
+  )
+}
+```
+
+### 方案对比
+
+| 方案 | 优点 | 缺点 | 适用场景 |
+|------|------|------|---------|
+| useEffect + fetch | 无依赖、灵活 | 手动处理缓存/竞态/重试 | 简单场景 |
+| SWR | 轻量、自动缓存 | 功能较少 | 中小型项目 |
+| React Query | 功能全面、生态好 | 包体积大、学习成本 | 大型应用 |
+| Axios | 拦截器、取消请求 | 不处理缓存 | 配合其他方案 |
+
+---
+
+## 附录：常用 API 速查
+
+### Hooks
+
+| Hook | 用途 |
+|------|------|
+| `useState` | 组件状态 |
+| `useEffect` | 副作用（数据请求、订阅、DOM 操作） |
+| `useContext` | 消费 Context |
+| `useReducer` | 复杂状态逻辑 |
+| `useCallback` | 缓存回调函数 |
+| `useMemo` | 缓存计算结果 |
+| `useRef` | DOM 引用 / 持久化值 |
+| `useImperativeHandle` | 自定义 ref 暴露的方法 |
+| `useLayoutEffect` | 同步副作用（DOM 测量） |
+| `useTransition` | 标记低优先级更新 |
+| `useDeferredValue` | 延迟更新值 |
+| `useId` | 生成唯一 ID（无障碍） |
+| `use()` | 读取 Promise 或 Context (React 19) |
+| `useActionState` | 表单 Action 状态 (React 19) |
+| `useFormStatus` | 表单提交状态 (React 19) |
+| `useOptimistic` | 乐观更新 (React 19) |
+
+### 组件 API
+
+| API | 用途 |
+|-----|------|
+| `memo` | 缓存组件渲染 |
+| `forwardRef` | 转发 ref 到子组件 |
+| `lazy` | 懒加载组件 |
+| `Suspense` | 加载状态 |
+| `startTransition` | 标记低优先级更新 |
+| `createContext` | 创建 Context |
+
+### 常用模式
+
+```tsx
+// 1. 状态提升
+<Parent>
+  <ChildA value={value} onChange={setValue} />
+  <ChildB value={value} />
+</Parent>
+
+// 2. Render Props
+<DataFetcher url="/api/data">
+  {({ data, loading }) => loading ? <Loading /> : <Data data={data} />}
+</DataFetcher>
+
+// 3. Compound Components
+<Select value={value} onChange={setValue}>
+  <Select.Option value="1">选项 1</Select.Option>
+  <Select.Option value="2">选项 2</Select.Option>
+</Select>
+
+// 4. Higher-Order Components (HOC)
+const EnhancedComponent = withAuth(MyComponent)
+
+// 5. Custom Hooks（推荐）
+const { data, loading } = useFetch('/api/data')
+```
+
+### React vs Vue 速查
+
+| 功能 | React | Vue 3 |
+|------|-------|-------|
+| 组件 | 函数 + Hooks | `<script setup>` |
+| 状态 | `useState` | `ref` / `reactive` |
+| 计算 | `useMemo` | `computed` |
+| 副作用 | `useEffect` | `watch` / `watchEffect` |
+| 生命周期 | `useEffect` | `onMounted` 等 |
+| Props | 函数参数 | `defineProps` |
+| Emits | 回调函数 Props | `defineEmits` |
+| 双向绑定 | `value` + `onChange` | `v-model` / `defineModel` |
+| Ref | `useRef` | `ref` + `useTemplateRef` |
+| 插槽 | `children` / Render Props | `<slot>` |
+| 跨层级 | Context | `provide` / `inject` |
+| 全局状态 | Zustand / Redux | Pinia |
+| 路由 | React Router | Vue Router |
+
+
