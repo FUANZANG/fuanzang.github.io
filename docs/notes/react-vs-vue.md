@@ -46,7 +46,414 @@ user.age++
 
 ---
 
-## 2. 组件 API 对照表
+## 2. 响应式系统对比
+
+### React：无响应式 + 手动更新
+
+React 没有真正的"响应式系统"，采用**不可变数据 + 手动 setState** 的方式触发更新。
+
+```tsx
+// React 更新流程
+function Counter() {
+  const [count, setCount] = useState(0)
+  
+  const handleClick = () => {
+    // 1. 调用 setState，创建新状态
+    setCount(count + 1)
+    
+    // 2. React 标记组件为"脏"，加入更新队列
+    
+    // 3. React 调度更新（Fiber 架构）
+    //    - 批量合并多个 setState
+    //    - 异步执行，避免阻塞主线程
+    
+    // 4. 重新执行整个组件函数
+    //    - 重新创建所有 Hooks
+    //    - 重新计算所有局部变量
+    
+    // 5. Diff 新旧 VDOM，更新真实 DOM
+  }
+  
+  // 每次渲染都会执行这行代码
+  const expensiveValue = computeExpensiveValue(count)
+  
+  return <button onClick={handleClick}>{count}</button>
+}
+```
+
+**特点：**
+- ❌ 每次 setState 触发整个组件树重新渲染
+- ❌ 需要手动优化（memo / useMemo / useCallback）
+- ✅ 心智模型简单，易于调试
+- ✅ 不可变数据便于时间旅行、撤销重做
+
+### Vue 2：Object.defineProperty
+
+```javascript
+// Vue 2 响应式原理
+function defineReactive(obj, key, val) {
+  const dep = new Dep() // 依赖收集器
+  
+  Object.defineProperty(obj, key, {
+    get() {
+      // 依赖收集：当前正在执行的 Watcher 订阅这个数据
+      if (Dep.target) {
+        dep.depend()
+      }
+      return val
+    },
+    set(newVal) {
+      if (val === newVal) return
+      val = newVal
+      // 派发更新：通知所有订阅者
+      dep.notify()
+    }
+  })
+}
+
+// 使用示例
+const vm = new Vue({
+  data: { count: 0 }
+})
+
+// 当模板中访问 vm.count 时：
+// 1. 触发 getter，收集依赖（当前组件的 Watcher）
+// 2. 当 count 变化时，触发 setter
+// 3. 通知 Watcher，只更新用到 count 的组件
+```
+
+**特点：**
+- ✅ 精准更新，只更新依赖变化的组件
+- ❌ 无法检测新增/删除属性（需要 $set / $delete）
+- ❌ 无法直接监听数组索引变化（需要 Vue.set）
+
+### Vue 3：Proxy
+
+```typescript
+// Vue 3 响应式原理
+function reactive(target) {
+  return new Proxy(target, {
+    get(target, key, receiver) {
+      // 依赖收集
+      track(target, key)
+      const result = Reflect.get(target, key, receiver)
+      // 惰性代理：访问时才代理嵌套对象
+      if (isObject(result)) {
+        return reactive(result)
+      }
+      return result
+    },
+    set(target, key, value, receiver) {
+      const result = Reflect.set(target, key, value, receiver)
+      // 派发更新
+      trigger(target, key)
+      return result
+    },
+    deleteProperty(target, key) {
+      const result = Reflect.deleteProperty(target, key)
+      trigger(target, key)
+      return result
+    }
+  })
+}
+
+// 使用示例
+const state = reactive({ count: 0 })
+
+// 当模板中访问 state.count 时：
+// 1. 触发 Proxy getter，收集依赖
+// 2. 当 count 变化时，触发 Proxy setter
+// 3. 通知所有依赖这个属性的 effect，精准更新
+```
+
+**特点：**
+- ✅ 精准更新 + 支持动态新增/删除属性
+- ✅ 支持数组索引、length 变化
+- ✅ 支持 Map/Set/WeakMap 等集合类型
+
+### 更新机制对比
+
+| 特性 | React | Vue 2 | Vue 3 |
+|------|-------|-------|-------|
+| **触发方式** | 手动 setState | 自动依赖追踪 | 自动依赖追踪 |
+| **更新粒度** | 整个组件树 | 组件级别 | 组件级别 |
+| **依赖收集** | 无（全量 Diff） | getter 时收集 | Proxy get 时收集 |
+| **更新派发** | 调度器批量更新 | setter 时通知 | Proxy set 时通知 |
+| **手动优化** | 必需（memo 等） | 不需要 | 不需要 |
+| **新增属性** | 支持 | 不支持（$set） | 支持 |
+| **数组监听** | 支持 | 部分（7 个变异方法） | 完整支持 |
+
+---
+
+## 3. Diff 算法对比
+
+### React：单端比较 + Fiber
+
+React 采用**单端比较**策略，配合 Fiber 架构实现可中断的增量渲染。
+
+```tsx
+// React Diff 核心逻辑（简化）
+function reconcileChildren(current, workInProgress, nextChildren) {
+  // 1. 单端比较：从前往后逐个比较
+  let oldFiber = current.child
+  let newFiber = null
+  
+  for (let i = 0; oldFiber && i < nextChildren.length; i++) {
+    const newChild = nextChildren[i]
+    
+    // 比较 key 和 type
+    if (oldFiber.key === newChild.key && oldFiber.type === newChild.type) {
+      // 复用节点，更新 props
+      newFiber = createWorkInProgress(oldFiber, newChild.props)
+    } else {
+      // 不匹配，标记删除/创建
+      if (oldFiber) {
+        deleteChild(workInProgress, oldFiber)
+      }
+      newFiber = createFiberFromElement(newChild)
+    }
+    
+    oldFiber = oldFiber.sibling
+  }
+  
+  // 2. 处理剩余节点
+  // 3. 使用 Map 优化乱序场景（key 索引）
+}
+```
+
+**Fiber 架构特点：**
+- ✅ 可中断渲染：将渲染任务拆分成多个小任务
+- ✅ 优先级调度：高优先级更新（用户输入）可以打断低优先级更新
+- ✅ 增量渲染：不需要一次性完成整个树的 Diff
+
+### Vue 2：双端比较
+
+```javascript
+// Vue 2 Diff 核心逻辑（简化）
+function updateChildren(parentElm, oldCh, newCh) {
+  let oldStartIdx = 0
+  let newStartIdx = 0
+  let oldEndIdx = oldCh.length - 1
+  let newEndIdx = newCh.length - 1
+  
+  let oldStartVnode = oldCh[0]
+  let oldEndVnode = oldCh[oldEndIdx]
+  let newStartVnode = newCh[0]
+  let newEndVnode = newCh[newEndIdx]
+  
+  // 双端比较：同时从两端向中间比较
+  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+    // 4 种比较策略
+    if (sameVnode(oldStartVnode, newStartVnode)) {
+      // 头头匹配
+      patchVnode(oldStartVnode, newStartVnode)
+      oldStartVnode = oldCh[++oldStartIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      // 尾尾匹配
+      patchVnode(oldEndVnode, newEndVnode)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newEndVnode = newCh[--newEndIdx]
+    } else if (sameVnode(oldStartVnode, newEndVnode)) {
+      // 头尾匹配（节点向右移动）
+      patchVnode(oldStartVnode, newEndVnode)
+      insertBefore(parentElm, oldStartVnode.elm, oldEndVnode.elm.nextSibling)
+      oldStartVnode = oldCh[++oldStartIdx]
+      newEndVnode = newCh[--newEndIdx]
+    } else if (sameVnode(oldEndVnode, newStartVnode)) {
+      // 尾头匹配（节点向左移动）
+      patchVnode(oldEndVnode, newStartVnode)
+      insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+      oldEndVnode = oldCh[--oldEndIdx]
+      newStartVnode = newCh[++newStartIdx]
+    } else {
+      // 都不匹配，使用 key 索引
+      // ...
+    }
+  }
+}
+```
+
+**双端比较特点：**
+- ✅ 高效处理列表头尾插入/删除
+- ✅ 4 种匹配策略覆盖大部分场景
+- ❌ 复杂乱序场景性能不如 LIS
+
+### Vue 3：最长递增子序列 (LIS)
+
+```typescript
+// Vue 3 Diff 核心逻辑（简化）
+function patchKeyedChildren(c1, c2, container) {
+  let i = 0
+  let e1 = c1.length - 1
+  let e2 = c2.length - 1
+  
+  // 1. 从头部开始比较，跳过相同的前缀
+  while (i <= e1 && i <= e2) {
+    if (isSameVNodeType(c1[i], c2[i])) {
+      patch(c1[i], c2[i], container)
+    } else {
+      break
+    }
+    i++
+  }
+  
+  // 2. 从尾部开始比较，跳过相同的后缀
+  while (i <= e1 && i <= e2) {
+    if (isSameVNodeType(c1[e1], c2[e2])) {
+      patch(c1[e1], c2[e2], container)
+    } else {
+      break
+    }
+    e1--
+    e2--
+  }
+  
+  // 3. 处理中间乱序部分
+  if (i > e1 && i <= e2) {
+    // 新增节点
+    mountChildren(c2.slice(i, e2 + 1), container)
+  } else if (i > e2 && i <= e1) {
+    // 删除节点
+    unmountChildren(c1.slice(i, e1 + 1))
+  } else {
+    // 乱序场景：使用最长递增子序列 (LIS)
+    const s1 = i
+    const s2 = i
+    const keyToNewIndexMap = new Map()
+    
+    // 建立 key 到索引的映射
+    for (let i = s2; i <= e2; i++) {
+      keyToNewIndexMap.set(c2[i].key, i)
+    }
+    
+    let j
+    let patched = 0
+    const toBePatched = e2 - s2 + 1
+    const newIndexToOldIndexMap = new Array(toBePatched).fill(0)
+    
+    // 遍历旧节点
+    for (let i = s1; i <= e1; i++) {
+      const prevChild = c1[i]
+      const newIndex = keyToNewIndexMap.get(prevChild.key)
+      
+      if (newIndex === undefined) {
+        // 旧节点在新列表中不存在，删除
+        unmount(prevChild)
+      } else {
+        // 记录新旧索引映射
+        newIndexToOldIndexMap[newIndex - s2] = i + 1
+        patch(prevChild, c2[newIndex], container)
+        patched++
+      }
+    }
+    
+    // 计算最长递增子序列
+    const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap)
+    j = increasingNewIndexSequence.length - 1
+    
+    // 从后向前遍历，移动或新增节点
+    for (let i = toBePatched - 1; i >= 0; i--) {
+      const nextIndex = s2 + i
+      const nextChild = c2[nextIndex]
+      const anchor = nextIndex + 1 < c2.length ? c2[nextIndex + 1].el : null
+      
+      if (newIndexToOldIndexMap[i] === 0) {
+        // 新增节点
+        mount(nextChild, container, anchor)
+      } else if (j < 0 || i !== increasingNewIndexSequence[j]) {
+        // 需要移动
+        move(nextChild, container, anchor)
+      } else {
+        // 不需要移动
+        j--
+      }
+    }
+  }
+}
+
+// 最长递增子序列算法
+function getSequence(arr) {
+  const p = arr.slice()
+  const result = [0]
+  let i, j, u, v, c
+  const len = arr.length
+  
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i]
+    if (arrI !== 0) {
+      j = result[result.length - 1]
+      if (arr[j] < arrI) {
+        p[i] = j
+        result.push(i)
+        continue
+      }
+      u = 0
+      v = result.length - 1
+      while (u < v) {
+        c = (u + v) >> 1
+        if (arr[result[c]] < arrI) {
+          u = c + 1
+        } else {
+          v = c
+        }
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0) {
+          p[i] = result[u - 1]
+        }
+        result[u] = i
+      }
+    }
+  }
+  u = result.length
+  v = result[u - 1]
+  while (u-- > 0) {
+    result[u] = v
+    v = p[v]
+  }
+  return result
+}
+```
+
+**LIS 特点：**
+- ✅ 最优移动策略：最少 DOM 操作
+- ✅ 高效处理复杂乱序场景
+- ✅ 预处理头尾相同部分，减少计算量
+
+### 三者对比
+
+| 特性 | React | Vue 2 | Vue 3 |
+|------|-------|-------|-------|
+| **比较策略** | 单端比较 | 双端比较 | LIS + 头尾预处理 |
+| **时间复杂度** | O(n) | O(n) | O(n log n)（LIS 部分） |
+| **乱序优化** | key 索引 Map | 4 种匹配策略 | 最长递增子序列 |
+| **DOM 移动** | 可能不是最优 | 较优 | 最优 |
+| **架构支持** | Fiber（可中断） | 同步渲染 | 同步渲染 |
+| **优先级调度** | 支持 | 不支持 | 不支持 |
+
+**性能场景对比：**
+
+```tsx
+// 场景 1：列表头部插入
+// React:  O(n) - 单端比较，逐个移动
+// Vue 2:  O(1) - 头头匹配，直接插入
+// Vue 3:  O(1) - 头尾预处理，跳过相同部分
+
+// 场景 2：列表尾部删除
+// React:  O(n) - 单端比较，逐个标记删除
+// Vue 2:  O(1) - 尾尾匹配，直接删除
+// Vue 3:  O(1) - 头尾预处理，跳过相同部分
+
+// 场景 3：复杂乱序
+// React:  O(n) - Map 索引，移动次数可能不是最优
+// Vue 2:  O(n) - 4 种策略，较优但不是最优
+// Vue 3:  O(n log n) - LIS 算法，移动次数最优
+```
+
+---
+
+## 4. 组件 API 对照表
 
 | 功能 | React | Vue 3 |
 |------|-------|-------|
@@ -63,7 +470,7 @@ user.age++
 
 ---
 
-## 3. 状态管理对比
+## 5. 状态管理对比
 
 ### 基本状态
 
@@ -187,7 +594,7 @@ watch(
 
 ---
 
-## 4. 生命周期对照
+## 6. 生命周期对照
 
 | Vue 3 | React | 说明 |
 |-------|-------|------|
@@ -252,7 +659,7 @@ watch(
 
 ---
 
-## 5. Hooks vs Composition API
+## 7. Hooks vs Composition API
 
 | React Hooks | Vue Composition API | 说明 |
 |-------------|---------------------|------|
@@ -355,7 +762,7 @@ const { data, loading, error } = useFetch<User[]>('/api/users')
 
 ---
 
-## 6. 组件通讯对比
+## 8. 组件通讯对比
 
 ### 父传子
 
@@ -526,7 +933,7 @@ const theme = inject<'light' | 'dark'>('theme')
 
 ---
 
-## 7. 状态管理库对比
+## 9. 状态管理库对比
 
 | 功能 | React | Vue 3 |
 |------|-------|-------|
@@ -591,7 +998,7 @@ const userStore = useUserStore()
 
 ---
 
-## 8. 路由对比
+## 10. 路由对比
 
 | 功能 | React Router 6 | Vue Router 4 |
 |------|----------------|--------------|
@@ -665,7 +1072,7 @@ const router = useRouter()
 
 ---
 
-## 9. 性能优化对比
+## 11. 性能优化对比
 
 | 优化手段 | React | Vue 3 |
 |----------|-------|-------|
@@ -729,7 +1136,7 @@ const handleClick = () => {
 
 ---
 
-## 10. 生态对比
+## 12. 生态对比
 
 | 领域 | React | Vue 3 |
 |------|-------|-------|
@@ -746,7 +1153,7 @@ const handleClick = () => {
 
 ---
 
-## 11. 选择建议
+## 13. 选择建议
 
 ### 选 React 的场景
 - 团队熟悉 React
