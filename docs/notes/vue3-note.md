@@ -3913,6 +3913,111 @@ const theme = inject(ThemeKey)   // 'light' | 'dark' | undefined
 const theme = inject(ThemeKey, 'light') // 'light' | 'dark'
 ```
 
+#### 实战：暴露方法（Dialog/Form 场景）
+
+```typescript
+// keys.ts
+import type { InjectionKey } from 'vue'
+
+interface DialogMethods {
+  open: () => void
+  close: () => void
+  toggle: () => void
+}
+
+export const DialogKey: InjectionKey<DialogMethods> = Symbol('dialog')
+
+// 父组件
+const visible = ref(false)
+provide(DialogKey, {
+  open: () => { visible.value = true },
+  close: () => { visible.value = false },
+  toggle: () => { visible.value = !visible.value },
+})
+
+// 任意子组件
+const dialog = inject(DialogKey)
+dialog?.open()  // ✅ 类型安全
+```
+
+#### 实战：useRequiredInject 封装
+
+```typescript
+// 问题：inject 返回值是 T | undefined，每次都要判空
+const user = inject(UserKey)
+user?.value.name  // 麻烦
+
+// 封装：必填 inject，没有就报错
+function useRequiredInject<T>(key: InjectionKey<T>): T {
+  const value = inject(key)
+  if (value === undefined) {
+    throw new Error(`No provider for ${String(key)}`)
+  }
+  return value
+}
+
+// 使用：直接拿到 T，不需要判空
+const user = useRequiredInject(UserKey)  // Ref<User>
+console.log(user.value.name)  // ✅
+```
+
+#### 实战：keys.ts + composable 统一管理
+
+```typescript
+// composables/keys.ts — 统一管理所有 key
+import type { InjectionKey, Ref } from 'vue'
+
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+export const UserKey: InjectionKey<Ref<User>> = Symbol('user')
+export const ThemeKey: InjectionKey<'light' | 'dark'> = Symbol('theme')
+```
+
+```typescript
+// composables/useUser.ts — 封装 provide/inject
+import { provide, inject, type Ref } from 'vue'
+import { UserKey, type User } from './keys'
+
+export function provideUser(user: Ref<User>) {
+  provide(UserKey, user)
+}
+
+export function useUser(): Ref<User> | undefined {
+  return inject(UserKey)
+}
+
+export function useRequiredUser(): Ref<User> {
+  const user = inject(UserKey)
+  if (!user) throw new Error('User not provided')
+  return user
+}
+```
+
+```vue
+<!-- App.vue -->
+<script setup>
+import { ref } from 'vue'
+import { provideUser } from '@/composables/useUser'
+
+const user = ref({ id: '1', name: '芥末', email: 'jiemo@example.com' })
+provideUser(user)
+</script>
+```
+
+```vue
+<!-- UserProfile.vue -->
+<script setup>
+import { useRequiredUser } from '@/composables/useUser'
+
+const user = useRequiredUser()
+console.log(user.value.name)  // ✅ 类型安全，不需要判空
+</script>
+```
+
 ### Composable 返回类型
 
 ```typescript
