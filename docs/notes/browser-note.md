@@ -553,6 +553,212 @@ screen.availWidth;  // 可用宽度（排除任务栏）
   });
   ```
 
+## SSE vs WebSocket 对比
+
+### 核心差异
+
+| 特性 | SSE (Server-Sent Events) | WebSocket |
+|------|-------------------------|-----------|
+| **通信方向** | 单向（服务器 → 客户端） | 双向（全双工） |
+| **协议** | HTTP/HTTPS | ws/wss（独立协议） |
+| **数据格式** | 纯文本（UTF-8） | 文本/二进制 |
+| **自动重连** | ✅ 内置支持 | ❌ 需手动实现 |
+| **断点续传** | ✅ Last-Event-ID 机制 | ❌ 需手动实现 |
+| **实现复杂度** | 简单（标准 HTTP） | 较复杂（协议升级） |
+| **浏览器支持** | 主流浏览器 | 主流浏览器 |
+| **代理/防火墙** | 友好（走 HTTP） | 可能被拦截 |
+| **适用场景** | 服务器推送、实时通知 | 聊天、游戏、协作编辑 |
+
+### 前端 API 对比
+
+**SSE:**
+```javascript
+// 基本用法
+const source = new EventSource('/api/stream');
+
+source.onopen = () => console.log('连接已建立');
+
+source.onmessage = (event) => {
+  console.log('收到消息:', event.data);
+};
+
+// 自定义事件
+source.addEventListener('user-update', (event) => {
+  console.log('用户更新:', JSON.parse(event.data));
+});
+
+source.onerror = (error) => {
+  console.error('连接错误:', error);
+  source.close(); // 手动关闭
+};
+
+// 注意：SSE 不支持客户端主动发送数据
+// 需要发送数据时，用 fetch/axios 发 POST 请求
+```
+
+**WebSocket:**
+```javascript
+// 基本用法
+const ws = new WebSocket('wss://example.com/socket');
+
+ws.onopen = () => {
+  console.log('连接已建立');
+  ws.send('Hello Server'); // 客户端可以主动发送
+};
+
+ws.onmessage = (event) => {
+  console.log('收到消息:', event.data);
+  
+  // 二进制数据处理
+  if (event.data instanceof Blob) {
+    // 处理文件/图片
+  } else if (event.data instanceof ArrayBuffer) {
+    // 处理二进制流
+  }
+};
+
+ws.onclose = (event) => {
+  console.log(`连接关闭: code=${event.code}, reason=${event.reason}`);
+  // 自动重连逻辑
+  if (!event.wasClean) {
+    setTimeout(() => reconnect(), 3000);
+  }
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket 错误:', error);
+};
+
+// 心跳保活
+setInterval(() => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send('ping');
+  }
+}, 30000);
+```
+
+### 后端实现对比
+
+**SSE (Node.js/Express):**
+```javascript
+app.get('/api/stream', (req, res) => {
+  // 设置 SSE 响应头
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+
+  // 发送数据
+  let id = 0;
+  const interval = setInterval(() => {
+    res.write(`id: ${id++}\n`);           // 事件 ID（用于断点续传）
+    res.write(`event: message\n`);        // 事件类型（可选）
+    res.write(`data: ${JSON.stringify({ time: new Date() })}\n\n`); // 数据（必须两个换行结束）
+  }, 1000);
+
+  // 客户端断开时清理
+  req.on('close', () => {
+    clearInterval(interval);
+  });
+});
+
+// 断点续传支持
+app.get('/api/stream', (req, res) => {
+  const lastEventId = req.headers['last-event-id'];
+  // 从 lastEventId 之后开始发送...
+});
+```
+
+**WebSocket (Node.js/ws):**
+```javascript
+import { WebSocketServer } from 'ws';
+
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on('connection', (ws, req) => {
+  console.log('客户端已连接');
+
+  ws.on('message', (data) => {
+    console.log('收到消息:', data.toString());
+    
+    // 广播给所有客户端
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(data);
+      }
+    });
+  });
+
+  ws.on('close', () => {
+    console.log('客户端断开');
+  });
+
+  // 发送初始数据
+  ws.send(JSON.stringify({ type: 'welcome', message: '连接成功' }));
+});
+```
+
+### 选择建议
+
+**选 SSE 的场景：**
+- ✅ AI 流式输出（ChatGPT 风格）
+- ✅ 实时通知/消息推送
+- ✅ 股票行情、日志流
+- ✅ 服务器状态监控
+- ✅ 只需要服务器单向推送
+
+**选 WebSocket 的场景：**
+- ✅ 实时聊天室
+- ✅ 多人协作编辑（如 Google Docs）
+- ✅ 在线游戏
+- ✅ 实时音视频信令
+- ✅ 需要频繁双向通信
+
+### 性能对比
+
+```
+连接建立：
+- SSE: HTTP 请求 → 保持连接（快，复用 HTTP 连接池）
+- WebSocket: HTTP 升级 → 协议切换（稍慢，需要握手）
+
+数据传输：
+- SSE: 文本数据，每条消息有 HTTP 头开销
+- WebSocket: 帧协议，开销小（2-14 字节/帧）
+
+并发连接：
+- SSE: 受浏览器限制（HTTP/1.1: 6 个，HTTP/2: 100+）
+- WebSocket: 无此限制，可以开更多连接
+
+断线重连：
+- SSE: 自动重连 + Last-Event-ID 断点续传
+- WebSocket: 需要手动实现重连逻辑
+```
+
+### 混合使用模式
+
+实际项目中常见的模式：**SSE 接收 + HTTP 发送**
+
+```javascript
+// 接收实时推送用 SSE
+const source = new EventSource('/api/notifications');
+source.onmessage = (event) => {
+  updateUI(JSON.parse(event.data));
+};
+
+// 发送操作用 HTTP POST
+async function sendMessage(content) {
+  await fetch('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
+  // 服务器处理后通过 SSE 推送给所有客户端
+}
+```
+
+这种模式比纯 WebSocket 更简单，适合"读多写少"的场景。
+
 ## 页面生命周期
 
 + visibilitychange（页面可见/隐藏切换）
