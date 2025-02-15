@@ -76,6 +76,13 @@ export default defineConfig({
           items: [
             { text: '前端对接 AI', link: '/notes/ai-frontend-integration' }
           ]
+        },
+        {
+          text: '数据可视化',
+          collapsed: false,
+          items: [
+            { text: 'ECharts', link: '/notes/echarts-note' }
+          ]
         }
       ]
     },
