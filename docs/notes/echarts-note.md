@@ -783,31 +783,188 @@ window.addEventListener('resize', () => chart.resize())
 
 ### 大数据量优化
 
+#### 数据量级与策略选择
+
+| 数据量 | 策略 |
+|--------|------|
+| < 1000 | 无需优化 |
+| 1K~10K | 关闭动画 + `sampling` |
+| 10K~100K | `appendData` 分片 + `large` 模式 |
+| 100K~1M | `large` 模式 + `progressive` 渐进渲染 |
+| > 1M | 服务端聚合 + dataZoom 分段加载 |
+
+#### 1. 基础优化
+
 ```javascript
 const option = {
-  // 1. 开启大数据量优化
-  dataset: {
-    source: largeData,  // 大量数据
-  },
   series: [
     {
       type: 'line',
-      // 2. 采样（数据点太多时采样显示）
-      sampling: 'lttb',  // 'average' | 'max' | 'min' | 'sum' | 'lttb'
-      // 3. 关闭动画
+      data: largeData,
+      // 关闭动画（大数据时动画是最大性能杀手）
       animation: false,
-    },
-  ],
-  // 4. 使用 dataZoom 分段加载
-  dataZoom: [
-    {
-      type: 'inside',
-      start: 0,
-      end: 10,
+      // 采样策略（数据点超过容器像素时自动采样）
+      sampling: 'lttb',  // 'average' | 'max' | 'min' | 'sum' | 'lttb'
+      // 关闭 symbol 显示（每个点不画圆点）
+      showSymbol: false,
+      // 关闭 hover 高亮
+      emphasis: { disabled: true },
     },
   ],
 }
 ```
+
+#### 2. large 大数据模式
+
+```javascript
+// 散点图大数据模式（10万+数据点）
+const option = {
+  series: [
+    {
+      type: 'scatter',
+      data: millionPoints,  // 百万级数据
+      large: true,           // 开启大数据优化
+      largeThreshold: 2000,  // 超过 2000 个数据点时自动启用
+      // large 模式下关闭不必要的渲染
+      symbolSize: 2,
+      itemStyle: { opacity: 0.6 },
+    },
+  ],
+}
+```
+
+#### 3. progressive 渐进渲染
+
+```javascript
+// 将大数据分片渲染，避免一次性渲染导致页面卡顿
+const option = {
+  series: [
+    {
+      type: 'scatter',
+      data: hugeData,  // 百万级
+      progressive: 500,        // 每帧渲染 500 个数据点
+      progressiveThreshold: 3000, // 超过 3000 个数据时启用渐进渲染
+      // 渐进渲染期间显示 loading
+      progressiveChunkMode: 'mod', // 'sequential' | 'mod'
+    },
+  ],
+}
+```
+
+#### 4. appendData 分片加载
+
+```javascript
+const chart = echarts.init(dom)
+
+// 先用空数据初始化
+chart.setOption({
+  series: [{ type: 'scatter', data: [] }],
+})
+
+// 分片追加数据（模拟流式加载）
+const CHUNK_SIZE = 5000
+let offset = 0
+
+function loadChunk() {
+  const chunk = largeData.slice(offset, offset + CHUNK_SIZE)
+  if (chunk.length === 0) return
+
+  chart.appendData({ seriesIndex: 0, data: chunk })
+  offset += CHUNK_SIZE
+
+  // 用 requestAnimationFrame 避免阻塞主线程
+  requestAnimationFrame(loadChunk)
+}
+
+loadChunk()
+```
+
+#### 5. dataZoom 分段加载
+
+```javascript
+// 配合服务端分页，只加载可视区域数据
+const option = {
+  dataZoom: [
+    { type: 'slider', start: 0, end: 10 },
+    { type: 'inside' },
+  ],
+  xAxis: { type: 'category' },
+  yAxis: {},
+  series: [{ type: 'line', data: [] }],
+}
+
+chart.setOption(option)
+
+// 监听缩放事件，动态加载数据
+chart.on('datazoom', async (params) => {
+  const { start, end } = params.batch?.[0] || {}
+  const data = await fetchDataByRange(start, end)
+  chart.setOption({
+    xAxis: { data: data.labels },
+    series: [{ data: data.values }],
+  })
+})
+```
+
+#### 6. dataset 共享数据源
+
+```javascript
+// 多个 series 共享同一个 dataset，避免重复数据
+const option = {
+  dataset: {
+    source: sharedData,  // 数据只存一份
+  },
+  series: [
+    { type: 'line', encode: { x: 0, y: 1 } },
+    { type: 'line', encode: { x: 0, y: 2 } },
+    { type: 'line', encode: { x: 0, y: 3 } },
+  ],
+}
+```
+
+#### 7. 降维与聚合
+
+```javascript
+// 前端聚合：将万级数据聚合为百级
+function aggregateData(rawData, bucketSize) {
+  const buckets = []
+  for (let i = 0; i < rawData.length; i += bucketSize) {
+    const chunk = rawData.slice(i, i + bucketSize)
+    buckets.push({
+      time: chunk[0].time,
+      avg: chunk.reduce((s, d) => s + d.value, 0) / chunk.length,
+      max: Math.max(...chunk.map(d => d.value)),
+      min: Math.min(...chunk.map(d => d.value)),
+    })
+  }
+  return buckets
+}
+
+// 根据缩放级别动态调整聚合粒度
+chart.on('datazoom', (params) => {
+  const visiblePercent = params.end - params.start
+  const bucketSize = visiblePercent > 50 ? 100 : visiblePercent > 20 ? 50 : 10
+  const aggregated = aggregateData(rawData, bucketSize)
+  chart.setOption({ series: [{ data: aggregated }] })
+})
+```
+
+#### 8. 性能优化清单
+
+| 优化手段 | 效果 | 适用场景 |
+|----------|------|---------|
+| `animation: false` | ⭐⭐⭐⭐⭐ | 所有大数据场景 |
+| `showSymbol: false` | ⭐⭐⭐⭐ | 折线图/散点图 |
+| `sampling: 'lttb'` | ⭐⭐⭐⭐ | 折线图数据点多 |
+| `large: true` | ⭐⭐⭐⭐⭐ | 散点图 10K+ |
+| `progressive` | ⭐⭐⭐⭐ | 渐进渲染，不卡主线程 |
+| `appendData` | ⭐⭐⭐ | 流式数据加载 |
+| `dataZoom` 分段 | ⭐⭐⭐⭐⭐ | 配合服务端分页 |
+| `emphasis: { disabled: true }` | ⭐⭐⭐ | 关闭 hover 效果 |
+| `dataset` 共享 | ⭐⭐⭐ | 多 series 同源数据 |
+| 服务端聚合 | ⭐⭐⭐⭐⭐ | 百万级以上 |
+| Canvas 渲染 | ⭐⭐⭐ | 默认就是，别用 SVG |
+| Web Worker 预处理 | ⭐⭐⭐ | 复杂数据计算 |
 
 ### 按需引入
 
