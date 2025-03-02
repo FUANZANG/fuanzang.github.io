@@ -78,6 +78,13 @@ export default defineConfig({
           ]
         },
         {
+          text: '跨端开发',
+          collapsed: false,
+          items: [
+            { text: 'Electron', link: '/notes/electron-note' }
+          ]
+        },
+        {
           text: '数据可视化',
           collapsed: false,
           items: [
