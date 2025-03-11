@@ -1544,3 +1544,860 @@ async function sendMessage(content) {
   ```
 
   > 注意：ReportingObserver 的浏览器兼容性有限，目前主要在 Chrome/Edge 中支持。Firefox 和 Safari 的支持程度不一。在生产环境中建议配合 `Report-To` HTTP 响应头做服务端收集作为兜底方案。
+
+## 浏览器缓存机制
+
+### 缓存流程总览
+
+```
+浏览器发起请求
+  → 检查强缓存（本地）
+    → 命中 → 直接使用缓存（不发请求）
+    → 未命中 → 发送 HTTP 请求
+      → 检查协商缓存（服务器）
+        → 304 Not Modified → 使用本地缓存
+        → 200 OK → 返回新资源 + 更新缓存
+```
+
+### 强缓存（不与服务器通信）
+
+通过响应头控制，浏览器直接判断缓存是否过期：
+
+| 字段 | 示例 | 说明 |
+|------|------|------|
+| `Cache-Control` | `max-age=31536000` | 相对时间（秒），优先级最高 |
+| `Expires` | `Wed, 21 Oct 2026 07:28:00 GMT` | 绝对时间，受客户端时钟影响 |
+
+```
+Cache-Control 常用指令：
+  max-age=3600        → 缓存有效期 3600 秒
+  no-cache            → 不走强缓存，每次走协商缓存
+  no-store            → 完全不缓存（敏感数据）
+  public              → 所有节点（CDN、浏览器）都可缓存
+  private             → 仅浏览器可缓存（CDN 不缓存）
+  must-revalidate     → 过期后必须向服务器验证
+```
+
+> `Cache-Control` 优先级高于 `Expires`，两者同时存在时以 `Cache-Control` 为准。
+
+### 协商缓存（与服务器通信，返回 304）
+
+强缓存未命中时，浏览器带上缓存标识向服务器验证：
+
+| 方案 | 请求头 | 响应头 | 对比方式 |
+|------|--------|--------|---------|
+| 最后修改时间 | `If-Modified-Since` | `Last-Modified` | 时间比较（秒级精度） |
+| 内容哈希 | `If-None-Match` | `ETag` | 字符串比较（精确） |
+
+```
+服务器判断逻辑：
+
+ETag 方案（优先）：
+  请求头 If-None-Match: "abc123"
+  → 服务器计算当前资源 ETag
+  → 相同 → 304（用缓存）
+  → 不同 → 200 + 新资源
+
+Last-Modified 方案：
+  请求头 If-Modified-Since: Wed, 21 Oct 2025 07:28:00 GMT
+  → 服务器对比文件最后修改时间
+  → 未修改 → 304
+  → 已修改 → 200 + 新资源
+```
+
+> `ETag` 优先级高于 `Last-Modified`。`ETag` 更精确（解决了 1 秒内多次修改、文件未变但修改时间变了等问题），但计算成本更高。
+
+### 缓存策略实践
+
+| 资源类型 | 推荐策略 | 原因 |
+|---------|---------|------|
+| HTML | `no-cache` 或 `max-age=0` | 入口文件，需要实时验证 |
+| CSS/JS（带 hash） | `max-age=31536000, immutable` | 文件名含 hash，内容变则文件名变 |
+| 图片/字体（带 hash） | `max-age=31536000, immutable` | 同上 |
+| API 响应 | `no-store` 或短时 `max-age` | 数据变化频繁或敏感 |
+
+```nginx
+# Nginx 配置示例
+location /assets/ {
+    # 带 hash 的静态资源，强缓存一年
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+
+location / {
+    # HTML 入口，每次都协商验证
+    add_header Cache-Control "no-cache";
+}
+```
+
+### 用户行为对缓存的影响
+
+| 操作 | 强缓存 | 协商缓存 |
+|------|--------|---------|
+| 地址栏回车 / 链接跳转 | ✅ 生效 | ✅ 生效 |
+| Ctrl+F5 强制刷新 | ❌ 跳过 | ❌ 跳过 |
+| F5 刷新 | ❌ 跳过 | ✅ 生效 |
+| 前进/后退 | ✅ 生效 | ✅ 生效 |
+
+## 跨域方案详解
+
+### 什么是跨域
+
+同源策略要求 **协议 + 域名 + 端口** 完全一致，否则就是跨域：
+
+```
+https://www.example.com:443
+  ↓
+https://api.example.com:443    → 域名不同 ✗
+http://www.example.com:443     → 协议不同 ✗
+https://www.example.com:8080   → 端口不同 ✗
+https://www.example.com:443/path → 路径不同 ✅（路径不参与同源判断）
+```
+
+### CORS 详解
+
+CORS（Cross-Origin Resource Sharing）是浏览器和服务端协商的跨域机制。
+
+**简单请求 vs 预检请求：**
+
+```
+简单请求（不发 OPTIONS）：
+  条件：GET/HEAD/POST + Content-Type 仅限以下三种：
+    - application/x-www-form-urlencoded
+    - multipart/form-data
+    - text/plain
+  且不包含自定义请求头
+
+预检请求（先 OPTIONS，再正式请求）：
+  条件：PUT/DELETE/PATCH 等方法
+    或 Content-Type 为 application/json
+    或包含自定义请求头（如 Authorization）
+```
+
+**预检请求流程：**
+
+```
+浏览器                          服务器
+  |                               |
+  |--- OPTIONS 请求 ------------>|
+  |    Origin: https://a.com      |
+  |    Access-Control-Request-    |
+  |      Method: PUT              |
+  |    Access-Control-Request-    |
+  |      Headers: Authorization   |
+  |                               |
+  |<-- 204 响应 ------------------|
+  |    Access-Control-Allow-      |
+  |      Origin: https://a.com    |
+  |    Access-Control-Allow-      |
+  |      Methods: PUT, GET        |
+  |    Access-Control-Allow-      |
+  |      Headers: Authorization   |
+  |    Access-Control-Max-Age:    |
+  |      86400                    |
+  |                               |
+  |--- PUT 正式请求 ------------>|  ← 预检通过后发送
+  |                               |
+```
+
+**服务端关键响应头：**
+
+```
+Access-Control-Allow-Origin: https://a.com    // 允许的来源（不能设 * 同时带 Cookie）
+Access-Control-Allow-Methods: GET, POST, PUT  // 允许的方法
+Access-Control-Allow-Headers: Authorization   // 允许的请求头
+Access-Control-Allow-Credentials: true        // 允许携带 Cookie
+Access-Control-Max-Age: 86400                 // 预检结果缓存时间（秒）
+Access-Control-Expose-Headers: X-Total-Count  // 允许前端 JS 读取的响应头
+```
+
+**前端配置（携带 Cookie）：**
+
+```js
+// fetch
+fetch('https://api.example.com/data', {
+  credentials: 'include'  // 携带 Cookie（同源用 same-origin，跨域用 include）
+});
+
+// axios
+axios.defaults.withCredentials = true;
+```
+
+**Nginx 反向代理（开发/生产通用）：**
+
+```nginx
+# 开发环境：前端 dev server 代理
+server {
+    listen 3000;
+
+    # API 请求代理到后端
+    location /api/ {
+        proxy_pass http://localhost:8080/;
+        proxy_set_header Host $host;
+    }
+
+    # 前端静态资源
+    location / {
+        root /dist;
+    }
+}
+
+# 生产环境：同域部署，从根本上避免跨域
+server {
+    listen 80;
+    server_name example.com;
+
+    location /api/ {
+        proxy_pass http://backend:8080/;
+    }
+
+    location / {
+        root /dist;
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+**Webpack/Vite devServer proxy：**
+
+```js
+// vite.config.js
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,  // 修改请求头的 Host
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
+})
+```
+
+### JSONP（了解即可，已过时）
+
+```html
+<!-- 利用 <script> 不受同源策略限制 -->
+<script>
+function handleData(data) {
+  console.log('收到数据:', data);
+}
+</script>
+<script src="https://api.example.com/data?callback=handleData"></script>
+```
+
+服务器返回：`handleData({"name": "John"})`
+
+**缺点：** 只支持 GET、存在安全风险（XSS）、无法设置请求头。现代项目应使用 CORS。
+
+### postMessage 跨窗口通信
+
+```js
+// 父页面 → iframe
+const iframe = document.getElementById('child');
+iframe.contentWindow.postMessage('hello', 'https://child.example.com');
+
+// iframe 中接收
+window.addEventListener('message', (event) => {
+  // 安全校验：验证来源
+  if (event.origin !== 'https://parent.example.com') return;
+  console.log(event.data); // 'hello'
+
+  // 回复
+  event.source.postMessage('received', event.origin);
+});
+```
+
+**适用场景：** 同一页面内不同域的 iframe 通信、`window.open` 打开的窗口间通信。
+
+### 跨域方案对比
+
+| 方案 | 优点 | 缺点 | 适用场景 |
+|------|------|------|---------|
+| CORS | 标准方案，支持所有 HTTP 方法 | 需要服务端配合 | 首选方案 |
+| Nginx 反向代理 | 前端无感知，彻底解决 | 需要运维配置 | 生产环境 |
+| devServer proxy | 开发环境零配置 | 仅开发环境 | 本地开发 |
+| JSONP | 兼容性好 | 只支持 GET，不安全 | 已淘汰 |
+| postMessage | 不依赖服务器 | 仅限窗口间 | iframe 通信 |
+
+## 事件循环（Event Loop）
+
+### 浏览器中的 Event Loop
+
+JavaScript 是单线程的，通过事件循环实现异步非阻塞：
+
+```
+┌──────────────────────────────────┐
+│          Call Stack              │  ← 同步代码在这里执行
+│  ┌────────────────────────────┐  │
+│  │ main() → foo() → bar()     │  │
+│  └────────────────────────────┘  │
+└──────────┬───────────────────────┘
+           │ 栈空时，从任务队列取任务
+           ▼
+┌──────────────────┐  ┌──────────────────────┐
+│  Microtask Queue │  │   Macrotask Queue    │
+│  (微任务队列)     │  │   (宏任务队列)        │
+│                  │  │                      │
+│  Promise.then    │  │  setTimeout          │
+│  MutationObserver│  │  setInterval         │
+│  queueMicrotask  │  │  I/O                 │
+│                  │  │  UI rendering        │
+│                  │  │  script（整体代码）    │
+└──────────────────┘  └──────────────────────┘
+```
+
+### 执行顺序规则
+
+```
+1. 执行同步代码（当前宏任务）
+2. 同步代码执行完毕，清空微任务队列（全部执行完）
+3. 执行一个宏任务
+4. 重复 2-3
+```
+
+关键区别：
+- **微任务**：在当前宏任务结束后、下一个宏任务开始前 **全部执行**
+- **宏任务**：每次只执行 **一个**，然后检查微任务队列
+
+### 代码执行顺序题
+
+```js
+console.log('1');                           // 同步 → 立即输出
+
+setTimeout(() => {
+  console.log('2');                          // 宏任务
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('3');                          // 微任务
+  setTimeout(() => {
+    console.log('4');                        // 宏任务（第二轮）
+  }, 0);
+});
+
+console.log('5');                           // 同步 → 立即输出
+
+// 输出顺序：1 → 5 → 3 → 2 → 4
+```
+
+**解析过程：**
+
+```
+第 1 轮宏任务（script 整体代码）：
+  1. console.log('1')           → 输出 1
+  2. setTimeout(fn)             → fn 放入宏任务队列
+  3. Promise.then(fn)           → fn 放入微任务队列
+  4. console.log('5')           → 输出 5
+  同步代码执行完毕
+
+  清空微任务队列：
+    Promise.then → console.log('3') → 输出 3
+    内部 setTimeout(fn) → fn 放入宏任务队列
+
+第 2 轮宏任务：
+  setTimeout(fn) → console.log('2') → 输出 2
+
+第 3 轮宏任务：
+  setTimeout(fn) → console.log('4') → 输出 4
+
+最终：1, 5, 3, 2, 4
+```
+
+### 更复杂的例子
+
+```js
+async function async1() {
+  console.log('async1 start');    // 同步
+  await async2();                 // await 后的代码相当于 .then()
+  console.log('async1 end');      // 微任务
+}
+
+async function async2() {
+  console.log('async2');          // 同步
+}
+
+console.log('script start');
+async1();
+new Promise(resolve => {
+  console.log('promise1');        // 同步
+  resolve();
+}).then(() => {
+  console.log('promise2');        // 微任务
+});
+console.log('script end');
+
+// 输出：script start → async1 start → async2 → promise1 → script end
+//       → async1 end → promise2
+```
+
+### MutationObserver 与微任务
+
+```js
+const observer = new MutationObserver(() => {
+  console.log('mutation');  // 微任务
+});
+observer.observe(document.body, { childList: true });
+
+document.body.appendChild(document.createElement('div'));
+
+Promise.resolve().then(() => {
+  console.log('promise');   // 微任务
+});
+
+// 输出顺序：promise → mutation
+// MutationObserver 回调是微任务，但比 Promise.then 优先级略低
+// 实际上两者都在同一轮微任务清空阶段执行，按入队顺序来
+```
+
+### 浏览器 Event Loop vs Node Event Loop
+
+| | 浏览器 | Node.js |
+|---|---|---|
+| 宏任务队列 | 一个 | 多个阶段（timers → pending → poll → check） |
+| 微任务 | Promise.then / MutationObserver | Promise.then / process.nextTick |
+| 微任务优先级 | 统一 | `process.nextTick` > `Promise.then` |
+| `setTimeout(fn, 0)` | 最小延迟 ~4ms | 最小延迟 ~1ms |
+| `setImmediate` | ❌ 不支持 | ✅ 在 check 阶段执行 |
+
+```js
+// Node.js 中的特殊行为
+process.nextTick(() => console.log('nextTick'));  // 微任务，最高优先级
+Promise.resolve().then(() => console.log('promise'));
+
+// Node 输出：nextTick → promise
+// 浏览器没有 process.nextTick
+```
+
+### requestAnimationFrame 在 Event Loop 中的位置
+
+```
+宏任务 → 微任务清空 → rAF 回调 → 渲染（Style → Layout → Paint）→ 下一个宏任务
+```
+
+`requestAnimationFrame` 在渲染前执行，不在宏任务也不在微任务队列中，而是由浏览器的渲染管线调度。这也是它比 `setTimeout` 更适合做动画的原因。
+
+## Web Worker / SharedWorker
+
+### Web Worker 基本用法
+
+```js
+// main.js — 主线程
+const worker = new Worker('./worker.js');
+
+// 发送数据给 Worker
+worker.postMessage({ type: 'compute', data: largeArray });
+
+// 接收 Worker 的结果
+worker.onmessage = (event) => {
+  console.log('Worker 返回:', event.data);
+};
+
+// 错误处理
+worker.onerror = (error) => {
+  console.error('Worker 出错:', error.message);
+};
+
+// 终止 Worker
+worker.terminate();
+```
+
+```js
+// worker.js — Worker 线程
+// Worker 中可用的 API：self, setTimeout, fetch, IndexedDB, Cache API
+// Worker 中不可用：DOM, window, document, alert
+
+self.onmessage = (event) => {
+  const { type, data } = event.data;
+
+  if (type === 'compute') {
+    // 耗时计算
+    const result = data.reduce((sum, n) => sum + n, 0);
+    self.postMessage(result);
+  }
+};
+```
+
+### 内联 Worker
+
+```js
+// 不需要单独文件，用 Blob 创建
+const workerCode = `
+  self.onmessage = (e) => {
+    const result = e.data * 2;
+    self.postMessage(result);
+  };
+`;
+
+const blob = new Blob([workerCode], { type: 'application/javascript' });
+const worker = new Worker(URL.createObjectURL(blob));
+
+worker.postMessage(21);
+worker.onmessage = (e) => console.log(e.data); // 42
+```
+
+### Transferable Objects（零拷贝传输）
+
+```js
+// 默认 postMessage 使用结构化克隆（拷贝）
+// 对于大数据（ArrayBuffer），可以用 Transferable 转移所有权，零拷贝
+
+const buffer = new ArrayBuffer(1024 * 1024 * 100); // 100MB
+
+// 转移后，主线程中的 buffer 不可再使用
+worker.postMessage(buffer, [buffer]);
+
+console.log(buffer.byteLength); // 0，已经被转移走了
+```
+
+```js
+// Worker 端接收
+self.onmessage = (event) => {
+  const buffer = event.data;
+  console.log(buffer.byteLength); // 100MB，完整可用
+  // 处理完后可以转回去
+  self.postMessage(buffer, [buffer]);
+};
+```
+
+### SharedWorker（多标签共享）
+
+```js
+// main.js — 多个标签页共享同一个 Worker
+const shared = new SharedWorker('./shared.js');
+
+shared.port.postMessage('hello');
+shared.port.onmessage = (event) => {
+  console.log('来自 SharedWorker:', event.data);
+};
+shared.port.start(); // 必须调用 start 才能接收消息
+```
+
+```js
+// shared.js
+const connections = [];
+
+self.onconnect = (event) => {
+  const port = event.ports[0];
+  connections.push(port);
+
+  port.onmessage = (e) => {
+    // 广播给所有连接的标签页
+    connections.forEach(p => {
+      p.postMessage(`收到消息: ${e.data}`);
+    });
+  };
+
+  port.start();
+};
+```
+
+### 实际应用场景
+
+```js
+// 1. 大文件 Hash 计算（上传前去重）
+const worker = new Worker('./hash-worker.js');
+worker.postMessage(fileArrayBuffer);
+worker.onmessage = (e) => {
+  const hash = e.data; // SHA-256 hash
+  // 先检查服务端是否已有该文件（秒传）
+};
+
+// 2. 图片处理（压缩、裁剪、滤镜）
+const imgWorker = new Worker('./image-worker.js');
+imgWorker.postMessage({ imageData, operation: 'compress', quality: 0.8 });
+
+// 3. 实时数据聚合（WebSocket 数据在 Worker 中处理）
+const dataWorker = new Worker('./data-worker.js');
+ws.onmessage = (e) => dataWorker.postMessage(JSON.parse(e.data));
+dataWorker.onmessage = (e) => updateChart(e.data);
+```
+
+### Worker 的限制
+
+| 特性 | 支持情况 |
+|------|---------|
+| DOM 操作 | ❌ 不可用 |
+| window/document | ❌ 不可用 |
+| fetch / XMLHttpRequest | ✅ |
+| IndexedDB / Cache API | ✅ |
+| setTimeout / setInterval | ✅ |
+| importScripts() | ✅（经典 Worker） |
+| ES Modules | ✅（`new Worker(url, { type: 'module' })`） |
+| 嵌套 Worker | 部分浏览器支持 |
+
+## Service Worker 与 PWA
+
+### Service Worker 生命周期
+
+```
+注册 (register)
+  → 下载 SW 文件
+  → install 事件（缓存资源）
+  → waiting（等待旧 SW 控制的页面关闭）
+  → activate 事件（清理旧缓存）
+  → 激活，开始拦截 fetch 请求
+```
+
+```js
+// main.js — 注册 Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(registration => {
+    console.log('SW 注册成功，作用域:', registration.scope);
+  }).catch(error => {
+    console.error('SW 注册失败:', error);
+  });
+}
+```
+
+```js
+// sw.js — Service Worker 文件
+
+const CACHE_NAME = 'app-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/style.css',
+  '/app.js',
+  '/logo.png'
+];
+
+// 安装阶段：预缓存关键资源
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS);
+    })
+  );
+  // 安装完成后立即激活，不等旧 SW 控制的页面关闭
+  self.skipWaiting();
+});
+
+// 激活阶段：清理旧版本缓存
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
+      );
+    })
+  );
+  // 立即接管所有页面
+  self.clients.claim();
+});
+
+// 拦截请求：返回缓存或网络资源
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request);
+    })
+  );
+});
+```
+
+### 缓存策略
+
+| 策略 | 逻辑 | 适用场景 |
+|------|------|---------|
+| **Cache First** | 优先缓存，缓存没有再走网络 | 静态资源（字体、图标） |
+| **Network First** | 优先网络，网络失败用缓存兜底 | API 数据（要新鲜，离线可降级） |
+| **Stale While Revalidate** | 先返回缓存，同时后台更新 | 文章内容（快速展示，下次刷新） |
+| **Cache Only** | 只走缓存 | 预缓存的离线页面 |
+| **Network Only** | 只走网络 | 实时数据、支付接口 |
+
+```js
+// Stale While Revalidate 实现
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.match(event.request).then(cached => {
+        // 先返回缓存（快），同时后台更新
+        const fetchPromise = fetch(event.request).then(response => {
+          if (response.ok) {
+            cache.put(event.request, response.clone());
+          }
+          return response;
+        });
+        return cached || fetchPromise;
+      });
+    })
+  );
+});
+```
+
+### PWA 配置 — manifest.json
+
+```json
+{
+  "name": "我的应用",
+  "short_name": "MyApp",
+  "description": "一个渐进式 Web 应用",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90D9",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+```html
+<!-- HTML 中引入 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4A90D9">
+```
+
+`display` 模式：
+- `standalone` — 独立应用外观（无地址栏）
+- `fullscreen` — 全屏
+- `minimal-ui` — 最小化浏览器 UI
+- `browser` — 普通浏览器标签页
+
+### Service Worker 的限制
+
+- 必须在 HTTPS 下运行（localhost 除外）
+- 无法访问 DOM
+- 闲置时会被浏览器终止（不能依赖全局变量保存状态，用 IndexedDB 持久化）
+- 作用域受限于注册路径（`/app/sw.js` 只能控制 `/app/` 下的页面）
+
+## HTTP 协议演进
+
+### HTTP/1.1 的痛点
+
+```
+1. 队头阻塞（Head-of-Line Blocking）
+   - 同一 TCP 连接上，请求必须排队，前一个没响应，后面的都得等
+   - 浏览器解决方案：开多个 TCP 连接（6-8 个），但有连接数上限
+
+2. 头部冗余
+   - 每个请求都带完整的 Cookie、User-Agent 等，重复数据多
+   - 一个 Cookie 可能就几百字节，每次请求都重复发送
+
+3. 服务端无法主动推送
+   - 服务器知道页面接下来需要什么资源，但无法主动发送
+   - 只能用 HTTP/1.1 的 Link: rel=preload 做提示
+```
+
+### HTTP/2 核心特性
+
+**多路复用（Multiplexing）：**
+
+```
+HTTP/1.1:
+  连接 1: 请求 A → 响应 A → 请求 B → 响应 B
+  连接 2: 请求 C → 响应 C
+
+HTTP/2（单连接多路复用）:
+  连接 1: ┌ 请求 A ─┐
+          │ 请求 B ─┼→ 响应 B（先完成）
+          │ 请求 C ─┼→ 响应 A
+          └─────────┘→ 响应 C
+
+  多个请求在同一个 TCP 连接上并行发送，响应可以乱序返回
+```
+
+**头部压缩（HPACK）：**
+
+```
+HTTP/1.1 每个请求：
+  GET /api/users HTTP/1.1
+  Host: example.com
+  User-Agent: Mozilla/5.0 ...（100+ bytes）
+  Cookie: session=abc123; ...（200+ bytes）
+  Accept: application/json
+  ... （每次 500+ bytes 重复头部）
+
+HTTP/2（HPACK 压缩后）：
+  首次请求：发送完整头部，建立索引表
+  后续请求：只发送差异部分（增量编码）
+  → 头部开销从 500 bytes 降到几十字节
+```
+
+**二进制帧（Binary Framing）：**
+
+```
+HTTP/1.1：文本协议，解析复杂、容易出错
+HTTP/2：二进制协议，所有数据拆分为小的 Frame
+
+  ┌─────────────┐
+  │   HEADERS   │  ← 头部帧（HPACK 压缩）
+  │   Frame     │
+  ├─────────────┤
+  │   DATA      │  ← 数据帧（请求体/响应体）
+  │   Frame     │
+  ├─────────────┤
+  │   DATA      │  ← 可以拆分成多个 DATA 帧
+  │   Frame     │
+  └─────────────┘
+```
+
+**服务器推送（Server Push）：**
+
+```
+浏览器请求 index.html
+  → 服务器返回 index.html
+  → 同时主动推送 style.css 和 app.js（服务器预判浏览器需要）
+  → 浏览器收到后存入缓存，解析 HTML 时直接从缓存取
+
+注意：服务器推送在实践中效果有限（可能推送浏览器已缓存的资源），
+Chrome 已不鼓励使用，HTTP/3 中移除了此特性。
+```
+
+### HTTP/3 与 QUIC
+
+```
+HTTP/1.1 → 基于 TCP
+HTTP/2   → 基于 TCP（多路复用解决了应用层队头阻塞，但 TCP 层仍有）
+HTTP/3   → 基于 QUIC（UDP）
+```
+
+**QUIC 解决的问题：**
+
+| 问题 | TCP 的表现 | QUIC 的方案 |
+|------|-----------|------------|
+| TCP 队头阻塞 | 一个包丢了，整个连接阻塞等重传 | 各 Stream 独立，丢包只影响对应 Stream |
+| 握手延迟 | TCP 三次握手 + TLS 握手 = 2-3 RTT | 0-RTT 或 1-RTT 建连 |
+| 连接迁移 | IP/端口变化（WiFi→4G）连接断开 | 基于 Connection ID，换网不断连 |
+| 安全性 | TLS 是可选的附加层 | 强制加密，TLS 1.3 内置于 QUIC |
+
+```
+连接建立对比：
+
+HTTP/1.1 + TLS：
+  TCP 握手 (1 RTT) + TLS 握手 (1-2 RTT) + HTTP 请求 = 3-4 RTT
+
+HTTP/2 + TLS：
+  TCP 握手 (1 RTT) + TLS 握手 (1-2 RTT) + HTTP 请求 = 3-4 RTT
+
+HTTP/3（首次连接）：
+  QUIC 握手 + TLS 1.3 (1 RTT) + 数据 = 1 RTT
+
+HTTP/3（再次连接，0-RTT）：
+  QUIC 握手 + 数据 = 0 RTT（利用之前的会话密钥）
+```
+
+### HTTP 版本对比总结
+
+| 特性 | HTTP/1.1 | HTTP/2 | HTTP/3 |
+|------|----------|--------|--------|
+| 传输层 | TCP | TCP | QUIC (UDP) |
+| 多路复用 | ❌（排队） | ✅ | ✅（独立 Stream） |
+| 头部压缩 | ❌ | HPACK | QPACK |
+| 服务器推送 | ❌ | ✅（已不推荐） | ❌（移除） |
+| 队头阻塞 | ✅（应用层+TCP层） | 解决应用层 | 完全解决 |
+| 连接迁移 | ❌ | ❌ | ✅ |
+| 握手延迟 | 2-3 RTT | 2-3 RTT | 0-1 RTT |
+| 安全 | 可选 TLS | 通常 TLS | 强制加密 |
