@@ -2401,3 +2401,551 @@ HTTP/3（再次连接，0-RTT）：
 | 连接迁移 | ❌ | ❌ | ✅ |
 | 握手延迟 | 2-3 RTT | 2-3 RTT | 0-1 RTT |
 | 安全 | 可选 TLS | 通常 TLS | 强制加密 |
+
+## Chrome DevTools 调试技巧
+
+### 断点类型
+
+Chrome DevTools 提供多种断点，远比 `debugger` 语句灵活：
+
+| 断点类型 | 触发条件 | 适用场景 |
+|---------|---------|---------|
+| **行断点** | 执行到指定代码行 | 基本调试 |
+| **条件断点** | 条件为 true 时暂停 | 循环中特定条件触发 |
+| **日志断点** | 执行到该行时输出日志（不暂停） | 替代 console.log |
+| **DOM 断点** | DOM 节点被修改/移除/子节点变化 | 排查谁改了 DOM |
+| **XHR/Fetch 断点** | 匹配的请求发出时暂停 | 定位接口调用来源 |
+| **事件监听断点** | 指定事件触发时暂停 | 排查事件处理逻辑 |
+| **异常断点** | 抛出异常时暂停（含/不含 caught） | 定位报错位置 |
+
+**条件断点 vs 日志断点：**
+
+```js
+// 条件断点：右键行号 → Add conditional breakpoint
+// 输入条件表达式，为 true 时才暂停
+i === 999
+
+// 日志断点：右键行号 → Add logpoint
+// 执行到此处时输出，不会暂停，可以嵌入表达式
+`User ${user.id} logged in at ${Date.now()}`
+
+// 等价于在代码里写 console.log，但不需要改源码、不需要重新部署
+```
+
+**DOM 断点三种子类型：**
+
+```
+右键 DOM 节点 → Break on:
+  → subtree modifications  // 子节点增删改
+  → attribute modifications // 属性变化（class、style 等）
+  → node removal            // 节点被移除
+```
+
+适用场景：页面某个元素莫名消失或被修改，加 DOM 断点直接定位修改来源。
+
+**XHR/Fetch 断点：**
+
+```
+Sources → XHR/fetch Breakpoints → 点 + 号
+  输入 URL 片段（如 /api/user）
+  → 任何匹配的请求发出时自动暂停在发起请求的代码行
+```
+
+### console 高级用法
+
+```js
+// console.table — 表格形式展示数组/对象
+console.table([
+  { name: 'Alice', age: 25, role: 'admin' },
+  { name: 'Bob', age: 30, role: 'user' },
+  { name: 'Charlie', age: 28, role: 'user' }
+]);
+// 可选第二参数指定显示列：
+console.table(users, ['name', 'role']);
+
+// console.time / console.timeEnd / console.timeLog — 计时
+console.time('data-fetch');
+await fetchData();
+console.timeLog('data-fetch');  // 中间打印：data-fetch: 123.45ms
+await processData();
+console.timeEnd('data-fetch');  // 结束并打印：data-fetch: 456.78ms
+
+// console.group / console.groupEnd — 分组折叠
+console.group('用户操作');
+console.log('点击了按钮');
+console.log('发起了请求');
+console.groupEnd();
+
+// console.groupCollapsed — 默认折叠
+console.groupCollapsed('详细数据');
+console.log({ ...largeObject });
+console.groupEnd();
+
+// %c — CSS 样式输出
+console.log('%c ERROR %c Something went wrong',
+  'background: red; color: white; padding: 2px 6px; border-radius: 3px;',
+  'color: red;'
+);
+
+// console.count / console.countReset — 调用计数
+function render() {
+  console.count('render');  // render: 1, render: 2, ...
+}
+
+// console.trace — 打印调用栈
+function foo() { bar(); }
+function bar() { console.trace('追踪调用链'); }
+foo();
+// 输出：追踪调用链 → bar → foo → (anonymous)
+
+// console.assert — 断言（false 时输出）
+console.assert(user.age >= 0, '年龄不能为负数', user);
+
+// console.dir — 以对象形式展示（查看 DOM 元素的 JS 属性）
+console.dir(document.body);  // 比 console.log 更适合看 JS 属性
+```
+
+### Sources 面板调试
+
+```
+Sources 面板布局：
+┌──────────────────────────────────────────────┐
+│  文件树          │  代码编辑器                │
+│  (左侧)         │  (中间)                    │
+│                  │                           │
+│                  │  ┌─────────────────────┐  │
+│                  │  │ Scope (局部变量)     │  │
+│                  │  │ Watch (监视表达式)   │  │
+│                  │  │ Call Stack (调用栈)  │  │
+│                  │  │ Breakpoints (断点列表)│  │
+│                  │  └─────────────────────┘  │
+└──────────────────────────────────────────────┘
+```
+
+**调试控制按钮：**
+
+| 按钮 | 快捷键 | 功能 |
+|------|--------|------|
+| ▶ Resume | F8 | 继续执行到下一个断点 |
+| ⏭ Step Over | F10 | 执行当前行，不进入函数 |
+| ⬇ Step Into | F11 | 进入当前函数内部 |
+| ⬆ Step Out | Shift+F11 | 执行完当前函数，返回调用处 |
+
+**实用技巧：**
+
+```js
+// 1. 暂停时直接修改代码（Live Edit）
+//    在 Sources 面板直接改代码 → Cmd+S 保存 → 立即生效（无需刷新）
+
+// 2. Copy as fetch — 右键 Network 中的请求
+//    直接生成可粘贴到 Console 重放的 fetch 代码
+
+// 3. Blackbox Script — 屏蔽第三方库的断点
+//    右键文件 → Blackbox script → 调试时自动跳过 jQuery/lodash 等
+
+// 4. 在 Console 中访问暂停时的变量
+//    暂停状态下，Console 的上下文就是当前断点处的 Scope
+//    可以直接访问局部变量、调用函数
+```
+
+### 调试实战流程
+
+```
+Bug：点击按钮后数据没有更新
+
+排查步骤：
+1. 事件监听断点 → 选择 click → 确认事件是否触发
+2. 在事件处理函数入口加行断点 → 确认函数是否执行
+3. 单步执行 → 观察变量变化
+4. 检查异步回调 → 在 then/catch 里加断点
+5. 检查网络请求 → Network 面板确认请求是否发出、响应是否正确
+6. 检查 DOM 更新 → Elements 面板观察 DOM 是否变化
+
+常见断点策略：
+  接口没数据 → XHR 断点 → 看请求有没有发
+  数据有但页面没变 → DOM 断点 → 看 DOM 有没有更新
+  循环中某个值异常 → 条件断点 → i === 异常索引
+  第三方代码出问题 → Event Listener 断点 → 追踪事件链
+```
+
+## Performance 面板（性能分析）
+
+### 录制与分析流程
+
+```
+操作步骤：
+1. 打开 DevTools → Performance 面板
+2. 点 Record（●）开始录制
+3. 执行要分析的操作（页面加载 / 滚动 / 点击）
+4. 点 Stop 结束录制
+5. 分析生成的性能报告
+
+快捷方式：
+  Cmd+E → 开始/停止录制
+  Cmd+Shift+E → 录制并刷新页面（分析首屏加载）
+```
+
+### 火焰图解读
+
+```
+Performance 面板结构（从上到下）：
+
+┌─ Filmstrip ─────────────────────────────────┐
+│  [截图1]  [截图2]  [截图3]  [截图4]  [截图5]  │  ← 每隔几帧截一张图
+└─────────────────────────────────────────────┘
+
+┌─ Timings ───────────────────────────────────┐
+│  FP    FCP    LCP    DCL    L               │  ← 关键时间节点标记
+└─────────────────────────────────────────────┘
+
+┌─ Main Thread（火焰图）────────────────────────┐
+│  ┌──────┐                                     │
+│  │Script│ ┌──┐                                │
+│  │Parse │ │Fn│ ┌──────────────────┐           │
+│  │      │ │  │ │Layout│Paint│Comp│           │  ← 函数调用栈可视化
+│  └──────┘ └──┘ └──────────────────┘           │
+│                                               │
+│  颜色含义：                                     │
+│  蓝色   = 脚本执行（Scripting）                  │
+│  紫色   = 渲染计算（Rendering / Layout）          │
+│  绿色   = 绘制与合成（Painting / Compositing）     │
+│  灰色   = 空闲（Idle）                           │
+│  黄色   = 垃圾回收（GC）                          │
+└───────────────────────────────────────────────┘
+
+┌─ Summary ───────────────────────────────────┐
+│  Scripting: 45%  Rendering: 20%  Painting: 5% │
+│  Other: 10%            Idle: 20%               │  ← 时间分布饼图
+└─────────────────────────────────────────────┘
+```
+
+### 性能问题定位
+
+**Long Task（长任务）：**
+
+```
+火焰图中宽度 > 50ms 的色块会被标红角标记 ⚠
+→ 表示这个任务阻塞了主线程超过 50ms
+→ 直接影响 INP 指标和交互流畅度
+
+优化方式：
+  1. 拆分任务（用 setTimeout / requestIdleCallback 分段执行）
+  2. 移到 Web Worker
+  3. 减少不必要的计算
+```
+
+**强制同步布局（紫色警告）：**
+
+```
+火焰图中紫色色块带 ⚠ 标记 = Forced Reflow
+→ 在 JS 中先写了样式，又立即读取布局属性
+→ 浏览器被迫同步计算布局，非常耗时
+
+// 典型问题代码：
+elements.forEach(el => {
+  el.style.width = '100px';      // 写
+  const h = el.offsetHeight;     // 读 → 强制同步布局！
+});
+
+// 修复：读写分离
+const heights = elements.map(el => el.offsetHeight); // 批量读
+elements.forEach((el, i) => {
+  el.style.height = heights[i] + 'px';               // 批量写
+});
+```
+
+**首屏加载性能分析：**
+
+```
+关注指标：
+  FP (First Paint)           → 首次像素绘制
+  FCP (First Contentful Paint) → 首次有意义内容绘制
+  LCP (Largest Contentful Paint) → 最大内容绘制（核心指标）
+  DCL (DOMContentLoaded)     → DOM 解析完成
+  L (Load)                   → 所有资源加载完成
+
+首屏优化检查清单：
+  □ LCP 元素是什么？（通常是 hero 图片）→ 优化其加载
+  □ 关键 CSS 是否内联？非关键 CSS 是否异步？
+  □ JS 是否使用了 defer/async？
+  □ 图片是否用了合适格式（WebP/AVIF）和尺寸？
+  □ 是否有不必要的第三方脚本阻塞渲染？
+```
+
+### Performance Monitor（实时监控）
+
+```
+更多工具 → Performance Monitor
+
+实时显示：
+  - CPU 使用率
+  - JS 堆内存大小
+  - DOM 节点数量（持续增长 = 泄漏）
+  - JS 事件监听器数量
+
+适用场景：快速判断是否存在内存泄漏或 CPU 占用过高
+```
+
+## Memory 面板（内存泄漏排查）
+
+### 三种分析模式
+
+| 模式 | 用途 | 适用场景 |
+|------|------|---------|
+| **Heap Snapshot** | 内存快照，查看所有对象及其引用关系 | 分析内存占用分布 |
+| **Allocation Timeline** | 时间线，显示内存分配随时间的变化 | 定位内存泄漏发生的时间点 |
+| **Allocation Sampling** | 采样分析，低开销 | 长时间运行的性能分析 |
+
+### Heap Snapshot 使用
+
+```
+操作流程：
+1. 执行某个操作（如打开弹窗）
+2. 拍快照 1（Snapshot 1）
+3. 关闭弹窗
+4. 拍快照 2（Snapshot 2）
+5. 对比快照：选择 Snapshot 2 → 视图切换为 Comparison
+6. 查看 # New（新增）和 # Deleted（删除）
+   → 如果某个类型的对象 New > Deleted，说明没有正确释放
+
+筛选方式：
+  Summary   → 按构造函数分组（最常用）
+  Containment → 按引用链展示（从 window 到目标对象）
+  Comparison → 对比两个快照的差异
+  Statistics → 内存占比饼图
+```
+
+### 常见内存泄漏模式
+
+```js
+// 1. 未清理的事件监听器
+class MyComponent {
+  constructor() {
+    // 绑定了事件但组件销毁时没移除
+    window.addEventListener('resize', this.handleResize);
+  }
+  // 缺少：destroy() { window.removeEventListener('resize', this.handleResize); }
+}
+
+// 2. 闭包持有大对象引用
+function createHandler() {
+  const hugeData = new Array(1000000).fill('x'); // 1MB
+  return function smallHandler() {
+    console.log('hello'); // 虽然没用到 hugeData，但闭包仍然持有引用
+    // 修复：将 hugeData 设为 null，或重构避免闭包捕获
+  };
+}
+
+// 3. 分离的 DOM 节点（Detached DOM）
+let detachedNode;
+function removeElement() {
+  const el = document.getElementById('myDiv');
+  detachedNode = el;  // JS 变量仍然引用这个 DOM
+  el.remove();        // DOM 树中已移除，但 GC 无法回收
+}
+// 修复：detachedNode = null
+
+// 4. 未清除的定时器
+setInterval(() => {
+  updateUI(data); // 组件已销毁，定时器还在跑，引用也不会释放
+}, 1000);
+// 修复：组件销毁时 clearInterval
+
+// 5. 全局变量累积
+const cache = [];
+function processItem(item) {
+  cache.push(item); // 只进不出，永远增长
+}
+// 修复：加容量限制，定期清理，或用 Map + LRU 策略
+```
+
+### Detached DOM 排查步骤
+
+```
+1. 拍 Heap Snapshot
+2. 在筛选框输入 "detached" 或选择 "Detached DOM" 过滤
+3. 展开引用链（Retainers 列），查看谁还持有这个 DOM 节点的引用
+4. 沿着引用链找到根因（通常是某个变量/闭包没清理）
+5. 在代码中清除引用 → 重新验证
+```
+
+## Network 面板与资源分析
+
+### 瀑布流（Waterfall）各阶段
+
+```
+Network 面板中每个请求的 Waterfall 列展示请求生命周期：
+
+| 阶段 | 颜色 | 含义 |
+|------|------|------|
+| Queueing | 灰色 | 浏览器排队等待（连接数已满、优先级低） |
+| Stalled | 灰色 | 等待可用连接（TCP 连接复用协商） |
+| DNS Lookup | 橙色 | 域名解析为 IP |
+| Initial Connection | 橙色 | TCP 三次握手 |
+| SSL | 紫色 | TLS 握手（仅 HTTPS） |
+| Request sent | 绿色 | 发送请求数据（通常很短） |
+| Waiting (TTFB) | 绿色 | 等待服务器首字节响应（关键指标） |
+| Content Download | 蓝色 | 下载响应体 |
+```
+
+**TTFB（Time to First Byte）分析：**
+
+```
+TTFB 高 → 服务器处理慢
+  → 检查后端逻辑、数据库查询、中间件
+  → 考虑 CDN 缓存、服务端缓存
+
+DNS Lookup 高 → DNS 解析慢
+  → 使用 DNS 预解析：<link rel="dns-prefetch" href="//api.example.com">
+  → 或使用 CDN（减少解析跳数）
+
+Content Download 高 → 响应体太大
+  → 开启 Gzip/Brotli 压缩
+  → 分页加载、懒加载
+```
+
+### 资源分析与优化
+
+```
+Network 面板底部状态栏：
+  X requests | X.X MB transferred | X.X MB resources
+  → transferred: 实际传输大小（经过压缩）
+  → resources: 解压后大小
+
+按类型筛选：
+  All | Fetch/XHR | CSS | JS | Font | Img | Media | Doc | WS
+
+大文件定位：
+  1. 按 Size 列降序排列
+  2. 找出最大的几个资源
+  3. 分析是否可以：
+     - 代码分割（Code Splitting）
+     - Tree Shaking 去除死代码
+     - 图片压缩或换格式（WebP/AVIF）
+     - 字体子集化（只包含用到的字符）
+```
+
+### 模拟弱网（Throttling）
+
+```
+Network 面板 → Throttling 下拉菜单：
+
+| 预设 | 下载 | 上传 | RTT | 场景 |
+|------|------|------|-----|------|
+| Fast 4G | 4 Mb/s | 3 Mb/s | 20ms | 城市 4G |
+| Slow 4G | 1.5 Mb/s | 750 Kb/s | 150ms | 郊区 4G |
+| 3G | 400 Kb/s | 400 Kb/s | 300ms | 移动 3G |
+| Offline | 0 | 0 | - | 断网 |
+
+自定义：点击 Add 创建自己的网络配置
+
+用途：
+  - 验证加载骨架屏/Skeleton 是否正常显示
+  - 测试离线/弱网降级策略
+  - 排查"为什么我这边正常但用户那边卡"
+```
+
+### Coverage 面板（代码覆盖率）
+
+```
+更多工具 → Coverage → 点 Record
+
+结果展示：
+  每个文件的使用率条形图：
+  ████████░░░░ 72% used
+  
+  绿色 = 已执行的代码
+  红色 = 未执行的代码
+
+优化方向：
+  - JS 文件覆盖率低 → 检查是否引入了整个库但只用了一部分
+    如：import _ from 'lodash' → import debounce from 'lodash/debounce'
+  - CSS 覆盖率低 → 用 PurgeCSS / UnCSS 移除未使用样式
+  - 首屏未使用代码多 → 路由级 Code Splitting + 懒加载
+```
+
+## Lighthouse 审计
+
+### 运行方式
+
+```
+方式一：DevTools → Lighthouse 面板
+  选择设备（Mobile / Desktop）
+  选择审计类别
+  点击 Analyze page load
+
+方式二：命令行
+  npm install -g lighthouse
+  lighthouse https://example.com --view
+
+方式三：PageSpeed Insights（在线）
+  https://pagespeed.web.dev/
+  → 可以看到真实用户数据（CrUX）+ 实验室数据
+```
+
+### 四大审计维度
+
+| 维度 | 关注点 | 常见扣分项 |
+|------|--------|-----------|
+| **Performance** | 加载速度、交互响应、视觉稳定 | LCP/INP/CLS 不达标、阻塞资源多 |
+| **Accessibility** | 可访问性（无障碍） | 图片缺 alt、对比度不够、无 ARIA |
+| **Best Practices** | 最佳实践 | HTTP 不安全、控制台报错、过时 API |
+| **SEO** | 搜索引擎优化 | 缺 meta description、无 viewport、爬虫不可达 |
+
+### 常见优化建议对照
+
+```
+Lighthouse 建议                    → 对应操作
+─────────────────────────────────────────────────────
+Eliminate render-blocking resources → CSS/JS 加 defer/async，内联关键 CSS
+Reduce unused JavaScript            → Code Splitting，Tree Shaking
+Reduce unused CSS                   → PurgeCSS，按需引入
+Serve images in next-gen formats    → 转 WebP/AVIF，用 <picture> 降级
+Properly size images                → 响应式图片（srcset），不加载过大图片
+Enable text compression             → 服务端开启 Gzip/Brotli
+Preconnect to required origins      → <link rel="preconnect" href="...">
+Avoid enormous network payloads     → 分页、懒加载、减少首屏资源
+Minimize main-thread work           → 减少 JS 执行时间，用 Worker
+Reduce JavaScript execution time     → 移除未使用代码，延迟非关键脚本
+```
+
+### 性能评分计算权重（Lighthouse v10+）
+
+```
+指标     权重     达标标准
+────────────────────────────
+FCP      10%     ≤ 1.8s
+SI       10%     ≤ 3.4s  (Speed Index)
+LCP      25%     ≤ 2.5s
+TBT      30%     ≤ 200ms (Total Blocking Time)
+CLS      25%     ≤ 0.1
+INP      评估中   ≤ 200ms（逐步纳入权重）
+
+评分区间：
+  90-100 → 🟢 Good
+  50-89  → 🟠 Needs Improvement
+  0-49   → 🔴 Poor
+```
+
+### Lighthouse 报告实战解读
+
+```
+拿到报告后的优化优先级：
+
+1. 先看 Opportunities（优化机会）
+   → 这些是直接能提升分数的操作，按潜在节省时间排序
+   → 优先处理节省时间最多的几项
+
+2. 再看 Diagnostics（诊断信息）
+   → 了解页面加载的详细数据
+   → 如 Main-thread work breakdown、DOM size
+
+3. 最后看 Passed audits（已通过项）
+   → 确认已做好的部分，保持住
+
+注意：
+  - Lighthouse 是实验室数据，每次跑可能略有波动
+  - 真机弱网下的体验比跑分更重要
+  - Mobile 分数通常比 Desktop 低很多（CPU throttling 更严格）
+  - 关注趋势而非单次分数
+```
