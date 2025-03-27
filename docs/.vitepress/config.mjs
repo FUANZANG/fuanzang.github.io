@@ -58,6 +58,7 @@ export default defineConfig({
             { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
             { text: 'Webpack vs Vite', link: '/notes/webpack-vs-vite' },
             { text: '微前端', link: '/notes/micro-frontend' },
+            { text: '大文件上传', link: '/notes/large-file-upload' },
             { text: 'CI/CD', link: '/notes/ci-cd' },
             { text: 'YApi 接口平台', link: '/notes/yapi' }
           ]
