@@ -60,6 +60,7 @@ export default defineConfig({
             { text: '微前端', link: '/notes/micro-frontend' },
             { text: '大文件上传', link: '/notes/large-file-upload' },
             { text: '动态表单渲染', link: '/notes/dynamic-form' },
+            { text: '虚拟列表', link: '/notes/virtual-list' },
             { text: 'CI/CD', link: '/notes/ci-cd' },
             { text: 'YApi 接口平台', link: '/notes/yapi' }
           ]
