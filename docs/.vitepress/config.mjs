@@ -84,6 +84,7 @@ export default defineConfig({
           text: '跨端开发',
           collapsed: false,
           items: [
+            { text: 'React Native', link: '/notes/react-native-note' },
             { text: 'Electron', link: '/notes/electron-note' }
           ]
         },
