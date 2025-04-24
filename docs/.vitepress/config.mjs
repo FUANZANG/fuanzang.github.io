@@ -42,7 +42,8 @@ export default defineConfig({
             { text: 'TypeScript', link: '/notes/typescript-note' },
             { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
             { text: '浏览器原理', link: '/notes/browser-note' },
-            { text: '前端安全', link: '/notes/frontend-security' }
+            { text: '前端安全', link: '/notes/frontend-security' },
+            { text: '网络协议', link: '/notes/network-protocol' }
           ]
         },
         {
