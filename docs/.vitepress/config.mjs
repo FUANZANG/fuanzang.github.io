@@ -64,7 +64,8 @@ export default defineConfig({
             { text: '动态表单渲染', link: '/notes/dynamic-form' },
             { text: '虚拟列表', link: '/notes/virtual-list' },
             { text: 'CI/CD', link: '/notes/ci-cd' },
-            { text: 'YApi 接口平台', link: '/notes/yapi' }
+            { text: 'YApi 接口平台', link: '/notes/yapi' },
+            { text: '前端监控', link: '/notes/frontend-monitoring' }
           ]
         },
         {
