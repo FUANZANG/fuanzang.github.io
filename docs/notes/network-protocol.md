@@ -733,8 +733,10 @@ SameSite=Strict|Lax|None // 跨站限制（防 CSRF）
 - 无法主动失效（除非维护黑名单）
 - Token 泄露风险（存 localStorage 怕 XSS）
 - payload 只是 Base64，不是加密
+```
 
-对比：
+### Session vs Token 对比
+
 | | Session | Token (JWT) |
 |---|---|---|
 | 存储 | 服务端 | 客户端 |
@@ -743,7 +745,9 @@ SameSite=Strict|Lax|None // 跨站限制（防 CSRF）
 | 分布式 | 需共享 Session | 天然支持 |
 | 主动失效 | 容易（删 Session） | 困难（需黑名单） |
 | 安全性 | Cookie 可设 HttpOnly | 需防 XSS 窃取 |
-```
+| 大小 | 小（只有 Session ID） | 较大（包含 payload） |
+| 性能 | 每次查服务端存储 | 只需验证签名 |
+| 适用场景 | 传统 Web、同域 | SPA、移动端、微服务 |
 
 ---
 
