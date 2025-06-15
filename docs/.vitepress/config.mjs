@@ -65,6 +65,7 @@ export default defineConfig({
             { text: '虚拟列表', link: '/notes/virtual-list' },
             { text: 'SSR / SSG', link: '/notes/ssr-ssg' },
             { text: 'Monorepo', link: '/notes/monorepo' },
+            { text: '组件库开发', link: '/notes/component-library' },
             { text: 'CI/CD', link: '/notes/ci-cd' },
             { text: 'YApi 接口平台', link: '/notes/yapi' },
             { text: '前端监控', link: '/notes/frontend-monitoring' },
