@@ -642,3 +642,7 @@ jobs:
 + **Groovy 沙箱**：声明式 Pipeline 默认在沙箱中运行，很多 Groovy 语法被禁止，需要用 `@NonCPS` 或在 Script Approval 中审批
 + **环境变量注入**：用 `withCredentials` 注入敏感信息，不要直接写在 Jenkinsfile 里
 + **Workspace 清理**：每次构建后 `cleanWs()`，避免残留文件影响下次构建
+
+## 交叉引用
+
++ 本节关注 CI/CD 工具链和 Pipeline 配置。**前端部署的具体策略**（缓存、CDN、回滚、Nginx 生产配置等）见 [前端部署](./frontend-deployment.md)
