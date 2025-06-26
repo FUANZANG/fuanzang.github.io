@@ -67,6 +67,7 @@ export default defineConfig({
             { text: 'Monorepo', link: '/notes/monorepo' },
             { text: '组件库开发', link: '/notes/component-library' },
             { text: 'CI/CD', link: '/notes/ci-cd' },
+            { text: '前端部署', link: '/notes/frontend-deployment' },
             { text: 'YApi 接口平台', link: '/notes/yapi' },
             { text: '前端监控', link: '/notes/frontend-monitoring' },
             { text: '前端测试', link: '/notes/frontend-testing' }
