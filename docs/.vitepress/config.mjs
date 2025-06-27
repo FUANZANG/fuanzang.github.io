@@ -89,6 +89,13 @@ export default defineConfig({
           ]
         },
         {
+          text: '运行时与底层技术',
+          collapsed: false,
+          items: [
+            { text: 'WebAssembly', link: '/notes/wasm-note' }
+          ]
+        },
+        {
           text: '跨端开发',
           collapsed: false,
           items: [
