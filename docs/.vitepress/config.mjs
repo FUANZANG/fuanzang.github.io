@@ -42,57 +42,58 @@ export default defineConfig({
             { text: 'TypeScript', link: '/notes/typescript-note' },
             { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
             { text: '浏览器原理', link: '/notes/browser-note' },
-            { text: '前端安全', link: '/notes/frontend-security' },
-            { text: '网络协议', link: '/notes/network-protocol' }
+            { text: '网络协议', link: '/notes/network-protocol' },
+            { text: '正则与校验', link: '/notes/regex-and-validation' }
           ]
         },
         {
-          text: '框架与工程化',
+          text: '框架',
           collapsed: false,
           items: [
             { text: 'Vue 总览', link: '/notes/vue-note' },
             { text: 'Vue 2 (Options API)', link: '/notes/vue2-note' },
             { text: 'Vue 3 (Composition API)', link: '/notes/vue3-note' },
             { text: 'React', link: '/notes/react-note' },
-            { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' },
-            { text: '前端性能优化', link: '/notes/performance-optimization' },
+            { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' }
+          ]
+        },
+        {
+          text: '构建与工程化',
+          collapsed: false,
+          items: [
             { text: 'Webpack 性能优化', link: '/notes/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
             { text: 'Webpack vs Vite', link: '/notes/webpack-vs-vite' },
-            { text: '微前端', link: '/notes/micro-frontend' },
-            { text: '大文件上传', link: '/notes/large-file-upload' },
-            { text: '动态表单渲染', link: '/notes/dynamic-form' },
-            { text: '虚拟列表', link: '/notes/virtual-list' },
-            { text: 'SSR / SSG', link: '/notes/ssr-ssg' },
             { text: 'Monorepo', link: '/notes/monorepo' },
             { text: '组件库开发', link: '/notes/component-library' },
+            { text: '微前端', link: '/notes/micro-frontend' },
+            { text: 'SSR / SSG', link: '/notes/ssr-ssg' }
+          ]
+        },
+        {
+          text: '性能与质量',
+          collapsed: false,
+          items: [
+            { text: '前端性能优化', link: '/notes/performance-optimization' },
+            { text: '前端监控', link: '/notes/frontend-monitoring' },
+            { text: '前端测试', link: '/notes/frontend-testing' },
+            { text: '前端安全', link: '/notes/frontend-security' }
+          ]
+        },
+        {
+          text: '部署与运维',
+          collapsed: false,
+          items: [
             { text: 'CI/CD', link: '/notes/ci-cd' },
             { text: '前端部署', link: '/notes/frontend-deployment' },
-            { text: 'YApi 接口平台', link: '/notes/yapi' },
-            { text: '前端监控', link: '/notes/frontend-monitoring' },
-            { text: '前端测试', link: '/notes/frontend-testing' }
+            { text: 'YApi 接口平台', link: '/notes/yapi' }
           ]
         },
         {
           text: '后端与工具',
           collapsed: false,
           items: [
-            { text: 'Node.js', link: '/notes/node-note' },
-            { text: '正则与校验', link: '/notes/regex-and-validation' }
-          ]
-        },
-        {
-          text: 'AI 与工程化',
-          collapsed: false,
-          items: [
-            { text: '前端对接 AI', link: '/notes/ai-frontend-integration' }
-          ]
-        },
-        {
-          text: '运行时与底层技术',
-          collapsed: false,
-          items: [
-            { text: 'WebAssembly', link: '/notes/wasm-note' }
+            { text: 'Node.js', link: '/notes/node-note' }
           ]
         },
         {
@@ -104,9 +105,20 @@ export default defineConfig({
           ]
         },
         {
-          text: '数据可视化',
+          text: '场景实战',
           collapsed: false,
           items: [
+            { text: '大文件上传', link: '/notes/large-file-upload' },
+            { text: '动态表单渲染', link: '/notes/dynamic-form' },
+            { text: '虚拟列表', link: '/notes/virtual-list' }
+          ]
+        },
+        {
+          text: 'AI 与前沿技术',
+          collapsed: false,
+          items: [
+            { text: '前端对接 AI', link: '/notes/ai-frontend-integration' },
+            { text: 'WebAssembly', link: '/notes/wasm-note' },
             { text: 'ECharts', link: '/notes/echarts-note' }
           ]
         }
