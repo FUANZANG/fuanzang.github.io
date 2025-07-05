@@ -54,7 +54,8 @@ export default defineConfig({
             { text: 'Vue 2 (Options API)', link: '/notes/vue2-note' },
             { text: 'Vue 3 (Composition API)', link: '/notes/vue3-note' },
             { text: 'React', link: '/notes/react-note' },
-            { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' }
+            { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' },
+            { text: '状态管理', link: '/notes/state-management' }
           ]
         },
         {
