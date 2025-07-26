@@ -56,7 +56,8 @@ export default defineConfig({
             { text: 'React', link: '/notes/react-note' },
             { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' },
             { text: '状态管理', link: '/notes/state-management' },
-            { text: '前端路由', link: '/notes/frontend-routing' }
+            { text: '前端路由', link: '/notes/frontend-routing' },
+            { text: 'HTTP 请求与数据层', link: '/notes/http-request' }
           ]
         },
         {
