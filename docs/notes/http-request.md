@@ -1,6 +1,8 @@
 # HTTP 请求与数据层
 
 > 📌 本文件记录前端 HTTP 请求核心知识：fetch API、Axios、拦截器、请求取消、并发控制、React Query/SWR 数据层方案、错误处理与最佳实践。
+>
+> 📅 基于以下版本：Axios 1.x | React Query 5.x | SWR 2.x | VueUse 11.x
 
 ---
 
@@ -1040,7 +1042,7 @@ const { data: posts } = useSWR(user ? `/api/users/${user.id}/posts` : null, fetc
 
 | | React Query | SWR |
 |---|---|---|
-| 体积 | ~50KB | ~5KB |
+| 体积 (min+gzip) | ~12KB | ~4KB |
 | API 风格 | useQuery({ queryKey, queryFn }) | useSWR(key, fetcher) |
 | DevTools | 完整 | 基础 |
 | 无限滚动 | 内置 useInfiniteQuery | 需 useSWRInfinite |
@@ -1236,7 +1238,7 @@ if (isError) {
 |---|---|---|---|---|---|
 | **类型** | HTTP 客户端 | HTTP 客户端 | 数据层 | 数据层 | Vue 工具集 |
 | **框架** | 原生 | 跨框架 | React | React | Vue |
-| **体积** | 0 | ~30KB | ~50KB | ~5KB | 按需 |
+| **体积 (min+gzip)** | 0 | ~11KB | ~12KB | ~4KB | 按需 |
 | **拦截器** | 无 | ✅ | 无 | 无 | 无 |
 | **取消请求** | AbortController | AbortController | 内置 | 内置 | 内置 |
 | **超时** | 手动 | 内置 | 内置 | 手动 | 内置 |

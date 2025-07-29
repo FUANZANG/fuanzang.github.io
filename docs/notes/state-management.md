@@ -1,6 +1,8 @@
 # 状态管理
 
 > 📌 本文件记录前端状态管理核心知识：基本概念、Vue 状态管理（Vuex/Pinia）、React 状态管理（Redux/Zustand/Jotai）、MobX、选型对比与最佳实践。
+>
+> 📅 基于以下版本：Pinia 3.x | Redux Toolkit 2.x | Zustand 5.x | Jotai 2.x | MobX 6.x | React Query 5.x
 
 ---
 
@@ -250,7 +252,7 @@ Pinia 是 Vue 官方新一代状态管理库，Vuex 的继任者。**更简单�
 | Mutation | 必须有，同步修改 | **没有 Mutation**，直接改 |
 | TypeScript | 弱，需大量类型声明 | **完美推断**，几乎不用写类型 |
 | 模块 | modules + namespaced | **每个 store 就是一个模块** |
-| 体积 | ~4KB | ~2KB |
+| 体积 (min+gzip) | ~1.5KB | ~1.2KB |
 | DevTools | 支持 | 支持（时间旅行） |
 | SSR | 需要额外处理 | 原生支持 |
 | API 风格 | Options API | **Options + Setup 两种写法** |
@@ -651,7 +653,7 @@ useStore.subscribe((state) => {     // 订阅
 
 | | Redux Toolkit | Zustand |
 |---|---|---|
-| 体积 | ~60KB | ~3KB |
+| 体积 (min+gzip) | ~12KB | ~1.1KB |
 | 样板代码 | 中等（createSlice） | 极少 |
 | TypeScript | 好 | 好 |
 | DevTools | 完整时间旅行 | 支持 |
@@ -1015,7 +1017,7 @@ function useUsers() {
 |---|------|-------|---|---|---|---|
 | **框架** | Vue 2/3 | Vue 3 | React | React | React | 跨框架 |
 | **模型** | Flux | Flux | Flux | Store | Atomic | Reactive |
-| **体积** | ~4KB | ~2KB | ~60KB | ~3KB | ~4KB | ~16KB |
+| **体积 (min+gzip)** | ~1.5KB | ~1.2KB | ~12KB | ~1.1KB | ~2KB | ~16KB |
 | **样板代码** | 多 | 少 | 中 | 极少 | 少 | 少 |
 | **TypeScript** | 弱 | 优秀 | 好 | 好 | 优秀 | 好 |
 | **DevTools** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |

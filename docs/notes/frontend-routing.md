@@ -1,6 +1,8 @@
 # 前端路由
 
 > 📌 本文件记录前端路由核心知识：路由原理、hash vs history、Vue Router、React Router、动态路由、导航守卫、懒加载与最佳实践。
+>
+> 📅 基于以下版本：Vue Router 4.x | React Router 7.x（兼容 React Router 6.x）
 
 ---
 
@@ -876,7 +878,7 @@ function ProtectedRoute({ children, roles }) {
 </Routes>
 ```
 
-### React Router 数据加载（v6.4+ loader/action）
+### React Router 数据加载（v6.4+ loader/action，v7 继续支持）
 
 ```tsx
 // 新版数据路由 — 类似 Remix 的 loader 模式
@@ -931,7 +933,7 @@ function App() {
 | **嵌套路由** | children 配置 | 嵌套 `<Route>` |
 | **导航守卫** | 内置 beforeEach 等 | 无，用组件包裹 |
 | **懒加载** | `() => import()` | `lazy(() => import())` |
-| **数据加载** | 无内置（用组件内 onMounted） | loader/action（v6.4+） |
+| **数据加载** | 无内置（用组件内 onMounted） | loader/action（v6.4+，v7 继续） |
 | **模式** | history / hash | BrowserRouter / HashRouter |
 | **动态路由** | `addRoute()` | 需要手动处理 |
 
