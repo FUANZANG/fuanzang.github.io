@@ -70,7 +70,8 @@ export default defineConfig({
             { text: 'Monorepo', link: '/notes/monorepo' },
             { text: '组件库开发', link: '/notes/component-library' },
             { text: '微前端', link: '/notes/micro-frontend' },
-            { text: 'SSR / SSG', link: '/notes/ssr-ssg' }
+            { text: 'SSR / SSG', link: '/notes/ssr-ssg' },
+            { text: 'CSS 工程化方案', link: '/notes/css-engineering' }
           ]
         },
         {
