@@ -71,7 +71,8 @@ export default defineConfig({
             { text: '组件库开发', link: '/notes/component-library' },
             { text: '微前端', link: '/notes/micro-frontend' },
             { text: 'SSR / SSG', link: '/notes/ssr-ssg' },
-            { text: 'CSS 工程化方案', link: '/notes/css-engineering' }
+            { text: 'CSS 工程化方案', link: '/notes/css-engineering' },
+            { text: '代码规范与工程约束', link: '/notes/code-standard' }
           ]
         },
         {
