@@ -155,7 +155,7 @@ const obj = {
   [1+2]: 18
 }
 // obj[age] = 18
-console.log(obj) // { 3: 18, name: 'tom', bar: 'bar', sayHi: λ }
+console.log(obj) // { '3': 18, name: 'tom', bar: 'bar', sayHi: [Function: sayHi] }
 ```
 
 ### 对象的扩展方法
@@ -289,7 +289,7 @@ s1.hello()
 ```js
 const s = new Set()
 s.add(1).add(2).add(3).add(4).add(2)
-console.log(s) // Set { 0: 1, 1: 2, 2: 3, 3: 4 }
+console.log(s) // Set(4) { 1, 2, 3, 4 }
 
 s.forEach(i => console.log(i)) // 1 2 3 4
 
@@ -302,7 +302,7 @@ console.log(s.size) // 4
 console.log(s.has(4)) // true
 
 console.log(s.delete(100)) // false
-console.log(s) // Set { 0: 1, 1: 2, 2: 3, 3: 4 }
+console.log(s) // Set(4) { 1, 2, 3, 4 }
 
 s.clear()
 console.log(s) // set {}
@@ -327,12 +327,12 @@ obj[{a: 1}] = 'object'
 
 console.log(Object.keys(obj)) // [ '123', 'true', '[object Object]' ]
 console.log(obj[{}]) // 'object'
-console.log(obj['[Object Object]']) // undefined
+console.log(obj['[object Object]']) // 'object'（{} 转字符串为 '[object Object]'）
 
 const map = new Map()
 const a = {a: 1}
 map.set(a, 100)
-console.log(map) // Map { { a: 1 }: 100 }
+console.log(map) // Map(1) { { a: 1 } => 100 }
 console.log(map.get(a)) // 100
 
 map.has()
@@ -421,6 +421,155 @@ const obj = {
 for (const item of obj) { //  is not iterable
   console.log(item) 
 }
+```
+
+### Proxy
+
+Proxy 用于创建对象的代理，拦截并自定义基本操作（如属性查找、赋值、枚举、函数调用等）。Vue 3 的响应式系统就是基于 Proxy 实现。
+
+```js
+const person = {
+  name: 'zs',
+  age: 18
+}
+
+const proxy = new Proxy(person, {
+  // 拦截读取
+  get(target, key, receiver) {
+    console.log(`读取 ${key}`)
+    return Reflect.get(target, key, receiver)
+  },
+  // 拦截设置
+  set(target, key, value, receiver) {
+    console.log(`设置 ${key} = ${value}`)
+    return Reflect.set(target, key, value, receiver)
+  },
+  // 拦截删除
+  deleteProperty(target, key) {
+    console.log(`删除 ${key}`)
+    return Reflect.deleteProperty(target, key)
+  },
+  // 拦截 in 操作符
+  has(target, key) {
+    console.log(`判断 ${key} in target`)
+    return Reflect.has(target, key)
+  }
+})
+
+proxy.name       // 读取 name → 'zs'
+proxy.age = 20   // 设置 age = 20
+delete proxy.age // 删除 age
+'name' in proxy   // 判断 name in target
+```
+
+### Reflect
+
+Reflect 提供拦截 JS 操作的静态方法，与 Proxy 的 handler 方法一一对应。
+
+```js
+// Reflect 的方法与 Proxy handler 一一对应
+Reflect.get(obj, 'name')           // 等同于 obj.name
+Reflect.set(obj, 'name', 'tom')    // 等同于 obj.name = 'tom'
+Reflect.has(obj, 'name')           // 等同于 'name' in obj
+Reflect.deleteProperty(obj, 'name') // 等同于 delete obj.name
+Reflect.ownKeys(obj)               // 等同于 Object.getOwnPropertyNames(obj).concat(Object.getOwnPropertySymbols(obj))
+
+// Reflect.apply 调用函数
+Reflect.apply(Math.floor, null, [1.75]) // 1
+
+// Reflect.construct 构造实例
+Reflect.construct(Date, [2020, 0, 1]) // new Date(2020, 0, 1)
+```
+
+### Promise
+
+Promise 是异步编程的解决方案，比传统的回调函数和事件更合理、更强大。
+
+```js
+// 基本用法
+const promise = new Promise((resolve, reject) => {
+  // 异步操作
+  if (success) {
+    resolve(data)  // 成功
+  } else {
+    reject(error)  // 失败
+  }
+})
+
+promise
+  .then(data => console.log(data))
+  .catch(error => console.error(error))
+  .finally(() => console.log('完成'))
+
+// 链式调用
+fetch('/api/user')
+  .then(res => res.json())
+  .then(user => renderUser(user))
+  .catch(err => showError(err))
+
+// Promise.all — 全部成功才成功
+const [users, posts] = await Promise.all([
+  fetch('/api/users').then(r => r.json()),
+  fetch('/api/posts').then(r => r.json())
+])
+
+// Promise.race — 最先完成的（不管成功失败）
+const fastest = await Promise.race([
+  fetch('/api/primary'),
+  fetch('/api/backup')
+])
+```
+
+### Generator 函数
+
+Generator 是可以暂停执行的函数，通过 `yield` 暂停，通过 `next()` 继续。
+
+```js
+function* idGenerator() {
+  let id = 1
+  while (true) {
+    yield id++
+  }
+}
+
+const gen = idGenerator()
+gen.next() // { value: 1, done: false }
+gen.next() // { value: 2, done: false }
+gen.next() // { value: 3, done: false }
+
+// yield 可以接收 next() 传参
+function* dialog() {
+  const name = yield '你叫什么？'
+  const age = yield `${name}，你多大了？`
+  yield `${name}，${age}岁，你好！`
+}
+
+const d = dialog()
+d.next()              // { value: '你叫什么？' }
+d.next('张三')        // { value: '张三，你多大了？' }
+d.next(18)            // { value: '张三，18岁，你好！' }
+```
+
+### Module（import / export）
+
+ES6 模块是编译时确定的静态模块，比 CommonJS 的运行时加载更高效。
+
+```js
+// export — 导出
+// math.js
+export const PI = 3.14159
+export function add(a, b) { return a + b }
+export default class Calculator { /* ... */ }
+
+// import — 导入
+import Calc from './math.js'           // 默认导入
+import { PI, add } from './math.js'    // 命名导入
+import * as math from './math.js'      // 全部导入
+import Calc, { PI } from './math.js'   // 混合导入
+
+// 动态 import() — ES2020，返回 Promise
+const module = await import('./math.js')
+module.add(1, 2)
 ```
 
 ### 其他内容
@@ -1356,7 +1505,7 @@ promise.then(value => console.log(value)); // 输出：done
 
 + 使用 `using` 声明自动管理资源，离开作用域时自动释放
 
-> ⚠️ 注意：此特性已到达 Stage 4，但 TC39 预计发布于 **ES2027**，尚未正式纳入任何年度标准。
+> ⚠️ 此特性于 2024 年到达 Stage 4，预计纳入 ES2026，目前部分浏览器已支持。
 
   ```js
   {
@@ -1423,9 +1572,11 @@ promise.then(value => console.log(value)); // 输出：done
   a.isDisjointFrom(b);     // false
   ```
 
-## ECMA 2026 (ES17)
+## ECMA 2026 (ES17) 及提案中
 
-### Upsert（Map 原子性插入/更新）
+> ⚠️ 以下特性截至 2025 年初大多处于 Stage 3，尚未正式纳入 ES2026 标准。仅作前瞻参考，API 可能变化。
+
+### Upsert（Map 原子性插入/更新）— Stage 3 提案
 
 + 为 `Map` 新增 `getOrInsert()` 和 `getOrInsertComputed()` 方法
 + 如果键已存在则返回现有值，不存在则插入新值，一步到位，无需先 `has()` 再 `set()`
@@ -1441,7 +1592,7 @@ promise.then(value => console.log(value)); // 输出：done
   map.getOrInsertComputed('c', (key) => key.length); // 1
   ```
 
-### JSON.parse source text access
+### JSON.parse source text access — Stage 3 提案
 
 + `JSON.parse` 新增 reviver 回调参数 `context`，可访问原始 JSON 文本信息
 + 用于更精确的错误报告、source map 支持等场景
@@ -1454,7 +1605,7 @@ promise.then(value => console.log(value)); // 输出：done
   });
   ```
 
-### Iterator Sequencing
+### Iterator Sequencing — Stage 3 提案
 
 + 将多个迭代器串联组合成一个新的迭代器序列
 
@@ -1468,7 +1619,7 @@ promise.then(value => console.log(value)); // 输出：done
   }
   ```
 
-### Uint8Array to/from Base64 and Hex
+### Uint8Array to/from Base64 and Hex — Stage 3 提案
 
 + 原生支持 `Uint8Array` 与 Base64、Hex 字符串互转，不再需要手写转换逻辑
 
@@ -1486,7 +1637,7 @@ promise.then(value => console.log(value)); // 输出：done
   const fromHex = Uint8Array.fromHex(hex);
   ```
 
-### Math.sumPrecise
+### Math.sumPrecise — Stage 3 提案
 
 + 精确求和，避免浮点数精度丢失（基于 Kahan 求和算法）
 
@@ -1500,7 +1651,7 @@ promise.then(value => console.log(value)); // 输出：done
   Math.sumPrecise(new Float64Array([1e16, 1, -1e16])) // 1（传统求和得 0）
   ```
 
-### Error.isError
+### Error.isError — Stage 3 提案
 
 + 判断一个值是否为 Error 实例
 + 替代 `instanceof Error`，在跨 realm（iframe、Worker）场景下更可靠
@@ -1514,7 +1665,7 @@ promise.then(value => console.log(value)); // 输出：done
   // 跨 iframe 也能正确判断（instanceof 会失败）
   ```
 
-### Array.fromAsync
+### Array.fromAsync — Stage 4，预计 ES2025
 
 + 从异步可迭代对象创建数组，类似 `Array.from()` 的异步版本
 + 返回一个 Promise，resolve 的值为收集到的数组
