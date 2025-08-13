@@ -1505,7 +1505,7 @@ promise.then(value => console.log(value)); // 输出：done
 
 + 使用 `using` 声明自动管理资源，离开作用域时自动释放
 
-> ⚠️ 此特性于 2024 年到达 Stage 4，预计纳入 ES2026，目前部分浏览器已支持。
+> ⚠️ 此特性已到达 Stage 4，TC39 确认预计发布于 **ES2027**。
 
   ```js
   {
@@ -1572,11 +1572,11 @@ promise.then(value => console.log(value)); // 输出：done
   a.isDisjointFrom(b);     // false
   ```
 
-## ECMA 2026 (ES17) 及提案中
+## ECMA 2026 (ES17)
 
-> ⚠️ 以下特性截至 2025 年初大多处于 Stage 3，尚未正式纳入 ES2026 标准。仅作前瞻参考，API 可能变化。
+> 以下特性均已到达 Stage 4，TC39 确认纳入 ES2026。
 
-### Upsert（Map 原子性插入/更新）— Stage 3 提案
+### Upsert（Map 原子性插入/更新）
 
 + 为 `Map` 新增 `getOrInsert()` 和 `getOrInsertComputed()` 方法
 + 如果键已存在则返回现有值，不存在则插入新值，一步到位，无需先 `has()` 再 `set()`
@@ -1592,7 +1592,7 @@ promise.then(value => console.log(value)); // 输出：done
   map.getOrInsertComputed('c', (key) => key.length); // 1
   ```
 
-### JSON.parse source text access — Stage 3 提案
+### JSON.parse source text access
 
 + `JSON.parse` 新增 reviver 回调参数 `context`，可访问原始 JSON 文本信息
 + 用于更精确的错误报告、source map 支持等场景
@@ -1605,7 +1605,7 @@ promise.then(value => console.log(value)); // 输出：done
   });
   ```
 
-### Iterator Sequencing — Stage 3 提案
+### Iterator Sequencing
 
 + 将多个迭代器串联组合成一个新的迭代器序列
 
@@ -1619,7 +1619,7 @@ promise.then(value => console.log(value)); // 输出：done
   }
   ```
 
-### Uint8Array to/from Base64 and Hex — Stage 3 提案
+### Uint8Array to/from Base64 and Hex
 
 + 原生支持 `Uint8Array` 与 Base64、Hex 字符串互转，不再需要手写转换逻辑
 
@@ -1637,7 +1637,7 @@ promise.then(value => console.log(value)); // 输出：done
   const fromHex = Uint8Array.fromHex(hex);
   ```
 
-### Math.sumPrecise — Stage 3 提案
+### Math.sumPrecise
 
 + 精确求和，避免浮点数精度丢失（基于 Kahan 求和算法）
 
@@ -1651,7 +1651,7 @@ promise.then(value => console.log(value)); // 输出：done
   Math.sumPrecise(new Float64Array([1e16, 1, -1e16])) // 1（传统求和得 0）
   ```
 
-### Error.isError — Stage 3 提案
+### Error.isError
 
 + 判断一个值是否为 Error 实例
 + 替代 `instanceof Error`，在跨 realm（iframe、Worker）场景下更可靠
@@ -1665,7 +1665,7 @@ promise.then(value => console.log(value)); // 输出：done
   // 跨 iframe 也能正确判断（instanceof 会失败）
   ```
 
-### Array.fromAsync — Stage 4，预计 ES2025
+### Array.fromAsync
 
 + 从异步可迭代对象创建数组，类似 `Array.from()` 的异步版本
 + 返回一个 Promise，resolve 的值为收集到的数组
