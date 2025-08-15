@@ -572,8 +572,6 @@ const module = await import('./math.js')
 module.add(1, 2)
 ```
 
-### 其他内容
-
 ## ECMA 2016 (ES7)
 
 ### Array.prototype.includes()
