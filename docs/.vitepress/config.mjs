@@ -115,7 +115,8 @@ export default defineConfig({
           items: [
             { text: '大文件上传', link: '/notes/large-file-upload' },
             { text: '动态表单渲染', link: '/notes/dynamic-form' },
-            { text: '虚拟列表', link: '/notes/virtual-list' }
+            { text: '虚拟列表', link: '/notes/virtual-list' },
+            { text: 'WebSocket 与实时通信', link: '/notes/websocket-realtime' }
           ]
         },
         {
