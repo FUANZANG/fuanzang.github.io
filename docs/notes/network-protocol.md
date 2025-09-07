@@ -437,6 +437,8 @@ HTTP/1.1 问题：
 
 ## 7. WebSocket
 
+> 📖 更系统的实时通信方案（WebSocket、SSE、长轮询、Socket.IO、WebRTC）请查看 [WebSocket 与实时通信](/notes/websocket-realtime)
+
 ### 原理
 
 ```

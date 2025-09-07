@@ -3,6 +3,8 @@
 > 📌 本文件记录前端实时通信方案：WebSocket API、Server-Sent Events (SSE)、长轮询、Socket.IO、WebRTC 的原理、用法与选型对比。
 >
 > 📅 基于以下版本：Socket.IO 4.x | ws 8.x | @microsoft/signalr 10.x | 浏览器原生 WebSocket API（Baseline Widely available）
+>
+> 🔗 WebSocket 协议基础（握手、帧格式）见 [网络协议笔记](/notes/network-protocol) 第 7 节
 
 ---
 

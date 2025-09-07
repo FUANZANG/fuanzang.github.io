@@ -3,6 +3,8 @@
 > 📌 本文件记录前端状态管理核心知识：基本概念、Vue 状态管理（Vuex/Pinia）、React 状态管理（Redux/Zustand/Jotai）、MobX、选型对比与最佳实践。
 >
 > 📅 基于以下版本：Pinia 3.x | Redux Toolkit 2.x | Zustand 5.x | Jotai 2.x | MobX 6.x | React Query 5.x
+>
+> 🔗 Pinia 速查见 [Vue 3 笔记](/notes/vue3-note)，Zustand vs Pinia 对比见 [React vs Vue](/notes/react-vs-vue) 第 5 节
 
 ---
 

@@ -665,6 +665,8 @@ const config = inject('config', () => ({ api: '/api' }), true)
 
 ### 路由传参
 
+> 📖 更系统的前端路由知识（路由原理、hash vs history、动态路由、导航守卫、懒加载）请查看 [前端路由](/notes/frontend-routing)
+
 ```ts
 // router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
@@ -739,6 +741,8 @@ console.log(historyState.role) // 'admin'
 ```
 
 ### Pinia (状态管理)
+
+> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX、选型对比）请查看 [状态管理](/notes/state-management)
 
 #### 安装
 

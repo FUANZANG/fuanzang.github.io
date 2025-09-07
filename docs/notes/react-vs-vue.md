@@ -472,6 +472,8 @@ function getSequence(arr) {
 
 ## 5. 状态管理对比
 
+> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX）请查看 [状态管理](/notes/state-management)
+
 ### 基本状态
 
 ```tsx
@@ -999,6 +1001,8 @@ const userStore = useUserStore()
 ---
 
 ## 10. 路由对比
+
+> 📖 更系统的前端路由知识（路由原理、Vue Router、React Router、动态路由、导航守卫）请查看 [前端路由](/notes/frontend-routing)
 
 | 功能 | React Router 6 | Vue Router 4 |
 |------|----------------|--------------|
