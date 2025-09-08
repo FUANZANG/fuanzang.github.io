@@ -105,6 +105,7 @@ export default defineConfig({
           text: '跨端开发',
           collapsed: false,
           items: [
+            { text: '小程序开发', link: '/notes/mini-program' },
             { text: 'React Native', link: '/notes/react-native-note' },
             { text: 'Electron', link: '/notes/electron-note' }
           ]
