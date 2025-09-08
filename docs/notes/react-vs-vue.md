@@ -1150,7 +1150,7 @@ const handleClick = () => {
 | **数据请求** | SWR、React Query、Axios | Vue Query、Axios |
 | **表单** | React Hook Form、Formik | VeeValidate、FormKit |
 | **SSR 框架** | Next.js | Nuxt 3 |
-| **移动端** | React Native | uni-app、Capacitor |
+| **移动端** | React Native | uni-app、Capacitor（小程序跨端见 [小程序开发](/notes/mini-program)） |
 | **构建工具** | Vite、Create React App (已废弃) | Vite、Vue CLI (已废弃) |
 | **测试** | Vitest + Testing Library | Vitest + Testing Library |
 | **TypeScript** | 原生支持 | 原生支持 |
