@@ -43,7 +43,8 @@ export default defineConfig({
             { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
             { text: '浏览器原理', link: '/notes/browser-note' },
             { text: '网络协议', link: '/notes/network-protocol' },
-            { text: '正则与校验', link: '/notes/regex-and-validation' }
+            { text: '正则与校验', link: '/notes/regex-and-validation' },
+            { text: '前端国际化', link: '/notes/frontend-i18n' }
           ]
         },
         {
