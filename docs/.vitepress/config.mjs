@@ -44,7 +44,8 @@ export default defineConfig({
             { text: '浏览器原理', link: '/notes/browser-note' },
             { text: '网络协议', link: '/notes/network-protocol' },
             { text: '正则与校验', link: '/notes/regex-and-validation' },
-            { text: '前端国际化', link: '/notes/frontend-i18n' }
+            { text: '前端国际化', link: '/notes/frontend-i18n' },
+            { text: '前端动画', link: '/notes/frontend-animation' }
           ]
         },
         {
