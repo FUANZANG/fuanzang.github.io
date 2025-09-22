@@ -46,7 +46,8 @@ export default defineConfig({
             { text: '正则与校验', link: '/notes/regex-and-validation' },
             { text: '前端国际化', link: '/notes/frontend-i18n' },
             { text: '前端动画', link: '/notes/frontend-animation' },
-            { text: '前端设计模式', link: '/notes/frontend-design-patterns' }
+            { text: '前端设计模式', link: '/notes/frontend-design-patterns' },
+            { text: 'PWA', link: '/notes/pwa-guide' }
           ]
         },
         {
