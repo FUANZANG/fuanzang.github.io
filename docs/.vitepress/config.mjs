@@ -15,6 +15,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '笔记', link: '/notes/html-note' },
+      { text: '菜谱', link: '/recipes' },
       { text: '博客', link: '/blog/hello-world' }
     ],
 
