@@ -340,30 +340,38 @@ onUnmounted(() => {
     <section class="features-section">
       <h2 class="section-heading">探索</h2>
       <div class="features-grid">
-        <div class="feature-card" data-accent="var(--c-blue)">
+        <a href="/notes/html-note" class="feature-card" data-accent="var(--c-blue)">
           <div class="card-icon">
             <span>📝</span>
           </div>
           <h3>学习笔记</h3>
           <p>记录技术学习心得、读书笔记和知识总结，构建个人知识体系</p>
           <div class="card-shine" />
-        </div>
-        <div class="feature-card" data-accent="var(--c-purple)">
+        </a>
+        <a href="/blog/hello-world" class="feature-card" data-accent="var(--c-purple)">
           <div class="card-icon">
             <span>🚀</span>
           </div>
           <h3>技术博客</h3>
           <p>技术文章与经验分享，记录开发心得与思考</p>
           <div class="card-shine" />
-        </div>
-        <div class="feature-card" data-accent="var(--c-pink)">
+        </a>
+        <a href="/notes/node-note" class="feature-card" data-accent="var(--c-pink)">
           <div class="card-icon">
             <span>💡</span>
           </div>
           <h3>工具推荐</h3>
           <p>分享好用的开发工具、插件与资源</p>
           <div class="card-shine" />
-        </div>
+        </a>
+        <a href="/recipes" class="feature-card recipe-card" data-accent="var(--c-cyan)">
+          <div class="card-icon">
+            <span>🍳</span>
+          </div>
+          <h3>家常菜谱</h3>
+          <p>不知道吃什么时翻翻看，记录一些简单好做的家常菜</p>
+          <div class="card-shine" />
+        </a>
       </div>
     </section>
 
@@ -740,6 +748,12 @@ onUnmounted(() => {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   transform-style: preserve-3d;
+}
+
+a.feature-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .feature-card:hover {
