@@ -267,6 +267,19 @@ const difficultyClass = d => {
   background: #fee2e2;
   color: #991b1b;
 }
+
+:root.dark .difficulty-badge.easy {
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+}
+:root.dark .difficulty-badge.medium {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+}
+:root.dark .difficulty-badge.hard {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+}
 .card-meta {
   display: flex;
   gap: 1rem;
