@@ -9,6 +9,25 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'FUANZANG' }],
+    [
+      'meta',
+      {
+        property: 'og:description',
+        content: 'FUANZANG 的个人站点 - 知识库、博客与作品展示'
+      }
+    ],
+    ['meta', { property: 'og:image', content: '/og-default.svg' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'FUANZANG' }],
+    [
+      'meta',
+      {
+        name: 'twitter:description',
+        content: 'FUANZANG 的个人站点 - 知识库、博客与作品展示'
+      }
+    ]
   ],
 
   themeConfig: {
@@ -16,6 +35,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '笔记', link: '/notes/html-note' },
       { text: '菜谱', link: '/recipes' },
+      { text: '工具', link: '/tools' },
       { text: '博客', link: '/blog/hello-world' }
     ],
 
@@ -103,9 +123,7 @@ export default defineConfig({
         {
           text: '后端与工具',
           collapsed: false,
-          items: [
-            { text: 'Node.js', link: '/notes/node-note' }
-          ]
+          items: [{ text: 'Node.js', link: '/notes/node-note' }]
         },
         {
           text: '跨端开发',

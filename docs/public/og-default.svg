@@ -1,0 +1,40 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1200"
+  height="630"
+  viewBox="0 0 1200 630"
+>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0f172a" />
+  <rect width="1200" height="630" fill="url(#g)" opacity="0.14" />
+  <circle cx="120" cy="120" r="260" fill="url(#g)" opacity="0.10" />
+  <circle cx="1080" cy="560" r="220" fill="url(#g)" opacity="0.10" />
+  <text
+    x="600"
+    y="300"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="130"
+    font-weight="800"
+    fill="url(#g)"
+    text-anchor="middle"
+    letter-spacing="-2"
+  >
+    FUANZANG
+  </text>
+  <text
+    x="600"
+    y="380"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="36"
+    fill="#cbd5e1"
+    text-anchor="middle"
+    letter-spacing="2"
+  >
+    知识库 · 博客 · 前端小工具
+  </text>
+</svg>
