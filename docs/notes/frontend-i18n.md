@@ -59,7 +59,7 @@ ICU（International Components for Unicode）是业界标准的消息格式语�
 
 ### 基本插值
 
-```icu
+```text
 // 简单插值
 Hello {name}!
 
@@ -72,7 +72,7 @@ The time is {time, time, short}.
 
 ### 复数处理
 
-```icu
+```text
 // 英文复数规则：zero / one / two / few / many / other
 {count, plural,
   =0 {No items}
@@ -98,7 +98,7 @@ The time is {time, time, short}.
 
 ### 选择（性别等）
 
-```icu
+```text
 {gender, select,
   male {He}
   female {She}
@@ -108,7 +108,7 @@ The time is {time, time, short}.
 
 ### 复杂嵌套
 
-```icu
+```text
 {count, plural,
   =0 {{name} has no items}
   one {{name} has # item}
