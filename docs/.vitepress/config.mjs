@@ -6,6 +6,12 @@ export default defineConfig({
   lang: 'zh-CN',
   base: '/',
 
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 2000
+    }
+  },
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
