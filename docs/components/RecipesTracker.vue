@@ -43,6 +43,23 @@ const filteredRecipes = computed(() => {
   })
 })
 
+const recommendedId = ref(null)
+
+const pickRandom = () => {
+  const pool = filteredRecipes.value
+  if (pool.length === 0) return
+  const choice = pool[Math.floor(Math.random() * pool.length)]
+  recommendedId.value = choice.name
+  expandedId.value = choice.name
+  toggleExpand(choice.name)
+  requestAnimationFrame(() => {
+    const el = document.querySelector(
+      `.recipe-card[data-name="${CSS.escape(choice.name)}"]`
+    )
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
+}
+
 const toggleExpand = name => {
   expandedId.value = expandedId.value === name ? null : name
 }
@@ -62,6 +79,9 @@ const difficultyClass = d => {
     </header>
 
     <section class="filters">
+      <button class="random-btn" type="button" @click="pickRandom">
+        🎲 随机推荐一道
+      </button>
       <div class="search-box">
         <input
           v-model="searchQuery"
@@ -94,7 +114,8 @@ const difficultyClass = d => {
         v-for="recipe in filteredRecipes"
         :key="recipe.name"
         class="recipe-card"
-        :class="{ expanded: expandedId === recipe.name }"
+        :data-name="recipe.name"
+        :class="{ expanded: expandedId === recipe.name, recommended: recommendedId === recipe.name }"
       >
         <div class="card-header" @click="toggleExpand(recipe.name)">
           <div class="card-title-row">
@@ -190,6 +211,27 @@ const difficultyClass = d => {
   flex: 1;
   min-width: 200px;
 }
+.random-btn {
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.random-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -6px rgba(99, 102, 241, 0.5);
+}
+.random-btn:active {
+  transform: translateY(0);
+}
 .search-input {
   width: 100%;
   padding: 0.6rem 1rem;
@@ -233,6 +275,10 @@ const difficultyClass = d => {
 }
 .recipe-card:hover {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+.recipe-card.recommended {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.25);
 }
 .card-header {
   padding: 1rem 1.25rem;
