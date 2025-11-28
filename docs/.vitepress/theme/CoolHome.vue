@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { useRouter } from 'vitepress'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import recipes from '../../data/recipes.json'
 
-gsap.registerPlugin(ScrollTrigger)
+let gsap = null
+let ScrollTrigger = null
 
 const router = useRouter()
 const heroRef = ref(null)
@@ -65,7 +65,69 @@ const techStack = [
   'Electron'
 ]
 
-const backToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+// ── Hero 代码窗口：随机菜谱 + 打字机 ──
+const codeText = ref('')
+const codeHtml = ref('')
+const typing = ref(true)
+let codeTimer = null
+
+function pickRandomRecipe() {
+  const list = recipes.length ? recipes : []
+  if (!list.length) return null
+  return list[Math.floor(Math.random() * list.length)]
+}
+
+function buildCode(recipe) {
+  if (!recipe) return ''
+  return `const dinner = await Recipes
+  .filter(r => r.name === '${recipe.name}')
+  .first()
+
+// 今晚吃什么？
+console.log(\`今晚吃：${recipe.name} 🍳\`)`
+}
+
+// 轻量语法高亮：关键字/字符串/注释/函数名上色
+function highlight(code) {
+  const escape = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  let html = escape(code)
+  // 注释
+  html = html.replace(/(\/\/.*)/g, '<span class="ln c">$1</span>')
+  // 字符串（单引号 / 模板字符串）
+  html = html.replace(/('[^']*'|`[^`]*`)/g, '<span class="ln s">$1</span>')
+  // 关键字
+  html = html.replace(
+    /\b(const|await|console|log|first|filter|name|r|Recipes)\b/g,
+    '<span class="ln k">$1</span>'
+  )
+  // 方法调用（.xxx(）
+  html = html.replace(/(\.\w+)(?=\()/g, '<span class="ln f">$1</span>')
+  return html
+}
+
+function startCodeTyping() {
+  const recipe = pickRandomRecipe()
+  const full = buildCode(recipe)
+  let i = 0
+  codeText.value = ''
+  typing.value = true
+  const tick = () => {
+    if (i <= full.length) {
+      codeText.value = full.slice(0, i)
+      i++
+      const ch = full[i - 1]
+      const delay = ch === '\n' ? 40 : 28
+      codeTimer = setTimeout(tick, delay)
+    } else {
+      // 打完：高亮 + 淡入上色
+      codeHtml.value = highlight(full)
+      requestAnimationFrame(() => {
+        typing.value = false
+      })
+    }
+  }
+  tick()
+}
 
 function kill() {
   st.value.forEach(t => t.kill())
@@ -85,7 +147,7 @@ const orbConfig = [
 
 // Mouse parallax — uses x-axis (scroll parallax owns y-axis)
 function onMove(e) {
-  if (!orbsRef.value) return
+  if (!orbsRef.value || !gsap) return
   const mx = (e.clientX / window.innerWidth - 0.5) * 2
   const my = (e.clientY / window.innerHeight - 0.5) * 2
   const orbs = orbsRef.value.querySelectorAll('.parallax-orb')
@@ -105,6 +167,16 @@ async function run() {
   kill()
   await nextTick()
   await new Promise(r => setTimeout(r, 200))
+
+  if (!gsap) {
+    const [{ gsap: g }, { ScrollTrigger: st }] = await Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ])
+    gsap = g
+    ScrollTrigger = st
+    gsap.registerPlugin(ScrollTrigger)
+  }
 
   const hero = heroRef.value
   if (!hero) return
@@ -228,109 +300,88 @@ async function run() {
     )
   }
 
-  // ── Feature Cards ──
-  const cards = document.querySelectorAll('.feature-card')
-  if (cards.length) {
-    gsap.set(cards, { y: 100, opacity: 0, scale: 0.85, rotateX: 15 })
+  // ── Features 区：标题 + 卡片随滚动从右侧逐张飞入，回滚再飞出 ──
+  const featuresSection = document.querySelector('.features-section')
+  if (featuresSection) {
+    const sectionHeading = featuresSection.querySelector('.section-heading')
+    const cards = featuresSection.querySelectorAll('.feature-card, .about-card')
+
+    if (sectionHeading) {
+      gsap.set(sectionHeading, { x: 60, opacity: 0 })
+      st.value.push(
+        ScrollTrigger.create({
+          trigger: sectionHeading,
+          start: 'top 95%',
+          end: 'top 60%',
+          scrub: 0.6,
+          animation: gsap.to(sectionHeading, {
+            x: 0,
+            opacity: 1,
+            ease: 'power2.out'
+          })
+        })
+      )
+    }
+
     cards.forEach((card, i) => {
+      gsap.set(card, { x: 120, opacity: 0 })
+      // 每张卡起点依次延后，形成「一张一张」飞入的节奏
       st.value.push(
         ScrollTrigger.create({
           trigger: card,
-          start: 'top 90%',
-          onEnter: () => {
-            tw.value.push(
-              gsap.to(card, {
-                y: 0,
-                opacity: 1,
-                scale: 1,
-                rotateX: 0,
-                duration: 0.9,
-                delay: i * 0.12,
-                ease: 'power3.out'
-              })
-            )
-          },
-          once: true
+          start: `top ${95 - i * 6}%`,
+          end: `top ${60 - i * 6}%`,
+          scrub: 0.6,
+          animation: gsap.to(card, {
+            x: 0,
+            opacity: 1,
+            ease: 'power2.out'
+          })
         })
       )
     })
-  }
-
-  // ── Section heading reveal ──
-  const sectionHeading = document.querySelector('.section-heading')
-  if (sectionHeading) {
-    gsap.set(sectionHeading, { y: 40, opacity: 0 })
-    st.value.push(
-      ScrollTrigger.create({
-        trigger: sectionHeading,
-        start: 'top 85%',
-        onEnter: () => {
-          tw.value.push(
-            gsap.to(sectionHeading, {
-              y: 0,
-              opacity: 1,
-              duration: 0.8,
-              ease: 'power3.out'
-            })
-          )
-        },
-        once: true
-      })
-    )
-  }
-
-  // ── About card reveal ──
-  const aboutCard = document.querySelector('.about-card')
-  if (aboutCard) {
-    gsap.set(aboutCard, { y: 60, opacity: 0, scale: 0.96 })
-    st.value.push(
-      ScrollTrigger.create({
-        trigger: aboutCard,
-        start: 'top 85%',
-        onEnter: () => {
-          tw.value.push(
-            gsap.to(aboutCard, {
-              y: 0,
-              opacity: 1,
-              scale: 1,
-              duration: 0.9,
-              ease: 'power3.out'
-            })
-          )
-        },
-        once: true
-      })
-    )
-  }
-
-  // ── Footer reveal ──
-  const homeFooter = document.querySelector('.home-footer')
-  if (homeFooter) {
-    gsap.set(homeFooter, { opacity: 0 })
-    st.value.push(
-      ScrollTrigger.create({
-        trigger: homeFooter,
-        start: 'top 95%',
-        onEnter: () => {
-          tw.value.push(
-            gsap.to(homeFooter, {
-              opacity: 1,
-              duration: 0.8,
-              ease: 'power2.out'
-            })
-          )
-        },
-        once: true
-      })
-    )
   }
 
   // Refresh ScrollTrigger after DOM updates
   ScrollTrigger.refresh()
 }
 
-function onRoute(url) {
-  if (url === '/' || url === '/index.html') {
+// ── 卡片 3D 倾斜跟随鼠标（功能卡 + 关于卡）──
+const tiltSelector = '.feature-card, .about-card'
+function onCardTilt(e) {
+  const card = e.target.closest(tiltSelector)
+  if (!card || !gsap) return
+  // 先把其它卡片归位，避免移出后停留在倾斜姿态
+  document.querySelectorAll(tiltSelector).forEach(c => {
+    if (c !== card) resetTilt(c)
+  })
+  const rect = card.getBoundingClientRect()
+  const px = (e.clientX - rect.left) / rect.width - 0.5
+  const py = (e.clientY - rect.top) / rect.height - 0.5
+  gsap.to(card, {
+    rotateY: px * 12,
+    rotateX: -py * 12,
+    duration: 0.4,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+function resetTilt(card) {
+  if (!card || !gsap) return
+  gsap.to(card, {
+    rotateY: 0,
+    rotateX: 0,
+    duration: 0.6,
+    ease: 'power3.out',
+    overwrite: 'auto'
+  })
+}
+function resetCardTilt() {
+  document.querySelectorAll(tiltSelector).forEach(resetTilt)
+}
+
+function onHomeRoute(e) {
+  if (e.detail === '/' || e.detail === '/index.html') {
     document.body.classList.add('cool-home-page')
     setTimeout(run, 400)
   } else {
@@ -342,6 +393,11 @@ function onRoute(url) {
 onMounted(() => {
   document.body.classList.add('cool-home-page')
   window.addEventListener('mousemove', onMove, { passive: true })
+  const grid = document.querySelector('.features-grid')
+  if (grid) {
+    grid.addEventListener('mousemove', onCardTilt, { passive: true })
+    grid.addEventListener('mouseleave', resetCardTilt, { passive: true })
+  }
 
   // 滚动监听：让导航栏在滚动后显示毛玻璃背景
   scrollHandler = () => {
@@ -356,25 +412,37 @@ onMounted(() => {
   }
   window.addEventListener('scroll', scrollHandler, { passive: true })
 
+  // 监听全局路由事件（由 Layout.vue 派发，避免覆盖 router 回调）
+  window.addEventListener('vp-route-change', onHomeRoute)
+
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     typedText.value = taglinePhrases[0]
+    const rc = pickRandomRecipe()
+    codeHtml.value = highlight(buildCode(rc))
+    typing.value = false
     return
   }
   startTyping()
+  startCodeTyping()
   run()
-  router.onAfterRouteChange = onRoute
 })
 
 onUnmounted(() => {
   document.body.classList.remove('cool-home-page')
   kill()
-  if (typingTimer) clearTimeout(typingTimer)
   window.removeEventListener('mousemove', onMove)
+  window.removeEventListener('vp-route-change', onHomeRoute)
+  if (typingTimer) clearTimeout(typingTimer)
+  if (codeTimer) clearTimeout(codeTimer)
+  const grid = document.querySelector('.features-grid')
+  if (grid) {
+    grid.removeEventListener('mousemove', onCardTilt)
+    grid.removeEventListener('mouseleave', resetCardTilt)
+  }
   if (scrollHandler) {
     window.removeEventListener('scroll', scrollHandler)
     scrollHandler = null
   }
-  router.onAfterRouteChange = null
 })
 </script>
 
@@ -443,13 +511,13 @@ onUnmounted(() => {
               <span class="dot green" />
               <span class="code-file">dinner.ts</span>
             </div>
-            <pre class="code-body" v-pre><code>const dinner = await Recipes
-  .filter(r => r.tags.includes('快手菜'))
-  .sort((a, b) => a.time - b.time)
-  .first()
-
-// 今晚吃什么？
-console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
+            <pre
+              class="code-body"
+              :class="{ typing }"
+            ><code class="code-plain">{{ codeText }}<span class="code-caret">▋</span></code><code
+              class="code-hl"
+              v-html="codeHtml"
+            /><span class="code-caret">▋</span></pre>
           </div>
         </div>
       </div>
@@ -498,40 +566,23 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
           <div class="card-shine" />
         </a>
         <a class="about-card" href="/about">
+          <div class="card-shine" />
           <div class="about-avatar">🧑‍💻</div>
           <div class="about-body">
             <h2 class="about-name">关于我</h2>
             <p class="about-text">
-              一名喜欢折腾的前端工程师，平时写代码、记笔记，也研究怎么把复杂的工程做简单。
-              这个站点用来沉淀学习笔记、分享技术思考，偶尔也放几道拿手菜谱 🍳。
+              一名从前端转向全栈的软件开发工程师，喜欢把复杂的工程做简单。
+              这个站点用来沉淀学习笔记、记录技术思考，偶尔也放几道拿手菜谱 🍳 ~
             </p>
             <div class="tech-tags">
               <span v-for="t in techStack" :key="t" class="tech-tag">{{
                 t
               }}</span>
             </div>
-            <span class="about-more">了解更多 →</span>
           </div>
         </a>
       </div>
     </section>
-
-    <!-- ═══ FOOTER ═══ -->
-    <footer class="home-footer">
-      <div class="footer-inner">
-        <p class="footer-copy">© 2026 FUANZANG · 基于 VitePress 构建</p>
-        <div class="footer-links">
-          <a href="https://github.com/FUANZANG" target="_blank" rel="noopener"
-            >GitHub</a
-          >
-          <span class="footer-sep">·</span>
-          <a href="/notes/html-note">笔记</a>
-          <span class="footer-sep">·</span>
-          <a href="/recipes">菜谱</a>
-          <button class="footer-top" @click="backToTop">回到顶部 ↑</button>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -545,6 +596,21 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
 
 .cool-home .VPDoc {
   padding-top: 0 !important;
+}
+
+/* 代码窗口语法高亮（作用于 v-html 注入的内容，需写在全局样式） */
+.code-body .ln.k {
+  color: #c084fc;
+}
+.code-body .ln.f {
+  color: #38bdf8;
+}
+.code-body .ln.s {
+  color: #86efac;
+}
+.code-body .ln.c {
+  color: #64748b;
+  font-style: italic;
 }
 </style>
 
@@ -728,6 +794,9 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
 .code-window {
   width: 100%;
   max-width: 420px;
+  height: 270px;
+  display: flex;
+  flex-direction: column;
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.92);
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -771,6 +840,7 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
 }
 
 .code-body {
+  flex: 1;
   margin: 0;
   padding: 1.1rem 1.2rem;
   font-size: 0.82rem;
@@ -778,20 +848,54 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
   color: #e2e8f0;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow: hidden;
 }
 
-.code-body .ln.k {
-  color: #c084fc;
+.code-caret {
+  display: inline-block;
+  margin-left: 1px;
+  color: #8b5cf6;
+  animation: code-blink 1s step-end infinite;
 }
-.code-body .ln.f {
-  color: #38bdf8;
+
+@keyframes code-blink {
+  50% {
+    opacity: 0;
+  }
 }
-.code-body .ln.s {
-  color: #86efac;
+
+/* 两层叠放：打字层（纯文本）与高亮层交叉淡入，避免节点替换闪烁 */
+.code-body {
+  position: relative;
 }
-.code-body .ln.c {
-  color: #64748b;
-  font-style: italic;
+.code-plain,
+.code-hl {
+  transition: opacity 0.4s ease;
+}
+.code-hl {
+  position: absolute;
+  inset: 1.1rem 1.2rem;
+  opacity: 0;
+  pointer-events: none;
+}
+.code-body.typing .code-plain {
+  opacity: 1;
+}
+.code-body.typing .code-hl {
+  opacity: 0;
+}
+.code-body:not(.typing) .code-plain {
+  opacity: 0;
+}
+.code-body:not(.typing) .code-hl {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-plain,
+  .code-hl {
+    transition: none;
+  }
 }
 
 /* ─── Typed tagline ─── */
@@ -835,11 +939,25 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
     var(--c-purple) 40%,
     var(--c-pink) 80%
   );
+  background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: none;
   filter: drop-shadow(0 0 40px rgba(139, 92, 246, 0.15));
+  animation: title-flow 6s ease infinite;
+}
+
+@keyframes title-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .char-wrapper {
@@ -1002,6 +1120,7 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
+  perspective: 1000px;
 }
 
 /* ─── Feature Card ─── */
@@ -1012,7 +1131,9 @@ console.log(`今晚吃：${dinner.name} 🍳`)</code></pre>
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
   will-change: transform;
   transform-style: preserve-3d;
 }
@@ -1024,7 +1145,6 @@ a.feature-card {
 }
 
 .feature-card:hover {
-  transform: translateY(-8px) scale(1.02);
   box-shadow:
     0 20px 40px -12px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(139, 92, 246, 0.1);
@@ -1083,28 +1203,17 @@ a.feature-card {
   pointer-events: none;
 }
 
-.feature-card:hover .card-shine {
+.feature-card:hover .card-shine,
+.about-card:hover .card-shine {
   left: 100%;
-}
-
-/* ═══════════════════════════════════════
-   FOOTER
-   ═══════════════════════════════════════ */
-.home-footer {
-  text-align: center;
-  padding: 3rem 2rem;
-  border-top: 1px solid var(--vp-c-divider);
-}
-
-.home-footer p {
-  font-size: 0.85rem;
-  color: var(--vp-c-text-3);
 }
 
 /* ═══════════════════════════════════════
    ABOUT CARD (in features grid, spans 2 cols)
    ═══════════════════════════════════════ */
+/* 关于卡：横向结构 + 统一 hover 流光/倾斜 */
 .about-card {
+  position: relative;
   grid-column: span 2;
   display: flex;
   gap: 1.6rem;
@@ -1119,15 +1228,23 @@ a.feature-card {
   border: 1px solid var(--vp-c-divider);
   text-decoration: none;
   color: inherit;
+  overflow: hidden;
+  will-change: transform;
+  transform-style: preserve-3d;
   transition:
     border-color 0.3s,
-    transform 0.3s,
     box-shadow 0.3s;
+}
+.about-card .card-shine {
+  z-index: 0;
+}
+.about-card > *:not(.card-shine) {
+  position: relative;
+  z-index: 1;
 }
 
 a.about-card:hover {
   border-color: rgba(139, 92, 246, 0.3);
-  transform: translateY(-4px);
   box-shadow: 0 16px 36px -16px rgba(139, 92, 246, 0.4);
 }
 
@@ -1188,63 +1305,11 @@ a.about-card:hover .about-more {
 }
 
 /* ═══════════════════════════════════════
-   FOOTER (override base)
-   ═══════════════════════════════════════ */
-.home-footer {
-  border-top: 1px solid var(--vp-c-divider);
-}
-.footer-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 2.5rem 2rem;
-}
-.footer-copy {
-  font-size: 0.82rem;
-  color: var(--vp-c-text-3);
-  margin: 0;
-}
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.85rem;
-}
-.footer-links a {
-  color: var(--vp-c-text-2);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.footer-links a:hover {
-  color: var(--c-purple);
-}
-.footer-sep {
-  color: var(--vp-c-divider);
-}
-.footer-top {
-  background: none;
-  border: none;
-  color: var(--vp-c-text-2);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
-}
-.footer-top:hover {
-  color: var(--c-purple);
-}
-
-/* ═══════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════ */
 @media (max-width: 960px) {
   .features-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .about-card {
-    grid-column: span 2;
   }
 }
 
