@@ -100,7 +100,8 @@ server {
     # --- 安全头 ---
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
+    # X-XSS-Protection 已被现代浏览器弃用，推荐用 CSP 替代
+    # add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
     # 可选：CSP（严格限制外部资源）
