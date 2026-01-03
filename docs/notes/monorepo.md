@@ -207,14 +207,14 @@ pnpm add -D turbo -w
 ```
 
 ```json
-// turbo.json — 任务配置
+// turbo.json — 任务配置（Turborepo 2.0+，pipeline 已重命名为 tasks）
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
     ".env",
     ".env.*"
   ],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],      // 依赖上游包的 build
       "outputs": ["dist/**", ".next/**"],  // 缓存产物
@@ -243,11 +243,11 @@ pnpm add -D turbo -w
 }
 ```
 
-### Pipeline 配置详解
+### Tasks 配置详解
 
 ```json
 {
-  "pipeline": {
+  "tasks": {
     "build": {
       // 依赖关系
       "dependsOn": ["^build"],
@@ -1128,7 +1128,7 @@ pnpm add -D turbo -w
 cat > turbo.json << 'EOF'
 {
   "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
