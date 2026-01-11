@@ -599,6 +599,8 @@ self.addEventListener('push', (event) => {
 
 ## 6. 后台同步
 
+> ⚠️ **浏览器兼容性**：Background Sync API 目前仅 Chromium 内核浏览器（Chrome、Edge）支持，Firefox 和 Safari 均不支持。生产使用时需做能力检测。
+
 ### 基本用法
 
 ```js
