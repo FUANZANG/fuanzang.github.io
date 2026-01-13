@@ -1,5 +1,39 @@
+# 依赖 / 构建产物
 node_modules
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+# 系统文件
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# 环境变量 / 密钥
+.env
+.env.*
+!.env.example
+
+# 编辑器 / IDE
+.idea
+.vscode
+*.swp
+*~
+
+# AI 编辑器
+.claude
+.qoder
+.cursor
+.cursorrules
+.windsurf
+.codeium
+.aider
+.aider*
+
+# 缓存
+.cache
+.eslintcache
+
+# 日志
+logs
 *.log
+*.log.*
