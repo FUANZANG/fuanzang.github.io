@@ -75,7 +75,8 @@ export default defineConfig({
             { text: '前端动画', link: '/notes/frontend-animation' },
             { text: '前端设计模式', link: '/notes/frontend-design-patterns' },
             { text: 'PWA', link: '/notes/pwa-guide' },
-            { text: '前端无障碍（a11y）', link: '/notes/frontend-a11y' }
+            { text: '前端无障碍（a11y）', link: '/notes/frontend-a11y' },
+            { text: 'Web 存储', link: '/notes/web-storage' }
           ]
         },
         {
