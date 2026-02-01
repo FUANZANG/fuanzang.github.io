@@ -77,7 +77,8 @@ export default defineConfig({
             { text: 'PWA', link: '/notes/pwa-guide' },
             { text: '前端无障碍（a11y）', link: '/notes/frontend-a11y' },
             { text: 'Web 存储', link: '/notes/web-storage' },
-            { text: 'Web Components', link: '/notes/web-components' }
+            { text: 'Web Components', link: '/notes/web-components' },
+            { text: 'Canvas & WebGL', link: '/notes/canvas-webgl' }
           ]
         },
         {
