@@ -102,6 +102,7 @@ export default defineConfig({
             { text: 'Webpack 性能优化', link: '/notes/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
             { text: 'Webpack vs Vite', link: '/notes/webpack-vs-vite' },
+            { text: '包管理器', link: '/notes/package-manager' },
             { text: 'Monorepo', link: '/notes/monorepo' },
             { text: '组件库开发', link: '/notes/component-library' },
             { text: '微前端', link: '/notes/micro-frontend' },
