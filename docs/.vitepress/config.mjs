@@ -119,7 +119,8 @@ export default defineConfig({
             { text: '前端性能优化', link: '/notes/performance-optimization' },
             { text: '前端监控', link: '/notes/frontend-monitoring' },
             { text: '前端测试', link: '/notes/frontend-testing' },
-            { text: '前端安全', link: '/notes/frontend-security' }
+            { text: '前端安全', link: '/notes/frontend-security' },
+            { text: 'Chrome DevTools', link: '/notes/debug-devtools' }
           ]
         },
         {
