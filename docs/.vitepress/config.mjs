@@ -161,6 +161,7 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: '前端对接 AI', link: '/notes/ai-frontend-integration' },
+            { text: 'Web AI', link: '/notes/web-ai' },
             { text: 'WebAssembly', link: '/notes/wasm-note' },
             { text: 'ECharts', link: '/notes/echarts-note' }
           ]
