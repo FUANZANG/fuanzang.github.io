@@ -2,11 +2,11 @@
 
 > 📌 本文件记录前端通用设计模式：组件模式（HOC、Render Props、Compound、Slot/Children）、Hooks/Composable 模式、响应式模式（Observer、Pub/Sub）、单例/工厂/策略/代理等经典模式在前端的应用。
 >
-> ⚠️ **边界说明**：React 自定义 Hooks 详见 [React 笔记](/notes/react-note)，Vue Composables 详见 [Vue 3 笔记](/notes/vue3-note)，状态管理详见 [状态管理笔记](/notes/state-management)。本文聚焦**跨框架的设计模式思想**和通用实现。
+> ⚠️ **边界说明**：React 自定义 Hooks 详见 [React 笔记](/notes/frameworks/react)，Vue Composables 详见 [Vue 3 笔记](/notes/frameworks/vue3)，状态管理详见 [状态管理笔记](/notes/frameworks/state-management)。本文聚焦**跨框架的设计模式思想**和通用实现。
 >
 > 📅 基于以下版本：React 19.2 | Vue 3.5 | TypeScript 5.x
 >
-> 🔗 React 自定义 Hooks 见 [React 笔记](/notes/react-note)，Vue Composables 见 [Vue 3 笔记](/notes/vue3-note)，状态管理见 [状态管理笔记](/notes/state-management)
+> 🔗 React 自定义 Hooks 见 [React 笔记](/notes/frameworks/react)，Vue Composables 见 [Vue 3 笔记](/notes/frameworks/vue3)，状态管理见 [状态管理笔记](/notes/frameworks/state-management)
 
 ---
 

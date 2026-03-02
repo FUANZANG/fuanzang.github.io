@@ -1,6 +1,6 @@
 # Vue 3 笔记
 
-> 📌 Vue 2 Options API 相关内容请查看 [Vue 2 笔记](/notes/vue2-note)
+> 📌 Vue 2 Options API 相关内容请查看 [Vue 2 笔记](/notes/frameworks/vue2)
 
 <!-- 本文件记录 Vue 3 Composition API 的核心概念、实战技巧与常用代码 -->
 
@@ -665,7 +665,7 @@ const config = inject('config', () => ({ api: '/api' }), true)
 
 ### 路由传参
 
-> 📖 更系统的前端路由知识（路由原理、hash vs history、动态路由、导航守卫、懒加载）请查看 [前端路由](/notes/frontend-routing)
+> 📖 更系统的前端路由知识（路由原理、hash vs history、动态路由、导航守卫、懒加载）请查看 [前端路由](/notes/frameworks/frontend-routing)
 
 ```ts
 // router/index.ts
@@ -742,7 +742,7 @@ console.log(historyState.role) // 'admin'
 
 ### Pinia (状态管理)
 
-> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX、选型对比）请查看 [状态管理](/notes/state-management)
+> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX、选型对比）请查看 [状态管理](/notes/frameworks/state-management)
 
 #### 安装
 

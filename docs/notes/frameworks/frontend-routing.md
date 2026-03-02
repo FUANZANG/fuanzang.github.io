@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Vue Router 4.x | React Router 7.x（兼容 React Router 6.x）
 >
-> 🔗 Vue Router 传参速查见 [Vue 3 笔记](/notes/vue3-note)，React Router vs Vue Router 对比表见 [React vs Vue](/notes/react-vs-vue) 第 10 节，SPA 路由原理见 [浏览器笔记](/notes/browser-note)
+> 🔗 Vue Router 传参速查见 [Vue 3 笔记](/notes/frameworks/vue3)，React Router vs Vue Router 对比表见 [React vs Vue](/notes/frameworks/react-vs-vue) 第 10 节，SPA 路由原理见 [浏览器笔记](/notes/foundations/browser)
 
 ---
 

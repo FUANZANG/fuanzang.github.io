@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：微信小程序基础库 3.x | uni-app 3.x（Vue 3 + Vite） | Taro 4.x | Mpx 2.x
 >
-> 🔗 跨端开发相关：[React Native](/notes/react-native-note)（移动端原生）、[Electron](/notes/electron-note)（桌面端）
+> 🔗 跨端开发相关：[React Native](/notes/cross-platform/react-native)（移动端原生）、[Electron](/notes/cross-platform/electron)（桌面端）
 
 ---
 

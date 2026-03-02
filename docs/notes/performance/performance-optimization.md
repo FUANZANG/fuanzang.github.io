@@ -481,4 +481,4 @@ function _runTask(task, resolve) {
 
 ---
 
-> 更多构建工具优化见 [Webpack 性能优化](./webpack-optimization.md)
+> 更多构建工具优化见 [Webpack 性能优化](/notes/engineering/webpack-optimization)

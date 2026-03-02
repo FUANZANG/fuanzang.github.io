@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Socket.IO 4.x | ws 8.x | @microsoft/signalr 10.x | 浏览器原生 WebSocket API（Baseline Widely available）
 >
-> 🔗 WebSocket 协议基础（握手、帧格式）见 [网络协议笔记](/notes/network-protocol) 第 7 节
+> 🔗 WebSocket 协议基础（握手、帧格式）见 [网络协议笔记](/notes/foundations/network-protocol) 第 7 节
 
 ---
 

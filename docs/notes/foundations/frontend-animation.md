@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Motion 12.x | GSAP 3.x | Web Animations API（Baseline Widely available）
 >
-> 🔗 Vue 内置过渡系统见 [Vue 3 笔记](/notes/vue3-note)，React 组件动画见 [React 笔记](/notes/react-note)，CSS 基础见 [CSS 笔记](/notes/css-note)
+> 🔗 Vue 内置过渡系统见 [Vue 3 笔记](/notes/frameworks/vue3)，React 组件动画见 [React 笔记](/notes/frameworks/react)，CSS 基础见 [CSS 笔记](/notes/foundations/css)
 
 ---
 

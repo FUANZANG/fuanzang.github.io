@@ -2,7 +2,7 @@
 
 > 📌 本文档帮助同时使用 React 和 Vue 的开发者快速切换，提供 API 对照和常见场景代码对比。
 
-<!-- React 详细笔记见 [React 笔记](/notes/react-note)，Vue 详细笔记见 [Vue 3 笔记](/notes/vue3-note) -->
+<!-- React 详细笔记见 [React 笔记](/notes/frameworks/react)，Vue 详细笔记见 [Vue 3 笔记](/notes/frameworks/vue3) -->
 
 ---
 
@@ -472,7 +472,7 @@ function getSequence(arr) {
 
 ## 5. 状态管理对比
 
-> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX）请查看 [状态管理](/notes/state-management)
+> 📖 更系统的状态管理知识（Pinia、Redux Toolkit、Zustand、Jotai、MobX）请查看 [状态管理](/notes/frameworks/state-management)
 
 ### 基本状态
 
@@ -1002,7 +1002,7 @@ const userStore = useUserStore()
 
 ## 10. 路由对比
 
-> 📖 更系统的前端路由知识（路由原理、Vue Router、React Router、动态路由、导航守卫）请查看 [前端路由](/notes/frontend-routing)
+> 📖 更系统的前端路由知识（路由原理、Vue Router、React Router、动态路由、导航守卫）请查看 [前端路由](/notes/frameworks/frontend-routing)
 
 | 功能 | React Router 6 | Vue Router 4 |
 |------|----------------|--------------|
@@ -1150,7 +1150,7 @@ const handleClick = () => {
 | **数据请求** | SWR、React Query、Axios | Vue Query、Axios |
 | **表单** | React Hook Form、Formik | VeeValidate、FormKit |
 | **SSR 框架** | Next.js | Nuxt 3 |
-| **移动端** | React Native | uni-app、Capacitor（小程序跨端见 [小程序开发](/notes/mini-program)） |
+| **移动端** | React Native | uni-app、Capacitor（小程序跨端见 [小程序开发](/notes/cross-platform/mini-program)） |
 | **构建工具** | Vite、Create React App (已废弃) | Vite、Vue CLI (已废弃) |
 | **测试** | Vitest + Testing Library | Vitest + Testing Library |
 | **TypeScript** | 原生支持 | 原生支持 |

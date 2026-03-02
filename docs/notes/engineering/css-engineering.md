@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Tailwind CSS 4.x | UnoCSS 66.x | Sass 1.x | Less 4.x | PostCSS 8.x | styled-components 6.x | Emotion 11.x
 >
-> 🔗 Sass/SCSS 语法速查见 [CSS 笔记](/notes/css-note)
+> 🔗 Sass/SCSS 语法速查见 [CSS 笔记](/notes/foundations/css)
 
 ---
 

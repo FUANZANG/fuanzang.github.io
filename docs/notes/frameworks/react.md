@@ -1,6 +1,6 @@
 # React 笔记
 
-> 📌 本文件记录 React 核心概念、实战技巧与常用代码。Vue 对比内容请查看 [Vue vs React 对比](/notes/react-vs-vue)
+> 📌 本文件记录 React 核心概念、实战技巧与常用代码。Vue 对比内容请查看 [Vue vs React 对比](/notes/frameworks/react-vs-vue)
 
 <!-- 本文件记录 React 18+ 函数组件 + Hooks 的核心知识 -->
 
