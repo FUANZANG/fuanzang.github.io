@@ -1,4 +1,4 @@
-# WebAssembly Note
+# WebAssembly
 
 > [WebAssembly.org](https://webassembly.org/)
 > [MDN - WebAssembly](https://developer.mozilla.org/zh-CN/docs/WebAssembly)

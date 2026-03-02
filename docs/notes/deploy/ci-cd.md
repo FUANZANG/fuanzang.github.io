@@ -645,4 +645,4 @@ jobs:
 
 ## 交叉引用
 
-+ 本节关注 CI/CD 工具链和 Pipeline 配置。**前端部署的具体策略**（缓存、CDN、回滚、Nginx 生产配置等）见 [前端部署](./frontend-deployment.md)
++ 本节关注 CI/CD 工具链和 Pipeline 配置。**前端部署的具体策略**（缓存、CDN、回滚、Nginx 生产配置等）见 [前端部署](/notes/deploy/frontend-deployment)

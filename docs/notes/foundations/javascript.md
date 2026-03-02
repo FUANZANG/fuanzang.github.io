@@ -1,4 +1,4 @@
-# JavaScript Note
+# JavaScript
 
 [JavaScript 教程](https://wangdoc.com/javascript/)
 

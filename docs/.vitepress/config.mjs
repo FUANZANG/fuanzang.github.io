@@ -39,7 +39,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
-      { text: '笔记', link: '/notes/html-note' },
+      { text: '笔记', link: '/notes/foundations/html' },
       { text: '菜谱', link: '/recipes' },
       { text: '工具', link: '/tools' },
       { text: '博客', link: '/blog/hello-world' }
@@ -62,108 +62,112 @@ export default defineConfig({
         {
           text: '前端基础',
           items: [
-            { text: 'HTML', link: '/notes/html-note' },
-            { text: 'CSS', link: '/notes/css-note' },
-            { text: '响应式与自适应', link: '/notes/responsive-design' },
-            { text: 'JavaScript', link: '/notes/javascript-note' },
-            { text: 'TypeScript', link: '/notes/typescript-note' },
-            { text: 'ECMAScript 标准', link: '/notes/ecma-script-standard' },
-            { text: '浏览器原理', link: '/notes/browser-note' },
-            { text: '网络协议', link: '/notes/network-protocol' },
-            { text: '正则与校验', link: '/notes/regex-and-validation' },
-            { text: '前端国际化', link: '/notes/frontend-i18n' },
-            { text: '前端动画', link: '/notes/frontend-animation' },
-            { text: '前端设计模式', link: '/notes/frontend-design-patterns' },
-            { text: 'PWA', link: '/notes/pwa-guide' },
-            { text: '前端无障碍（a11y）', link: '/notes/frontend-a11y' },
-            { text: 'Web 存储', link: '/notes/web-storage' },
-            { text: 'Web Components', link: '/notes/web-components' },
-            { text: 'Canvas & WebGL', link: '/notes/canvas-webgl' }
+            { text: 'HTML', link: '/notes/foundations/html' },
+            { text: 'CSS', link: '/notes/foundations/css' },
+            { text: '响应式与自适应', link: '/notes/foundations/responsive-design' },
+            { text: 'JavaScript', link: '/notes/foundations/javascript' },
+            { text: 'TypeScript', link: '/notes/foundations/typescript' },
+            { text: 'ECMAScript 标准', link: '/notes/foundations/ecma-script-standard' },
+            { text: '浏览器原理', link: '/notes/foundations/browser' },
+            { text: '网络协议', link: '/notes/foundations/network-protocol' },
+            { text: '正则与校验', link: '/notes/foundations/regex-and-validation' },
+            { text: '前端国际化', link: '/notes/foundations/frontend-i18n' },
+            { text: '前端动画', link: '/notes/foundations/frontend-animation' },
+            { text: '前端设计模式', link: '/notes/foundations/frontend-design-patterns' },
+            { text: 'PWA', link: '/notes/foundations/pwa' },
+            { text: '前端无障碍（a11y）', link: '/notes/foundations/frontend-a11y' },
+            { text: 'Web 存储', link: '/notes/foundations/web-storage' },
+            { text: 'Web Components', link: '/notes/foundations/web-components' },
+            { text: 'Canvas & WebGL', link: '/notes/foundations/canvas-webgl' }
           ]
         },
         {
           text: '框架',
           collapsed: false,
           items: [
-            { text: 'Vue 总览', link: '/notes/vue-note' },
-            { text: 'Vue 2 (Options API)', link: '/notes/vue2-note' },
-            { text: 'Vue 3 (Composition API)', link: '/notes/vue3-note' },
-            { text: 'React', link: '/notes/react-note' },
-            { text: 'React vs Vue 对比', link: '/notes/react-vs-vue' },
-            { text: '状态管理', link: '/notes/state-management' },
-            { text: '前端路由', link: '/notes/frontend-routing' },
-            { text: 'HTTP 请求与数据层', link: '/notes/http-request' }
+            { text: 'Vue 总览', link: '/notes/frameworks/vue' },
+            { text: 'Vue 2 (Options API)', link: '/notes/frameworks/vue2' },
+            { text: 'Vue 3 (Composition API)', link: '/notes/frameworks/vue3' },
+            { text: 'React', link: '/notes/frameworks/react' },
+            { text: 'React vs Vue 对比', link: '/notes/frameworks/react-vs-vue' },
+            { text: '状态管理', link: '/notes/frameworks/state-management' },
+            { text: '前端路由', link: '/notes/frameworks/frontend-routing' },
+            { text: 'HTTP 请求与数据层', link: '/notes/frameworks/http-request' }
           ]
         },
         {
           text: '构建与工程化',
           collapsed: false,
           items: [
-            { text: 'Webpack 性能优化', link: '/notes/webpack-optimization' },
-            { text: 'Vite 性能优化', link: '/notes/vite-optimization' },
-            { text: 'Webpack vs Vite', link: '/notes/webpack-vs-vite' },
-            { text: '包管理器', link: '/notes/package-manager' },
-            { text: 'Monorepo', link: '/notes/monorepo' },
-            { text: 'Git 工作流', link: '/notes/git-workflow' },
-            { text: '组件库开发', link: '/notes/component-library' },
-            { text: '微前端', link: '/notes/micro-frontend' },
-            { text: 'SSR / SSG', link: '/notes/ssr-ssg' },
-            { text: 'CSS 工程化方案', link: '/notes/css-engineering' },
-            { text: '代码规范与工程约束', link: '/notes/code-standard' }
+            { text: 'Webpack 性能优化', link: '/notes/engineering/webpack-optimization' },
+            { text: 'Vite 性能优化', link: '/notes/engineering/vite-optimization' },
+            { text: 'Webpack vs Vite', link: '/notes/engineering/webpack-vs-vite' },
+            { text: '包管理器', link: '/notes/engineering/package-manager' },
+            { text: 'Monorepo', link: '/notes/engineering/monorepo' },
+            { text: 'Git 工作流', link: '/notes/engineering/git-workflow' },
+            { text: '组件库开发', link: '/notes/engineering/component-library' },
+            { text: '微前端', link: '/notes/engineering/micro-frontend' },
+            { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
+            { text: 'CSS 工程化方案', link: '/notes/engineering/css-engineering' },
+            { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' }
           ]
         },
         {
           text: '性能与质量',
           collapsed: false,
           items: [
-            { text: '前端性能优化', link: '/notes/performance-optimization' },
-            { text: '前端监控', link: '/notes/frontend-monitoring' },
-            { text: '前端测试', link: '/notes/frontend-testing' },
-            { text: '前端安全', link: '/notes/frontend-security' },
-            { text: 'Chrome DevTools', link: '/notes/debug-devtools' }
+            { text: '前端性能优化', link: '/notes/performance/performance-optimization' },
+            { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
+            { text: '前端测试', link: '/notes/performance/frontend-testing' },
+            { text: '前端安全', link: '/notes/performance/frontend-security' },
+            { text: 'Chrome DevTools', link: '/notes/performance/debug-devtools' }
           ]
         },
         {
           text: '部署与运维',
           collapsed: false,
           items: [
-            { text: 'CI/CD', link: '/notes/ci-cd' },
-            { text: '前端部署', link: '/notes/frontend-deployment' },
-            { text: 'YApi 接口平台', link: '/notes/yapi' }
+            { text: 'CI/CD', link: '/notes/deploy/ci-cd' },
+            { text: '前端部署', link: '/notes/deploy/frontend-deployment' },
+            { text: 'YApi 接口平台', link: '/notes/deploy/yapi' }
           ]
         },
         {
-          text: '后端与工具',
+          text: '后端与运维',
           collapsed: false,
-          items: [{ text: 'Node.js', link: '/notes/node-note' }]
+          items: [
+            { text: 'Node.js', link: '/notes/backend/node' },
+            { text: 'Docker', link: '/notes/backend/docker' },
+            { text: 'Linux', link: '/notes/backend/linux' }
+          ]
         },
         {
           text: '跨端开发',
           collapsed: false,
           items: [
-            { text: '小程序开发', link: '/notes/mini-program' },
-            { text: 'React Native', link: '/notes/react-native-note' },
-            { text: 'Electron', link: '/notes/electron-note' }
+            { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
+            { text: 'React Native', link: '/notes/cross-platform/react-native' },
+            { text: 'Electron', link: '/notes/cross-platform/electron' }
           ]
         },
         {
           text: '场景实战',
           collapsed: false,
           items: [
-            { text: '大文件上传', link: '/notes/large-file-upload' },
-            { text: '动态表单渲染', link: '/notes/dynamic-form' },
-            { text: '虚拟列表', link: '/notes/virtual-list' },
-            { text: 'WebSocket 与实时通信', link: '/notes/websocket-realtime' }
+            { text: '大文件上传', link: '/notes/practice/large-file-upload' },
+            { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
+            { text: '虚拟列表', link: '/notes/practice/virtual-list' },
+            { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
+            { text: 'ECharts', link: '/notes/practice/echarts' }
           ]
         },
         {
           text: 'AI 与前沿技术',
           collapsed: false,
           items: [
-            { text: '前端对接 AI', link: '/notes/ai-frontend-integration' },
-            { text: 'Web AI', link: '/notes/web-ai' },
-            { text: 'WebAssembly', link: '/notes/wasm-note' },
-            { text: 'ECharts', link: '/notes/echarts-note' }
+            { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
+            { text: 'Web AI', link: '/notes/frontier/web-ai' },
+            { text: 'WebAssembly', link: '/notes/frontier/wasm' }
           ]
         }
       ]

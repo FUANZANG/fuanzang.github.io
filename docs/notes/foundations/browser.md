@@ -1,4 +1,4 @@
-# 浏览器 Note
+# 浏览器
 
 [Web API](https://wangdoc.com/webapi/)
 
@@ -404,7 +404,7 @@ location.replace('/new-page'); // 跳转（替换当前历史记录）
 
 ### history（SPA 路由原理）
 
-> 📖 更系统的前端路由知识请查看 [前端路由](/notes/frontend-routing)
+> 📖 更系统的前端路由知识请查看 [前端路由](/notes/frameworks/frontend-routing)
 
 ```js
 // pushState：添加历史记录条目，不刷新页面

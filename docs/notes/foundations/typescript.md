@@ -1,4 +1,4 @@
-# TypeScript Note
+# TypeScript
 
 [TypeScript 教程](https://wangdoc.com/typescript/)
 
