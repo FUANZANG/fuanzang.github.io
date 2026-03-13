@@ -138,7 +138,9 @@ export default defineConfig({
           items: [
             { text: 'Node.js', link: '/notes/backend/node' },
             { text: 'Docker', link: '/notes/backend/docker' },
-            { text: 'Linux', link: '/notes/backend/linux' }
+            { text: 'Linux', link: '/notes/backend/linux' },
+            { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
+            { text: 'SQL 基础', link: '/notes/backend/sql-basics' }
           ]
         },
         {
