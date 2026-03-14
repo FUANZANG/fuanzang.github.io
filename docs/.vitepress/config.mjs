@@ -140,7 +140,8 @@ export default defineConfig({
             { text: 'Docker', link: '/notes/backend/docker' },
             { text: 'Linux', link: '/notes/backend/linux' },
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
-            { text: 'SQL 基础', link: '/notes/backend/sql-basics' }
+            { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
+            { text: 'Redis 基础', link: '/notes/backend/redis-basics' }
           ]
         },
         {
