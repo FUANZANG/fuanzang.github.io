@@ -110,7 +110,8 @@ export default defineConfig({
             { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
             { text: 'CSS 工程化方案', link: '/notes/engineering/css-engineering' },
             { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' },
-            { text: 'GitHub Actions', link: '/notes/engineering/github-actions' }
+            { text: 'GitHub Actions', link: '/notes/engineering/github-actions' },
+            { text: 'Nginx 生产配置', link: '/notes/engineering/nginx' }
           ]
         },
         {
