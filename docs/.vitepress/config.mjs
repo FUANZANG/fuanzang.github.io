@@ -91,6 +91,7 @@ export default defineConfig({
             { text: 'React', link: '/notes/frameworks/react' },
             { text: 'React vs Vue 对比', link: '/notes/frameworks/react-vs-vue' },
             { text: '状态管理', link: '/notes/frameworks/state-management' },
+            { text: '状态管理框架对比', link: '/notes/frameworks/state-managers-compare' },
             { text: '前端路由', link: '/notes/frameworks/frontend-routing' },
             { text: 'HTTP 请求与数据层', link: '/notes/frameworks/http-request' }
           ]
