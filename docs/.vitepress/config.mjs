@@ -123,7 +123,8 @@ export default defineConfig({
             { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
             { text: '前端测试', link: '/notes/performance/frontend-testing' },
             { text: '前端安全', link: '/notes/performance/frontend-security' },
-            { text: 'Chrome DevTools', link: '/notes/performance/debug-devtools' }
+            { text: 'Chrome DevTools', link: '/notes/performance/debug-devtools' },
+            { text: 'Web Vitals 性能指标', link: '/notes/performance/web-vitals' }
           ]
         },
         {
