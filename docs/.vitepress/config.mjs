@@ -174,7 +174,8 @@ export default defineConfig({
           items: [
             { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
             { text: 'Web AI', link: '/notes/frontier/web-ai' },
-            { text: 'WebAssembly', link: '/notes/frontier/wasm' }
+            { text: 'WebAssembly', link: '/notes/frontier/wasm' },
+            { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' }
           ]
         }
       ]
