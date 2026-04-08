@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Pinia 3.x | Redux Toolkit 2.x | Zustand 5.x | Jotai 2.x | MobX 6.x | React Query 5.x
 >
-> 🔗 Pinia 速查见 [Vue 3 笔记](/notes/frameworks/vue3)，Zustand vs Pinia 对比见 [React vs Vue](/notes/frameworks/react-vs-vue) 第 5 节
+> 🔗 Pinia 速查见 [Vue 3 ](/notes/frameworks/vue3)，Zustand vs Pinia 对比见 [React vs Vue](/notes/frameworks/react-vs-vue) 第 5 节
 
 ---
 

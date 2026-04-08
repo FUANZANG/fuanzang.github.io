@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：vue-i18n 11.x | react-i18next 15.x | i18next 25.x | FormatJS（react-intl）7.x
 >
-> 🔗 Vue 项目集成 vue-i18n 见 [Vue 3 笔记](/notes/frameworks/vue3)，React 项目集成见 [React 笔记](/notes/frameworks/react)，小程序国际化见 [小程序开发](/notes/cross-platform/mini-program)
+> 🔗 Vue 项目集成 vue-i18n 见 [Vue 3 ](/notes/frameworks/vue3)，React 项目集成见 [React ](/notes/frameworks/react)，小程序国际化见 [小程序开发](/notes/cross-platform/mini-program)
 
 ---
 

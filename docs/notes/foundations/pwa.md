@@ -2,11 +2,11 @@
 
 > 📌 本文件记录 PWA 相关知识：Service Worker、Web App Manifest、离线缓存、推送通知、安装提示、后台同步、IndexedDB、性能优化与最佳实践。
 >
-> ⚠️ **边界说明**：Service Worker 基础注册与缓存策略见 [浏览器笔记](/notes/foundations/browser)，HTTP/缓存见 [网络协议笔记](/notes/foundations/network-protocol)。本文聚焦 **PWA 完整体系**——安装、推送、后台同步、离线优先等进阶能力。
+> ⚠️ **边界说明**：Service Worker 基础注册与缓存策略见 [浏览器](/notes/foundations/browser)，HTTP/缓存见 [网络协议](/notes/foundations/network-protocol)。本文聚焦 **PWA 完整体系**——安装、推送、后台同步、离线优先等进阶能力。
 >
 > 📅 基于以下版本：Chrome 120+ | Safari 17+ | Firefox 120+
 >
-> 🔗 Service Worker 基础注册见 [浏览器笔记](/notes/foundations/browser)，HTTP/缓存见 [网络协议笔记](/notes/foundations/network-protocol)
+> 🔗 Service Worker 基础注册见 [浏览器](/notes/foundations/browser)，HTTP/缓存见 [网络协议](/notes/foundations/network-protocol)
 
 ---
 

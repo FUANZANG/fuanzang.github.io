@@ -1,6 +1,6 @@
 # React Native 笔记
 
-> 📌 本文件记录 React Native 核心概念、组件、API 与实战技巧。React 基础请查看 [React 笔记](/notes/frameworks/react)
+> 📌 本文件记录 React Native 核心概念、组件、API 与实战技巧。React 基础请查看 [React ](/notes/frameworks/react)
 
 <!-- 基于 React Native 0.76+ (New Architecture) -->
 

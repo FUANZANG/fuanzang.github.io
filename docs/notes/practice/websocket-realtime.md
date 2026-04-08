@@ -4,7 +4,7 @@
 >
 > 📅 基于以下版本：Socket.IO 4.x | ws 8.x | @microsoft/signalr 10.x | 浏览器原生 WebSocket API（Baseline Widely available）
 >
-> 🔗 WebSocket 协议基础（握手、帧格式）见 [网络协议笔记](/notes/foundations/network-protocol) 第 7 节
+> 🔗 WebSocket 协议基础（握手、帧格式）见 [网络协议](/notes/foundations/network-protocol) 第 7 节
 
 ---
 
@@ -124,158 +124,14 @@ function notifyClients(message) {
 
 ## 3. Server-Sent Events (SSE)
 
-SSE 是 HTML5 标准，服务器通过 HTTP 连接单向推送数据到客户端。**基于 HTTP 协议，无需特殊服务器**。
+SSE 是 HTML5 标准，服务器通过 HTTP 连接**单向推送**数据到客户端，基于普通 HTTP、自带重连，适合"只需服务器→客户端推"的场景（通知、行情、日志流）。
 
-### 客户端 API
+协议格式、客户端 `EventSource` API、Node.js SSE 服务端实现、Vue/React 用法等完整内容见专篇：[AI 流式输出](/notes/frontier/ai-streaming)（该篇同时覆盖 SSE 与 fetch + ReadableStream 消费 LLM 流）。
 
-```js
-// 创建 EventSource 连接
-const eventSource = new EventSource('/api/events')
+选型速记：
 
-// 监听消息（默认 message 事件）
-eventSource.onmessage = (event) => {
-  const data = JSON.parse(event.data)
-  console.log(data)
-}
-
-// 监听自定义事件
-eventSource.addEventListener('update', (event) => {
-  console.log('update:', JSON.parse(event.data))
-})
-
-eventSource.addEventListener('notification', (event) => {
-  console.log('notification:', JSON.parse(event.data))
-})
-
-// 连接状态
-eventSource.readyState  // 0=connecting, 1=open, 2=closed
-
-// 关闭连接
-eventSource.close()
-```
-
-### 服务器端实现
-
-```
-SSE 响应格式要求：
-  Content-Type: text/event-stream
-  Cache-Control: no-cache
-  Connection: keep-alive
-
-  data: 消息内容\n\n
-  event: 自定义事件名\n
-  data: 消息内容\n\n
-  id: 消息ID\n
-  data: 消息内容\n\n
-```
-
-```js
-// Node.js SSE 服务器（原生 http）
-import http from 'http'
-
-http.createServer((req, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-  })
-
-  // 每 2 秒推送一次
-  const interval = setInterval(() => {
-    res.write(`data: ${JSON.stringify({ time: Date.now() })}\n\n`)
-  }, 2000)
-
-  // 自定义事件
-  res.write(`event: update\ndata: ${JSON.stringify({ msg: '更新' })}\n\n`)
-
-  // 带消息 ID（断线重连时通过 Last-Event-ID 头恢复）
-  res.write(`id: 123\ndata: ${JSON.stringify({ msg: '带ID的消息' })}\n\n`)
-
-  req.on('close', () => {
-    clearInterval(interval)
-    res.end()
-  })
-}).listen(3000)
-```
-
-### SSE 自动重连
-
-```
-SSE 内置自动重连：
-  - 连接断开后浏览器自动重连
-  - 重连时会带上 Last-Event-ID 请求头
-  - 服务器可据此发送断线期间错过的消息
-
-  也可以用 retry 字段控制重连间隔：
-  retry: 5000\n\n  → 5 秒后重连
-```
-
-### Vue 中使用 SSE
-
-```ts
-import { ref, onUnmounted } from 'vue'
-
-function useSSE(url: string) {
-  const data = ref(null)
-  const error = ref<Event | null>(null)
-
-  const source = new EventSource(url)
-
-  source.onmessage = (e) => {
-    data.value = JSON.parse(e.data)
-  }
-
-  source.onerror = (e) => {
-    error.value = e
-  }
-
-  onUnmounted(() => source.close())
-
-  return { data, error }
-}
-```
-
-### React 中使用 SSE
-
-```tsx
-import { useEffect, useState } from 'react'
-
-function useSSE(url: string) {
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-    const source = new EventSource(url)
-
-    source.onmessage = (e) => {
-      setData(JSON.parse(e.data))
-    }
-
-    return () => source.close()  // 清理
-  }, [url])
-
-  return data
-}
-```
-
-### SSE 的优缺点
-
-```
-✅ 优点：
-- 基于 HTTP，无需特殊协议/服务器
-- 浏览器内置自动重连
-- 简单的 API（EventSource）
-- 适合服务器→客户端单向推送
-- HTTP/2 下可多路复用
-
-❌ 缺点：
-- 只能服务器→客户端（单向）
-- 不能发自定义 header（EventSource 不支持）
-- 浏览器限制同源连接数（HTTP/1.1 下 6 个）
-- IE/旧 Edge 不支持（需 polyfill）
-- 只能传输 UTF-8 文本（不能传二进制）
-```
-
----
++ 只要服务器单向推（含 AI 逐字输出）→ SSE
++ 需要双向实时（聊天、协同）→ WebSocket
 
 ## 4. WebSocket API（浏览器原生）
 

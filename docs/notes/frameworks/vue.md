@@ -2,7 +2,7 @@
 
 > 为便于查阅，Vue 笔记已按版本拆分为两个独立页面：
 
-## 📘 [Vue 2 笔记](/notes/frameworks/vue2)
+## 📘 [Vue 2 ](/notes/frameworks/vue2)
 
 Vue 2 Options API 实战技巧：
 - 路由守卫、路由重复点击报错处理
@@ -10,7 +10,7 @@ Vue 2 Options API 实战技巧：
 - cron 表达式转换
 - Tags-Views 刷新保留、树形展开状态持久化
 
-## 📗 [Vue 3 笔记](/notes/frameworks/vue3)
+## 📗 [Vue 3 ](/notes/frameworks/vue3)
 
 Vue 3 Composition API 全面参考：
 - 响应式核心：ref / reactive / toRefs / shallowRef / readonly

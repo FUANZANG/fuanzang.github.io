@@ -2,11 +2,11 @@
 
 > 📌 本文件记录前端无障碍相关知识：WCAG 标准、ARIA 角色/状态/属性、语义化 HTML、键盘导航、屏幕阅读器、色彩对比度、焦点管理、无障碍测试与最佳实践。
 >
-> ⚠️ **边界说明**：`prefers-reduced-motion` 见 [前端动画笔记](/notes/foundations/frontend-animation)，`aria-labelledby` 见 [Vue 3 笔记](/notes/frameworks/vue3)。本文聚焦 **a11y 完整体系**。
+> ⚠️ **边界说明**：`prefers-reduced-motion` 见 [前端动画](/notes/foundations/frontend-animation)，`aria-labelledby` 见 [Vue 3 ](/notes/frameworks/vue3)。本文聚焦 **a11y 完整体系**。
 >
 > 📅 基于 WCAG 2.2 AA 标准
 >
-> 🔗 `prefers-reduced-motion` 见 [前端动画笔记](/notes/foundations/frontend-animation)，`aria-labelledby` 见 [Vue 3 笔记](/notes/frameworks/vue3)
+> 🔗 `prefers-reduced-motion` 见 [前端动画](/notes/foundations/frontend-animation)，`aria-labelledby` 见 [Vue 3 ](/notes/frameworks/vue3)
 
 ---
 

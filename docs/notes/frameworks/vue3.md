@@ -1,6 +1,6 @@
 # Vue 3 笔记
 
-> 📌 Vue 2 Options API 相关内容请查看 [Vue 2 笔记](/notes/frameworks/vue2)
+> 📌 Vue 2 Options API 相关内容请查看 [Vue 2 ](/notes/frameworks/vue2)
 
 <!-- 本文件记录 Vue 3 Composition API 的核心概念、实战技巧与常用代码 -->
 

@@ -2,7 +2,7 @@
 
 > 📌 本文档帮助同时使用 React 和 Vue 的开发者快速切换，提供 API 对照和常见场景代码对比。
 
-<!-- React 详细笔记见 [React 笔记](/notes/frameworks/react)，Vue 详细笔记见 [Vue 3 笔记](/notes/frameworks/vue3) -->
+<!-- React 详细笔记见 [React ](/notes/frameworks/react)，Vue 详细笔记见 [Vue 3 ](/notes/frameworks/vue3) -->
 
 ---
 
