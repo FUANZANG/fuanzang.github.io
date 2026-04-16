@@ -74,109 +74,15 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
 
 **缺点**：所有文件一起失效，无法做到"只更新改了的文件"。contenthash 是更细粒度的方案，推荐。
 
-## Nginx 完整生产配置
+## Nginx 生产配置
 
-```nginx
-# /etc/nginx/conf.d/app.conf
-upstream app_backend {
-    server 127.0.0.1:3000;  # 后端 API
-    keepalive 32;
-}
+完整配置见专篇：[Nginx 生产配置](/notes/engineering/nginx)。
 
-server {
-    listen 80;
-    listen [::]:80;
-    server_name example.com www.example.com;
+部署要点：
 
-    # --- 静态资源根目录 ---
-    root /var/www/app/current/dist;
-    index index.html;
-
-    # --- HTTPS 重定向（生产环境）---
-    # listen 443 ssl http2;
-    # ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
-
-    # --- 安全头 ---
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    # X-XSS-Protection 已被现代浏览器弃用，推荐用 CSP 替代
-    # add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # 可选：CSP（严格限制外部资源）
-    # add_header Content-Security-Policy "default-src 'self'; script-src 'self' cdn.example.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: cdn.example.com;";
-
-    # --- 前端路由（SPA fallback）---
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # --- API 代理 ---
-    location /api/ {
-        proxy_pass http://app_backend/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # --- 静态资源缓存 ---
-    location ~* \.(js|css)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-
-    location ~* \.(png|jpg|jpeg|gif|ico|svg|webp)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-
-    location ~* \.(woff2?|ttf|eot|otf)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # --- HTML 不缓存 ---
-    location = /index.html {
-        add_header Cache-Control "no-cache, no-store, must-revalidate";
-        add_header Pragma "no-cache";
-        add_header Expires "0";
-    }
-
-    # --- Gzip 压缩 ---
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_min_length 1024;
-    gzip_types
-        text/plain text/css text/javascript
-        application/javascript application/json
-        application/xml application/xml+rss
-        image/svg+xml;
-
-    # --- 请求限流（防刷）---
-    # limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    # location /api/ {
-    #     limit_req zone=api burst=20 nodelay;
-    #     ...
-    # }
-
-    # --- 健康检查 ---
-    location /health {
-        return 200 'ok';
-        add_header Content-Type text/plain;
-        access_log off;
-    }
-
-    # --- 日志 ---
-    access_log /var/log/nginx/app_access.log;
-    error_log /var/log/nginx/app_error.log warn;
-}
-```
++ 构建产物带内容哈希可长缓存；**HTML 不缓存**
++ SPA（history 模式）配 `try_files $uri $uri/ /index.html` 回退
++ HTTP 强制跳转 HTTPS，配合 Let's Encrypt 免费证书
 
 ## 部署模式
 

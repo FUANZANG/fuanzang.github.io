@@ -13,74 +13,15 @@
 
 ## GitHub Actions
 
-### 基本结构
+GitHub 原生的 CI/CD 服务，配置写在仓库 `.github/workflows/*.yml`。完整用法见专篇：[GitHub Actions](/notes/engineering/github-actions)。
 
-```yaml
-# .github/workflows/ci.yml
-name: CI
+要点速记：
 
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
++ 事件触发：`push` / `pull_request` / `schedule` / `workflow_dispatch`
++ 核心概念：workflow → job → step → action
++ 用 `npm ci` 而非 `npm install`，保证 lock 文件一致性
++ Secrets 在仓库 `Settings → Secrets` 配置，workflow 中以 <code v-pre>${{ secrets.X }}</code> 引用
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: 安装依赖
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
-
-      - name: Build
-        run: npm run build
-```
-
-### 常用 actions
-
-| Action | 用途 |
-|--------|------|
-| `actions/checkout@v4` | 拉取代码 |
-| `actions/setup-node@v4` | 安装 Node.js + 缓存 |
-| `actions/cache@v4` | 自定义缓存（node_modules 等） |
-| `actions/upload-artifact@v4` | 上传构建产物 |
-| `actions/download-artifact@v4` | 下载构建产物 |
-| `peaceiris/actions-gh-pages@v4` | 部署到 GitHub Pages |
-
-### 缓存 node_modules
-
-```yaml
-- name: 缓存 node_modules
-  uses: actions/cache@v4
-  id: cache-deps
-  with:
-    path: node_modules
-    key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-    restore-keys: |
-      ${{ runner.os }}-node-
-
-- name: 安装依赖
-  if: steps.cache-deps.outputs.cache-hit != 'true'
-  run: npm ci
-```
-
-+ 用 `npm ci` 而不是 `npm install`，保证 lock 文件一致性
 
 ## GitLab CI/CD
 
