@@ -491,7 +491,7 @@ onUnmounted(() => {
             ><span class="caret">|</span>
           </p>
           <div class="hero-actions">
-            <a href="/notes/html-note" class="action-btn primary">开始阅读</a>
+            <a href="/notes/foundations/html" class="action-btn primary">开始阅读</a>
             <a href="/blog/hello-world" class="action-btn ghost">浏览博客</a>
             <a
               href="https://github.com/FUANZANG"
