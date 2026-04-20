@@ -42,6 +42,7 @@ export default defineConfig({
       { text: '笔记', link: '/notes/foundations/html' },
       { text: '菜谱', link: '/recipes' },
       { text: '工具', link: '/tools' },
+      { text: '导航', link: '/nav' },
       { text: '博客', link: '/blog/hello-world' }
     ],
 
