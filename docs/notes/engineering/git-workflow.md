@@ -354,7 +354,7 @@ git bisect reset         # 结束二分查找
 
 ## 8. .gitignore 最佳实践
 
-```gitignore
+```text
 # 依赖
 node_modules/
 .pnp
