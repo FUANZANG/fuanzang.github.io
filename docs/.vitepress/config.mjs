@@ -38,12 +38,17 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: '首页', link: '/' },
       { text: '笔记', link: '/notes/foundations/html' },
-      { text: '菜谱', link: '/recipes' },
-      { text: '工具', link: '/tools' },
-      { text: '导航', link: '/nav' },
-      { text: '博客', link: '/blog/hello-world' }
+      { text: '博客', link: '/blog/hello-world' },
+      {
+        text: '探索',
+        items: [
+          { text: '工具', link: '/tools' },
+          { text: '菜谱', link: '/recipes' },
+          { text: '导航', link: '/nav' },
+          { text: '关于', link: '/about' }
+        ]
+      }
     ],
 
     sidebar: {
