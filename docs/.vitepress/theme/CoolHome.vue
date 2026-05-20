@@ -533,7 +533,7 @@ onUnmounted(() => {
     <section class="features-section">
       <h2 class="section-heading">探索</h2>
       <div class="features-grid">
-        <a href="/notes/html-note" class="feature-card">
+        <a href="/notes/foundations/html" class="feature-card">
           <div class="card-icon">
             <span>📝</span>
           </div>
