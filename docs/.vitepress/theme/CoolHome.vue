@@ -617,6 +617,7 @@ onUnmounted(() => {
 <style scoped>
 /* ─── CSS Custom Properties ─── */
 .cool-home {
+  overflow-x: hidden;
   --c-blue: #3b82f6;
   --c-purple: #8b5cf6;
   --c-pink: #ec4899;
@@ -1105,6 +1106,8 @@ onUnmounted(() => {
   padding: 6rem 2rem 8rem;
   max-width: 1100px;
   margin: 0 auto;
+  /* 卡片/标题入场从右侧飞入（x: 60~120），裁剪避免撑出横向滚动条 */
+  overflow-x: hidden;
 }
 
 .section-heading {
