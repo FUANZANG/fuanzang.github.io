@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import recipes from '../data/recipes.json'
 
 const searchQuery = ref('')
@@ -103,27 +103,38 @@ const pagedRecipes = computed(() => {
   return sortedRecipes.value.slice(start, start + perPage)
 })
 
+const recommendedId = ref(null)
+
 watch([searchQuery, selectedCategory, selectedTags, sortBy], () => {
   currentPage.value = 1
+  recommendedId.value = null
 })
 
-const recommendedId = ref(null)
-const pickRandom = () => {
-  const pool = filteredRecipes.value
+const pickRandom = async () => {
+  const pool = sortedRecipes.value
   if (pool.length === 0) return
-  const choice = pool[Math.floor(Math.random() * pool.length)]
+  const index = Math.floor(Math.random() * pool.length)
+  const choice = pool[index]
   recommendedId.value = choice.name
   expandedId.value = choice.name
+  // 先翻到目标所在页，再滚动（分页后 DOM 只渲染当前页）
+  currentPage.value = Math.floor(index / perPage) + 1
+  await nextTick()
   requestAnimationFrame(() => {
     const el = document.querySelector(
       `.recipe-card[data-name="${CSS.escape(choice.name)}"]`
     )
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   })
 }
 
 const toggleExpand = name => {
-  expandedId.value = expandedId.value === name ? null : name
+  const collapsing = expandedId.value === name
+  expandedId.value = collapsing ? null : name
+  // 收起推荐卡，或手动点开其他菜 → 去掉「换一道」
+  if (!recommendedId.value) return
+  if (collapsing && name === recommendedId.value) recommendedId.value = null
+  else if (!collapsing && name !== recommendedId.value) recommendedId.value = null
 }
 
 const difficultyClass = d => {
@@ -281,6 +292,18 @@ const formatTime = s => {
       共收录 {{ recipes.length }} 道菜谱 · 筛选出 {{ sortedRecipes.length }} 道
     </footer>
 
+    <!-- 随机后悬浮「换一道」，避免每次回到顶部 -->
+    <Teleport to="body">
+      <button
+        v-if="recommendedId && !cookingMode"
+        class="random-fab"
+        type="button"
+        @click="pickRandom"
+      >
+        🎲 换一道
+      </button>
+    </Teleport>
+
     <!-- 烹饪模式弹窗 -->
     <Teleport to="body">
       <div v-if="cookingMode" class="cooking-overlay" @click.self="closeCooking">
@@ -366,6 +389,31 @@ const formatTime = s => {
 .random-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(99,102,241,0.5); }
 .random-btn:active { transform: translateY(0); }
 
+/* 随机推荐后的悬浮换一道 */
+.random-fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.75rem;
+  z-index: 90;
+  padding: 0.7rem 1.15rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.55);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.random-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.6);
+}
+.random-fab:active {
+  transform: translateY(0);
+}
+
 .view-toggle {
   display: flex;
   border: 1px solid var(--vp-c-divider);
@@ -445,6 +493,8 @@ const formatTime = s => {
   border-radius: 12px;
   overflow: hidden;
   transition: box-shadow 0.2s, transform 0.2s;
+  /* 为固定导航预留下方空间，避免 scrollIntoView 贴顶被遮挡 */
+  scroll-margin-top: calc(var(--vp-nav-height, 64px) + 12px);
 }
 .recipe-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
 .recipe-card.recommended { border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 2px rgba(139,92,246,0.2); }
