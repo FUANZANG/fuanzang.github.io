@@ -68,6 +68,36 @@ body.cool-home-page .VPNav.scrolled {
   }
 }
 
+/* ═══ 移动端：展开"探索"组，子项扁平化（不折叠进探索）═══ */
+/* 手机访问时，把"探索"分组的子项直接作为一级菜单项展示，去掉折叠 */
+@media (max-width: 767px) {
+  /* 隐藏"探索"分组标题（折叠按钮） */
+  .VPNavScreenMenuGroup .button {
+    display: none !important;
+  }
+
+  /* 强制子项始终可见、容器自适应高度 */
+  .VPNavScreenMenuGroup {
+    height: auto !important;
+    overflow: visible !important;
+    border-bottom: none !important;
+  }
+  .VPNavScreenMenuGroup .items {
+    visibility: visible !important;
+  }
+
+  /* 子项链接样式对齐一级菜单项（带分隔线、无缩进） */
+  .VPNavScreenMenuGroup .items .item {
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+  .VPNavScreenMenuGroup .items .VPNavScreenMenuGroupLink {
+    margin-left: 0;
+    padding: 12px 0 11px;
+    line-height: 24px;
+    font-weight: 500;
+  }
+}
+
 /* 滚动条美化 */
 ::-webkit-scrollbar {
   width: 8px;
