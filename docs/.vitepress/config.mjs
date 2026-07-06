@@ -38,7 +38,7 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: '笔记', link: '/notes/foundations/html' },
+      { text: '笔记', link: '/notes/' },
       { text: '博客', link: '/blog/hello-world' },
       {
         text: '探索',
@@ -149,7 +149,6 @@ export default defineConfig({
             { text: 'Node.js', link: '/notes/backend/node' },
             { text: 'Docker', link: '/notes/backend/docker' },
             { text: 'Linux', link: '/notes/backend/linux' },
-            { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'Redis 基础', link: '/notes/backend/redis-basics' }
           ]
