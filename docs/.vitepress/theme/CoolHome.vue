@@ -491,7 +491,7 @@ onUnmounted(() => {
             ><span class="caret">|</span>
           </p>
           <div class="hero-actions">
-            <a href="/notes/foundations/html" class="action-btn primary">开始阅读</a>
+            <a href="/notes/" class="action-btn primary">开始阅读</a>
             <a href="/blog/hello-world" class="action-btn ghost">浏览博客</a>
             <a
               href="https://github.com/FUANZANG"
@@ -533,7 +533,7 @@ onUnmounted(() => {
     <section class="features-section">
       <h2 class="section-heading">探索</h2>
       <div class="features-grid">
-        <a href="/notes/foundations/html" class="feature-card">
+        <a href="/notes/" class="feature-card">
           <div class="card-icon">
             <span>📝</span>
           </div>
@@ -1318,7 +1318,9 @@ a.about-card:hover .about-more {
 
 @media (max-width: 768px) {
   .hero {
-    min-height: auto;
+    min-height: 100vh; /* 兜底：不支持 svh 的浏览器 */
+    min-height: 100svh;
+    justify-content: center;
   }
 
   .hero-inner {
@@ -1336,18 +1338,29 @@ a.about-card:hover .about-more {
     order: 2;
   }
 
-  .code-window {
-    max-width: 100%;
-  }
-
+  /* 紧凑 CTA：两个主按钮并排，GitHub 作次级链接 */
   .hero-actions {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
   }
 
-  .action-btn {
-    width: 100%;
-    max-width: 260px;
+  .action-btn.primary,
+  .action-btn.ghost {
+    flex: 1 1 calc(50% - 0.375rem);
+    width: auto;
+    max-width: none;
+    justify-content: center;
+  }
+
+  .action-btn.subtle {
+    flex: 1 1 100%;
+    width: auto;
+    max-width: none;
+    margin-top: 0.25rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
     justify-content: center;
   }
 
@@ -1355,8 +1368,18 @@ a.about-card:hover .about-more {
     padding: 4rem 1.5rem 5rem;
   }
 
+  /* 探索区：收紧标题与卡片间距 */
+  .section-heading {
+    margin-bottom: 2rem;
+  }
+
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .feature-card {
+    padding: 1.8rem 1.5rem;
   }
 
   .about-card {
@@ -1364,6 +1387,7 @@ a.about-card:hover .about-more {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 1.8rem 1.5rem;
   }
 
   .tech-tags {
@@ -1375,7 +1399,7 @@ a.about-card:hover .about-more {
   }
 
   .scroll-hint {
-    bottom: 1.5rem;
+    display: none;
   }
 }
 
