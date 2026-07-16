@@ -77,11 +77,16 @@ for (const { key, label } of subdirs) {
 }
 
 // 更新汇总行
-readme = readme.replace(/(\d+)\+?\s*\u7BC7\u6280\u672F\u6587\u7AE0/, stats.totalNotes + '+ \u7BC7\u6280\u672F\u6587\u7AE0')
+readme = readme.replace(/(\d+)\+?\s*\u7BC7\u6280\u672F\u6587\u7AE0/, stats.totalNotes + ' \u7BC7\u6280\u672F\u6587\u7AE0')
 readme = readme.replace(/(\d+)\s*\u6B3E\u7EAF\u524D\u7AEF\u5DE5\u5177/, stats.tools + ' \u6B3E\u7EAF\u524D\u7AEF\u5DE5\u5177')
-readme = readme.replace(/(\d+)\+?\s*\u9053\u5BB6\u5E38\u83DC\u8C31/, stats.recipes + '+ \u9053\u5BB6\u5E38\u83DC\u8C31')
+readme = readme.replace(/(\d+)\+?\s*\u9053\u5BB6\u5E38\u83DC\u8C31/, stats.recipes + ' \u9053\u5BB6\u5E38\u83DC\u8C31')
 readme = readme.replace(/(\d+)\s*\u4E2A\u5206\u7C7B/, stats.navCategories + ' \u4E2A\u5206\u7C7B')
 readme = readme.replace(/(\d+)\+?\s*\u4E2A\u5F00\u53D1\u7F51\u7AD9/, stats.navLinks + '+ \u4E2A\u5F00\u53D1\u7F51\u7AD9')
+
+// 同步目录结构注释块里写死的数据文件描述数字（data/ 段）
+readme = readme.replace(/(recipes\.json\s+#\s*)(\d+)/, `$1${stats.recipes}`)
+readme = readme.replace(/(tools\.js\s+#\s*)(\d+)/, `$1${stats.tools}`)
+readme = readme.replace(/(navLinks\.js\s+#\s*)(\d+)/, `$1${stats.navLinks}`)
 
 fs.writeFileSync(README, readme, 'utf8')
 
