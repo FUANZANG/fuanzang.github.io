@@ -21,11 +21,14 @@ npm run docs:preview # 预览构建结果
 
 ```
 docs/
-├── .vitepress/config.mjs   # 站点配置（导航、侧边栏）
-├── .vitepress/theme/       # 自定义主题
-│   ├── Layout.vue          # 全局布局（滚动进度条、GSAP 动画）
-│   ├── CoolHome.vue        # 首页 Hero 组件
-│   └── style.css           # 全局样式
+├── .vitepress/
+│   ├── config.mjs          # 站点配置（导航、侧边栏）
+│   └── theme/              # 自定义主题
+│       ├── index.js        # 主题入口
+│       ├── Layout.vue      # 全局布局（滚动进度条、GSAP 动画）
+│       ├── CoolHome.vue    # 首页 Hero 组件
+│       ├── NotesIndex.vue  # 笔记总览组件
+│       └── style.css       # 全局样式
 ├── components/             # Vue 组件
 │   ├── ToolsBox.vue        # 工具箱外壳
 │   ├── RecipesTracker.vue  # 菜谱组件
@@ -34,10 +37,10 @@ docs/
 │   ├── transforms.js       # 编解码转换纯函数
 │   └── useTool.js          # 共享 hook（复制、toast）
 ├── data/
-│   ├── recipes.json        # 66 道菜谱数据
+│   ├── recipes.json        # 90 道菜谱数据
 │   ├── tools.js            # 20 款工具定义
 │   └── navLinks.js         # 112 导航链接
-├── notes/                  # 技术笔记（9 大分类）
+├── notes/                  # 技术笔记（9 大分类，66 篇）
 │   ├── foundations/         # 前端基础（17 篇）
 │   ├── frameworks/          # 框架（9 篇）
 │   ├── engineering/         # 工程化（13 篇）
@@ -49,15 +52,19 @@ docs/
 │   └── frontier/            # AI 与前沿（5 篇）
 ├── blog/                   # 博客文章
 ├── public/                 # 静态资源
+├── about.md                # 关于页
+├── nav.md                  # 导航页
+├── recipes.md              # 菜谱页
+├── tools.md                # 工具箱页
 └── index.md                # 首页入口
 ```
 
 ## 功能模块
 
 - **首页**：沉浸式 Hero（打字机、视差滚动、3D 卡片倾斜、渐变光球）
-- **笔记**：66+ 篇技术文章，覆盖前端全栈知识体系
+- **笔记**：66 篇技术文章，覆盖前端全栈知识体系
 - **工具箱**：20 款纯前端工具（Base64、JSON、正则、密码、二维码等），数据不上传
-- **菜谱**：66+ 道家常菜谱，支持搜索/分类/随机推荐
+- **菜谱**：90 道家常菜谱，支持搜索/分类/随机推荐
 - **导航**：15 个分类、112 开发网站速查
 - **博客**：技术文章与经验分享
 
