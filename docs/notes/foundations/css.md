@@ -1,5 +1,12 @@
 # CSS
 
+> 📌 本文件记录 CSS 布局、选择器、现代特性与常见坑。工程化方案（Tailwind/CSS Modules 等）见 [CSS 工程化](/notes/engineering/css-engineering)；响应式方案见 [响应式与自适应](/notes/foundations/responsive-design)。
+>
+> 📅 参考：MDN CSS | CSS Specs
+
+---
+
+
 ## 居中总结
 
 + 行盒 (行块盒) 的水平居中
@@ -926,3 +933,187 @@ ul{
   all: revert 
 }
 ```
+
+---
+
+## 现代布局补强
+
+### 一维：Flex 速记
+
+```css
+.row {
+  display: flex;
+  align-items: center;      /* 交叉轴 */
+  justify-content: space-between; /* 主轴 */
+  gap: 12px;                /* 替代 margin 缝隙 */
+  flex-wrap: wrap;          /* 小屏换行 */
+}
+
+.item { flex: 1 1 200px; }  /* grow shrink basis */
+```
+
++ 子项默认 `min-width: auto`，长内容可能撑破；需要时可设 `min-width: 0`
++ `margin-left: auto` 可把单个子项推到另一侧（比再包一层更干净）
+
+### 二维：Grid 速记
+
+```css
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.hero {
+  grid-column: 1 / -1; /* 通栏 */
+}
+```
+
+```css
+/* 经典圣杯/侧栏布局 */
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+.layout > header { grid-column: 1 / -1; }
+.layout > footer { grid-column: 1 / -1; }
+```
+
++ `fr` 分配剩余空间；`minmax(0, 1fr)` 可防止网格子项溢出
++ 子网格：`display: subgrid`（支持度已较好，复杂对齐时很香）
+
+### 逻辑属性（书写方向友好）
+
+```css
+.card {
+  margin-inline: auto;     /* 左右 = 行内方向 */
+  padding-block: 1rem;     /* 上下 = 块方向 */
+  inset-inline-start: 0;   /* 替代 left（在 RTL 下自动镜像） */
+  border-inline-end: 1px solid #ddd;
+}
+```
+
+新项目优先逻辑属性，少写死 `left`/`right`。
+
+---
+
+## 现代选择器
+
+```css
+/* 父级根据子级状态变化 */
+.card:has(img.loading) { opacity: 0.6; }
+form:has(:invalid) .submit { opacity: 0.5; }
+
+/* 后续兄弟（含自身之后所有） */
+h2 ~ p { color: #555; }
+
+/* 任意层级后代中的直接关系可用 :is/:where 降权 */
+:is(article, section) :where(h1, h2, h3) {
+  line-height: 1.25;
+}
+
+/* 用户是否使用键盘导航（无障碍焦点环） */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+```
+
++ `:where()` 权重为 0，适合重置；`:is()` 取参数中最高权重
++ `:has()` 很强，但复杂选择器可能有性能成本，避免挂在超大列表根上乱扫
+
+---
+
+## 容器查询（轻量）
+
+相对视口的媒体查询之外，**按组件自身宽度**响应：
+
+```css
+.card {
+  container-type: inline-size;
+  container-name: card;
+}
+
+@container card (min-width: 360px) {
+  .card__body { display: grid; grid-template-columns: 120px 1fr; }
+}
+```
+
++ 适用：卡片、侧栏内嵌模块、设计系统组件
++ 页面级断点仍用 `@media`；组件级优先 `@container`
++ 需要查询高度时用 `container-type: size`（较少见）
+
+完整响应式策略见 [响应式与自适应](/notes/foundations/responsive-design)。
+
+---
+
+## 层叠与优先级提醒
+
+1. 来源与重要性：用户 `!important` > 作者 `!important` > 作者普通 > 用户普通 > UA
+2. 选择器权重（内联 / id / class+属性+伪类 / 元素+伪元素）
+3. 后写覆盖先写
+4. `@layer` 可显式管理层级，减少 `!important`：
+
+```css
+@layer reset, base, components, utilities;
+
+@layer components {
+  .btn { padding: 8px 12px; }
+}
+@layer utilities {
+  .p-0 { padding: 0; } /* 即使权重相同也压过 components */
+}
+```
+
+堆叠上下文细节见上文「堆叠(层叠)上下文」。
+
+---
+
+## 性能相关注意
+
+| 点 | 建议 |
+|----|------|
+| 动画属性 | 优先 `transform` / `opacity`，少改宽高触发布局 |
+| `content-visibility: auto` | 长列表/折叠区块可跳过渲染（见上文示例） |
+| 选择器 | 过深或大量 `:has()` 需实测；DevTools Performance 验证 |
+| 字体 | `font-display: swap`；可变字体减少多文件请求 |
+| 含图片 CLS | 给 img 宽高或 `aspect-ratio` |
+
+动画库与动效体系见 [前端动画](/notes/foundations/frontend-animation)。
+
+---
+
+## 实用片段
+
+```css
+/* 安全区（刘海屏） */
+.bottom-bar {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* 截断 */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 流畅视口高度 */
+.full { min-height: 100dvh; }
+```
+
+---
+
+## 参考
+
++ [MDN CSS 参考](https://developer.mozilla.org/zh-CN/docs/Web/CSS)
++ [CSS 选择器 Level 4](https://www.w3.org/TR/selectors-4/)
++ [CSS Containment / Container Queries](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_containment)
