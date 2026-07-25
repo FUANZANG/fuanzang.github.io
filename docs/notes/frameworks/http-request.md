@@ -2,6 +2,8 @@
 
 > 📌 本文件记录前端 HTTP 请求核心知识：fetch API、Axios、拦截器、请求取消、并发控制、React Query/SWR 数据层方案、错误处理与最佳实践。
 >
+> ⚠️ **边界说明**：GraphQL / tRPC 契约与客户端见 [GraphQL 与 tRPC](/notes/frameworks/graphql-trpc)；登录态与 Token 刷新拦截见 [前端鉴权实战](/notes/practice/frontend-auth)。
+>
 > 📅 基于以下版本：Axios 1.x | React Query 5.x | SWR 2.x | VueUse 11.x
 
 ---

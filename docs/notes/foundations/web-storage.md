@@ -2,6 +2,8 @@
 
 > 📌 本文件记录浏览器端存储方案：Cookie、localStorage、sessionStorage、IndexedDB 的 API、容量限制、适用场景与对比。
 >
+> ⚠️ **边界说明**：Token / Session 该不该放本地存储，见 [前端鉴权实战](/notes/practice/frontend-auth)。
+>
 > 📅 参考：MDN Web Docs | Storage quotas and eviction criteria
 
 ---

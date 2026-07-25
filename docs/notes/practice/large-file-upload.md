@@ -1,5 +1,7 @@
 # 大文件上传
 
+> 分片 Hash 若放主线程易卡顿，可配合 [Web Workers 实战](/notes/practice/web-workers) 卸载计算。
+
 ## 核心机制
 
 ### 分片上传 (Chunked Upload)

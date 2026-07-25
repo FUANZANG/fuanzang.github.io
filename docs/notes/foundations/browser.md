@@ -1981,6 +1981,8 @@ Promise.resolve().then(() => console.log('promise'));
 
 ## Web Worker / SharedWorker
 
+> 工程向扩展（Transferable、池化、框架生命周期）见专篇：[Web Workers 实战](/notes/practice/web-workers)。
+
 ### Web Worker 基本用法
 
 ```js

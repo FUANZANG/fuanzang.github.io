@@ -370,44 +370,9 @@ gl.drawArrays(gl.TRIANGLES, 0, 3)  // 画一个三角形
 | 适用场景 | 图表、简单动画、图片处理 | 3D 场景、粒子系统、WebXR |
 | 实际使用 | 直接使用 | 通常用 Three.js / Babylon.js 等封装 |
 
-### Three.js 快速上手
+### Three.js
 
-实际 3D 项目基本都使用 Three.js，它封装了 WebGL 的底层细节：
-
-```bash
-npm install three
-```
-
-```js
-import * as THREE from 'three'
-
-// 场景
-const scene = new THREE.Scene()
-
-// 相机（透视相机：fov, 宽高比, 近截面, 远截面）
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.z = 5
-
-// 渲染器
-const renderer = new THREE.WebGLRenderer()
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
-
-// 几何体 + 材质 + 网格
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-const cube = new THREE.Mesh(geometry, material)
-scene.add(cube)
-
-// 动画循环
-function animate() {
-  requestAnimationFrame(animate)
-  cube.rotation.x += 0.01
-  cube.rotation.y += 0.01
-  renderer.render(scene, camera)
-}
-animate()
-```
+实际 3D 项目基本都使用 Three.js 封装 WebGL。场景、材质、模型加载、框架集成与性能清单见专篇：[Three.js](/notes/frontier/threejs)。
 
 ---
 
