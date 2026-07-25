@@ -93,7 +93,8 @@ export default defineConfig({
             { text: '状态管理', link: '/notes/frameworks/state-management' },
             { text: '状态管理框架对比', link: '/notes/frameworks/state-managers-compare' },
             { text: '前端路由', link: '/notes/frameworks/frontend-routing' },
-            { text: 'HTTP 请求与数据层', link: '/notes/frameworks/http-request' }
+            { text: 'HTTP 请求与数据层', link: '/notes/frameworks/http-request' },
+            { text: 'GraphQL 与 tRPC', link: '/notes/frameworks/graphql-trpc' }
           ]
         },
         {
@@ -164,7 +165,9 @@ export default defineConfig({
             { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
             { text: '虚拟列表', link: '/notes/practice/virtual-list' },
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
-            { text: 'ECharts', link: '/notes/practice/echarts' }
+            { text: 'ECharts', link: '/notes/practice/echarts' },
+            { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
+            { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
           ]
         },
         {
@@ -175,7 +178,8 @@ export default defineConfig({
             { text: 'Web AI', link: '/notes/frontier/web-ai' },
             { text: 'WebAssembly', link: '/notes/frontier/wasm' },
             { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' },
-            { text: 'WebGPU', link: '/notes/frontier/webgpu' }
+            { text: 'WebGPU', link: '/notes/frontier/webgpu' },
+            { text: 'Three.js', link: '/notes/frontier/threejs' }
           ]
         }
       ]

@@ -2,7 +2,7 @@
 
 WebGPU 是浏览器的新一代**图形与计算 API**，用于在 GPU 上执行渲染和通用计算。它取代老旧的 WebGL，提供更接近现代 GPU 的编程模型（基于 Vulkan / Metal / Direct3D 12），性能与灵活性大幅提升。
 
-> 上一代图形 API 见 [Canvas & WebGL](/notes/foundations/canvas-webgl)；3D 封装库见 Three.js（待补充）。
+> 上一代图形 API 见 [Canvas & WebGL](/notes/foundations/canvas-webgl)；3D 封装库见 [Three.js](/notes/frontier/threejs)。
 
 ## 为什么需要 WebGPU
 

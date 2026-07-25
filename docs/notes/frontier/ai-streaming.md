@@ -2,7 +2,7 @@
 
 AI 流式输出指的是：大模型（LLM）生成回答时，**不等待整段文本生成完毕，而是以"逐块/逐字"的方式持续推送给前端**，前端边收边渲染，带来类似打字机的实时体验。
 
-> 本篇聚焦**前端如何消费 LLM 的流式响应**。关于双向实时通信（聊天室、协同编辑等），见 [WebSocket 与实时通信](/notes/practice/websocket-realtime)。
+> 本篇聚焦**前端如何消费 LLM 的流式响应**。关于双向实时通信（聊天室、协同编辑等），见 [WebSocket 与实时通信](/notes/practice/websocket-realtime)。重计算卸载主线程见 [Web Workers 实战](/notes/practice/web-workers)（与流式传输无关）。
 
 ## 为什么用 SSE 而不是 WebSocket
 
