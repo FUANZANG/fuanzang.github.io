@@ -1,7 +1,10 @@
 <script setup>
-import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import { useRouter } from 'vitepress'
 import recipes from '../../data/recipes.json'
+import { getHomeSections } from '../../data/siteSections.js'
+import { techStack } from '../../data/profile.js'
+import SectionIcon from '../../components/SectionIcon.vue'
 
 let gsap = null
 let ScrollTrigger = null
@@ -20,7 +23,7 @@ const taglinePhrases = [
   '前端开发',
   '全栈探索',
   '开源爱好者',
-  '偶尔下厨 🍳',
+  '偶尔下厨',
   '记录与分享'
 ]
 let typingTimer = null
@@ -50,31 +53,43 @@ function startTyping() {
   tick()
 }
 
-// ── 技术栈（与笔记覆盖的技术对齐） ──
-const techStack = [
-  'Vue',
-  'React',
-  'TypeScript',
-  'JavaScript',
-  'Vite',
-  'Webpack',
-  'Node.js',
-  'GSAP',
-  'ECharts',
-  'VitePress',
-  'Electron'
-]
+// ── 首页探索区（与顶栏探索同源：docs/data/siteSections.js）──
+const homeSections = getHomeSections()
+const homeCards = computed(() =>
+  homeSections.filter((s) => s.homeVariant !== 'about')
+)
+const aboutSection = computed(() =>
+  homeSections.find((s) => s.homeVariant === 'about')
+)
 
 // ── Hero 代码窗口：随机菜谱 + 打字机 ──
 const codeText = ref('')
 const codeHtml = ref('')
 const typing = ref(true)
+const currentRecipeName = ref('')
 let codeTimer = null
+
+const recipesDeepLink = computed(() =>
+  currentRecipeName.value
+    ? `/recipes?name=${encodeURIComponent(currentRecipeName.value)}`
+    : '/recipes'
+)
 
 function pickRandomRecipe() {
   const list = recipes.length ? recipes : []
   if (!list.length) return null
-  return list[Math.floor(Math.random() * list.length)]
+  if (list.length === 1) {
+    currentRecipeName.value = list[0].name
+    return list[0]
+  }
+  let next = list[Math.floor(Math.random() * list.length)]
+  // 连续点击换菜时尽量不重复
+  let guard = 0
+  while (next.name === currentRecipeName.value && guard++ < 8) {
+    next = list[Math.floor(Math.random() * list.length)]
+  }
+  currentRecipeName.value = next.name
+  return next
 }
 
 function buildCode(recipe) {
@@ -84,12 +99,13 @@ function buildCode(recipe) {
   .first()
 
 // 今晚吃什么？
-console.log(\`今晚吃：${recipe.name} 🍳\`)`
+console.log(\`今晚吃：${recipe.name}\`)`
 }
 
 // 轻量语法高亮：关键字/字符串/注释/函数名上色
 function highlight(code) {
-  const escape = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const escape = (s) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   let html = escape(code)
   // 注释
   html = html.replace(/(\/\/.*)/g, '<span class="ln c">$1</span>')
@@ -105,11 +121,20 @@ function highlight(code) {
   return html
 }
 
+function stopCodeTyping() {
+  if (codeTimer) {
+    clearTimeout(codeTimer)
+    codeTimer = null
+  }
+}
+
 function startCodeTyping() {
+  stopCodeTyping()
   const recipe = pickRandomRecipe()
   const full = buildCode(recipe)
   let i = 0
   codeText.value = ''
+  codeHtml.value = ''
   typing.value = true
   const tick = () => {
     if (i <= full.length) {
@@ -127,6 +152,11 @@ function startCodeTyping() {
     }
   }
   tick()
+}
+
+/** 点击代码区：换一道菜并重新打字 */
+function reshuffleDinner() {
+  startCodeTyping()
 }
 
 function kill() {
@@ -433,7 +463,7 @@ onUnmounted(() => {
   window.removeEventListener('mousemove', onMove)
   window.removeEventListener('vp-route-change', onHomeRoute)
   if (typingTimer) clearTimeout(typingTimer)
-  if (codeTimer) clearTimeout(codeTimer)
+  stopCodeTyping()
   const grid = document.querySelector('.features-grid')
   if (grid) {
     grid.removeEventListener('mousemove', onCardTilt)
@@ -509,15 +539,32 @@ onUnmounted(() => {
               <span class="dot red" />
               <span class="dot yellow" />
               <span class="dot green" />
-              <span class="code-file">dinner.ts</span>
+              <a
+                class="code-file"
+                :href="recipesDeepLink"
+                :title="
+                  currentRecipeName
+                    ? `查看「${currentRecipeName}」`
+                    : '打开家常菜谱'
+                "
+                >dinner.ts → 菜谱</a
+              >
             </div>
-            <pre
-              class="code-body"
-              :class="{ typing }"
-            ><code class="code-plain">{{ codeText }}<span class="code-caret">▋</span></code><code
-              class="code-hl"
-              v-html="codeHtml"
-            /><span class="code-caret">▋</span></pre>
+            <button
+              type="button"
+              class="code-body-btn"
+              title="换一道菜"
+              aria-label="换一道菜"
+              @click="reshuffleDinner"
+            >
+              <pre
+                class="code-body"
+                :class="{ typing }"
+              ><code class="code-plain">{{ codeText }}<span class="code-caret">▋</span></code><code
+                class="code-hl"
+                v-html="codeHtml"
+              /><span class="code-caret">▋</span></pre>
+            </button>
           </div>
         </div>
       </div>
@@ -533,47 +580,31 @@ onUnmounted(() => {
     <section class="features-section">
       <h2 class="section-heading">探索</h2>
       <div class="features-grid">
-        <a href="/notes/" class="feature-card">
-          <div class="card-icon">
-            <span>📝</span>
+        <a
+          v-for="item in homeCards"
+          :key="item.id"
+          :href="item.link"
+          class="feature-card"
+          :class="{ 'recipe-card': item.homeVariant === 'recipe' }"
+        >
+          <div class="card-icon" aria-hidden="true">
+            <SectionIcon :name="item.icon" :size="22" />
           </div>
-          <h3>学习笔记</h3>
-          <p>记录技术学习心得、读书笔记和知识总结，构建个人知识体系</p>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
           <div class="card-shine" />
         </a>
-        <a href="/blog/hello-world" class="feature-card">
-          <div class="card-icon">
-            <span>🚀</span>
-          </div>
-          <h3>技术博客</h3>
-          <p>技术文章与经验分享，记录开发心得与思考</p>
+        <a
+          v-if="aboutSection"
+          class="about-card"
+          :href="aboutSection.link"
+        >
           <div class="card-shine" />
-        </a>
-        <a href="/tools" class="feature-card">
-          <div class="card-icon">
-            <span>💡</span>
-          </div>
-          <h3>工具推荐</h3>
-          <p>编码转换、格式化等纯前端小工具，随用随走</p>
-          <div class="card-shine" />
-        </a>
-        <a href="/recipes" class="feature-card recipe-card">
-          <div class="card-icon">
-            <span>🍳</span>
-          </div>
-          <h3>家常菜谱</h3>
-          <p>不知道吃什么时翻翻看，记录一些简单好做的家常菜</p>
-          <div class="card-shine" />
-        </a>
-        <a class="about-card" href="/about">
-          <div class="card-shine" />
-          <div class="about-avatar">🧑‍💻</div>
-          <div class="about-body">
-            <h2 class="about-name">关于我</h2>
-            <p class="about-text">
-              一名从前端转向全栈的软件开发工程师，喜欢把复杂的工程做简单。
-              这个站点用来沉淀学习笔记、记录技术思考，偶尔也放几道拿手菜谱 🍳 ~
-            </p>
+          <div class="about-avatar" aria-hidden="true">
+            <SectionIcon :name="aboutSection.icon" :size="26" />
+          </div>          <div class="about-body">
+            <h2 class="about-name">{{ aboutSection.title }}</h2>
+            <p class="about-text">{{ aboutSection.description }}</p>
             <div class="tech-tags">
               <span v-for="t in techStack" :key="t" class="tech-tag">{{
                 t
@@ -836,12 +867,41 @@ onUnmounted(() => {
 
 .code-file {
   margin-left: 0.6rem;
+  margin-right: 0.4rem;
   font-size: 0.75rem;
   color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.code-file:hover {
+  color: #e2e8f0;
+}
+
+.code-body-btn {
+  flex: 1;
+  min-height: 0;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+.code-body-btn:focus-visible {
+  outline: 2px solid rgba(139, 92, 246, 0.7);
+  outline-offset: -2px;
+}
+.code-body-btn:hover .code-body {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .code-body {
   flex: 1;
+  height: 100%;
   margin: 0;
   padding: 1.1rem 1.2rem;
   font-size: 0.82rem;
@@ -850,6 +910,7 @@ onUnmounted(() => {
   white-space: pre-wrap;
   word-break: break-word;
   overflow: hidden;
+  transition: background 0.2s;
 }
 
 .code-caret {
@@ -1173,7 +1234,17 @@ a.feature-card {
     rgba(139, 92, 246, 0.1)
   );
   margin-bottom: 1.5rem;
-  font-size: 1.6rem;
+  color: var(--c-purple);
+  transition: color 0.25s, background 0.25s;
+}
+
+.feature-card:hover .card-icon {
+  color: var(--c-blue);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.16),
+    rgba(139, 92, 246, 0.14)
+  );
 }
 
 .feature-card h3 {
@@ -1271,13 +1342,18 @@ a.about-card:hover .about-more {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
   border-radius: 18px;
+  color: var(--c-purple);
   background: linear-gradient(
     135deg,
     rgba(59, 130, 246, 0.12),
     rgba(139, 92, 246, 0.12)
   );
+  transition: color 0.25s;
+}
+
+a.about-card:hover .about-avatar {
+  color: var(--c-blue);
 }
 
 .about-name {
