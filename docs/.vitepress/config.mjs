@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { getExploreNavItems } from '../data/siteSections.js'
 
 export default defineConfig({
   title: 'FUANZANG',
@@ -42,12 +43,7 @@ export default defineConfig({
       { text: '博客', link: '/blog/hello-world' },
       {
         text: '探索',
-        items: [
-          { text: '工具', link: '/tools' },
-          { text: '菜谱', link: '/recipes' },
-          { text: '导航', link: '/nav' },
-          { text: '关于', link: '/about' }
-        ]
+        items: getExploreNavItems()
       }
     ],
 
