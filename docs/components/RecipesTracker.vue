@@ -110,23 +110,45 @@ watch([searchQuery, selectedCategory, selectedTags, sortBy], () => {
   recommendedId.value = null
 })
 
-const pickRandom = async () => {
-  const pool = sortedRecipes.value
-  if (pool.length === 0) return
-  const index = Math.floor(Math.random() * pool.length)
-  const choice = pool[index]
-  recommendedId.value = choice.name
-  expandedId.value = choice.name
-  // 先翻到目标所在页，再滚动（分页后 DOM 只渲染当前页）
+/** 定位到指定菜：展开、翻页、滚动（供随机推荐与深链共用） */
+const focusRecipeByName = async (name) => {
+  if (!name) return
+  // 重置筛选，确保目标一定在列表里
+  searchQuery.value = ''
+  selectedCategory.value = '全部'
+  selectedTags.value = []
+  sortBy.value = 'default'
+  await nextTick()
+
+  const index = sortedRecipes.value.findIndex((r) => r.name === name)
+  if (index === -1) return
+
+  recommendedId.value = name
+  expandedId.value = name
   currentPage.value = Math.floor(index / perPage) + 1
   await nextTick()
   requestAnimationFrame(() => {
     const el = document.querySelector(
-      `.recipe-card[data-name="${CSS.escape(choice.name)}"]`
+      `.recipe-card[data-name="${CSS.escape(name)}"]`
     )
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   })
 }
+
+const pickRandom = async () => {
+  const pool = sortedRecipes.value
+  if (pool.length === 0) return
+  const index = Math.floor(Math.random() * pool.length)
+  await focusRecipeByName(pool[index].name)
+}
+
+onMounted(() => {
+  // 首页深链：/recipes?name=番茄炒蛋 → 展开并滚到该菜
+  try {
+    const name = new URLSearchParams(window.location.search).get('name')
+    if (name) focusRecipeByName(name)
+  } catch {}
+})
 
 const toggleExpand = name => {
   const collapsing = expandedId.value === name
