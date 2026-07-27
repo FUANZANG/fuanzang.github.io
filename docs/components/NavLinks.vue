@@ -1,14 +1,14 @@
 <script setup>
 import { navCategories } from '../data/navLinks.js'
+import PageShell from './PageShell.vue'
 </script>
 
 <template>
-  <div class="nav-page">
-    <header class="page-header">
-      <h1>网站导航</h1>
-      <p class="subtitle">常用网站与工具速查</p>
-    </header>
-
+  <PageShell
+    title="🧭 网站导航"
+    subtitle="常用网站与工具速查"
+    max-width="960px"
+  >
     <section v-for="cat in navCategories" :key="cat.name" class="category">
       <h2 class="category-title">
         <span class="cat-icon">{{ cat.icon }}</span>
@@ -28,49 +28,10 @@ import { navCategories } from '../data/navLinks.js'
         </a>
       </div>
     </section>
-  </div>
+  </PageShell>
 </template>
 
 <style scoped>
-.nav-page {
-  --c-blue: #3b82f6;
-  --c-purple: #8b5cf6;
-  --c-pink: #ec4899;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem 2rem;
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding: 1rem 0 0.5rem;
-}
-
-.page-header h1 {
-  font-size: 1.5rem;
-  margin-bottom: 0.6rem;
-  background: linear-gradient(135deg, var(--c-blue), var(--c-purple), var(--c-pink));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.subtitle {
-  color: var(--vp-c-text-2);
-  font-size: 0.95rem;
-}
-
-.subtitle::after {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 3px;
-  margin: 0.3rem auto 0;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--c-blue), var(--c-purple));
-}
-
 .category {
   margin-bottom: 2rem;
 }
