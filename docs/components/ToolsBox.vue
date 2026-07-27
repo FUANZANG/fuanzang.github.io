@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { tools } from '../data/tools.js'
 import { useTool } from './useTool.js'
+import PageShell from './PageShell.vue'
 import SimpleTool from './tools/SimpleTool.vue'
 import PasswordTool from './tools/PasswordTool.vue'
 import UuidTool from './tools/UuidTool.vue'
@@ -27,12 +28,10 @@ const current = computed(() => compMap[activeTool.value] || SimpleTool)
 </script>
 
 <template>
-  <div class="tools-page">
-    <header class="page-header">
-      <h1>🛠 前端小工具</h1>
-      <p class="subtitle">纯浏览器本地运行，数据不上传，随用随走</p>
-    </header>
-
+  <PageShell
+    title="🛠 前端小工具"
+    subtitle="纯浏览器本地运行，数据不上传，随用随走"
+  >
     <div class="tabs">
       <button
         v-for="t in tools"
@@ -54,54 +53,10 @@ const current = computed(() => compMap[activeTool.value] || SimpleTool)
     <transition name="fade">
       <div v-if="toast" class="toast">{{ toast }}</div>
     </transition>
-  </div>
+  </PageShell>
 </template>
 
 <style scoped>
-.tools-page {
-  --c-blue: #3b82f6;
-  --c-purple: #8b5cf6;
-  --c-pink: #ec4899;
-  --c-cyan: #06b6d4;
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 1rem 1.5rem 2rem;
-}
-.page-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem 0 0.5rem;
-}
-.page-header h1 {
-  font-size: 1.5rem;
-  margin-bottom: 0.6rem;
-  background: linear-gradient(
-    135deg,
-    var(--c-blue),
-    var(--c-purple),
-    var(--c-pink)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
-}
-.subtitle {
-  color: var(--vp-c-text-2);
-  font-size: 0.95rem;
-}
-.subtitle::after {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 3px;
-  margin: 0.3rem auto 0;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--c-blue), var(--c-purple));
-}
-
 .tabs {
   display: flex;
   flex-wrap: wrap;

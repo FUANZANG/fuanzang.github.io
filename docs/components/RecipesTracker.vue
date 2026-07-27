@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import recipes from '../data/recipes.json'
+import PageShell from './PageShell.vue'
 
 const searchQuery = ref('')
 const selectedCategory = ref('全部')
@@ -203,12 +204,11 @@ const formatTime = s => {
 </script>
 
 <template>
-  <div class="recipes-page">
-    <header class="page-header">
-      <h1>🍳 今天吃什么？</h1>
-      <p class="subtitle">记录一些家常菜谱，不知道吃什么的时候翻翻看</p>
-    </header>
-
+  <PageShell
+    title="🍳 今天吃什么？"
+    subtitle="记录一些家常菜谱，不知道吃什么的时候翻翻看"
+    max-width="1100px"
+  >
     <section class="toolbar">
       <div class="toolbar-row">
         <button class="random-btn" type="button" @click="pickRandom">🎲 随机推荐</button>
@@ -357,22 +357,10 @@ const formatTime = s => {
         </div>
       </div>
     </Teleport>
-  </div>
+  </PageShell>
 </template>
 
 <style scoped>
-.recipes-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-.page-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-.page-header h1 { font-size: 2rem; margin-bottom: 0.4rem; }
-.subtitle { color: var(--vp-c-text-2); font-size: 1rem; }
-
 /* ── Toolbar ── */
 .toolbar { margin-bottom: 1.5rem; }
 .toolbar-row {

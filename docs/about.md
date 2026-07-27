@@ -5,7 +5,7 @@ layout: page
 
 <script setup>
 import { useRouter } from 'vitepress'
-import SectionIcon from './components/SectionIcon.vue'
+import PageShell from './components/PageShell.vue'
 import { siteSections } from './data/siteSections.js'
 import { profileTagline, techStack } from './data/profile.js'
 
@@ -13,15 +13,11 @@ const router = useRouter()
 const about = siteSections.find((s) => s.id === 'about')
 </script>
 
-<div class="about-page">
-  <div class="about-hero">
-    <div class="about-avatar" aria-hidden="true">
-      <SectionIcon name="user" :size="36" />
-    </div>
-    <h1>{{ about?.title || '关于我' }}</h1>
-    <p class="about-tag">{{ profileTagline }}</p>
-  </div>
-
+<PageShell
+  :title="`👋 ${about?.title || '关于我'}`"
+  :subtitle="profileTagline"
+  max-width="720px"
+>
   <section class="about-block">
     <h2>我是谁</h2>
     <p>{{ about?.description }}</p>
@@ -53,42 +49,9 @@ const about = siteSections.find((s) => s.id === 'about')
   </section>
 
   <button class="back-btn" @click="router.go('/')">← 返回首页</button>
-</div>
+</PageShell>
 
 <style>
-.about-page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem 4rem;
-}
-.about-hero {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-.about-avatar {
-  width: 88px;
-  height: 88px;
-  margin: 0 auto 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 24px;
-  color: #8b5cf6;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.12),
-    rgba(139, 92, 246, 0.12)
-  );
-}
-.about-hero h1 {
-  font-size: 2rem;
-  margin: 0 0 0.4rem;
-  color: var(--vp-c-text-1);
-}
-.about-tag {
-  color: var(--vp-c-text-2);
-  margin: 0;
-}
 .about-block {
   margin-bottom: 2rem;
 }
@@ -97,7 +60,7 @@ const about = siteSections.find((s) => s.id === 'about')
   color: var(--vp-c-text-1);
   margin: 0 0 0.8rem;
   padding-left: 0.7rem;
-  border-left: 3px solid #8b5cf6;
+  border-left: 3px solid var(--c-purple, #8b5cf6);
 }
 .about-block p {
   color: var(--vp-c-text-2);
@@ -135,7 +98,7 @@ const about = siteSections.find((s) => s.id === 'about')
   transition: all 0.25s;
 }
 .back-btn:hover {
-  border-color: #8b5cf6;
-  color: #8b5cf6;
+  border-color: var(--c-purple, #8b5cf6);
+  color: var(--c-purple, #8b5cf6);
 }
 </style>
