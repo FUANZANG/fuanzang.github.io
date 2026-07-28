@@ -44,10 +44,29 @@ const categories = computed(() => {
   return ['全部', ...Array.from(cats)]
 })
 
+/** 标签展示顺序：高频/常用靠前，便于手机横滑时优先点到 */
+const TAG_ORDER = [
+  '下饭',
+  '快手菜',
+  '荤菜',
+  '素食',
+  '辣',
+  '清淡',
+  '荤素',
+  '凉菜',
+  '汤',
+  '甜口',
+  '海鲜'
+]
+
 const allTags = computed(() => {
-  const tagSet = new Set()
-  recipes.forEach(r => r.tags.forEach(t => tagSet.add(t)))
-  return Array.from(tagSet)
+  const present = new Set()
+  recipes.forEach((r) => r.tags.forEach((t) => present.add(t)))
+  const ordered = TAG_ORDER.filter((t) => present.has(t))
+  const rest = Array.from(present)
+    .filter((t) => !TAG_ORDER.includes(t))
+    .sort((a, b) => a.localeCompare(b, 'zh'))
+  return [...ordered, ...rest]
 })
 
 const toggleTag = tag => {
@@ -111,29 +130,36 @@ watch([searchQuery, selectedCategory, selectedTags, sortBy], () => {
   recommendedId.value = null
 })
 
-/** 定位到指定菜：展开、翻页、滚动（供随机推荐与深链共用） */
-const focusRecipeByName = async (name) => {
-  if (!name) return
-  // 重置筛选，确保目标一定在列表里
+/** 滚到指定菜卡片；找不到则返回 false */
+const scrollRecipeIntoView = (name) => {
+  const el = document.querySelector(
+    `.recipe-card[data-name="${CSS.escape(name)}"]`
+  )
+  if (!el) return false
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  return true
+}
+
+/** 定位到指定菜：展开、翻页；默认滚动（随机推荐 / 深链可关滚动后自行补滚） */
+const focusRecipeByName = async (name, { scroll = true } = {}) => {
+  if (!name) return false
+  // 重置筛选，确保目标一定在列表里（空数组勿重复赋值，避免触发 watch）
   searchQuery.value = ''
   selectedCategory.value = '全部'
-  selectedTags.value = []
+  if (selectedTags.value.length) selectedTags.value = []
   sortBy.value = 'default'
   await nextTick()
 
   const index = sortedRecipes.value.findIndex((r) => r.name === name)
-  if (index === -1) return
+  if (index === -1) return false
 
   recommendedId.value = name
   expandedId.value = name
   currentPage.value = Math.floor(index / perPage) + 1
   await nextTick()
-  requestAnimationFrame(() => {
-    const el = document.querySelector(
-      `.recipe-card[data-name="${CSS.escape(name)}"]`
-    )
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
+  if (!scroll) return true
+  await new Promise((r) => requestAnimationFrame(r))
+  return scrollRecipeIntoView(name)
 }
 
 const pickRandom = async () => {
@@ -143,11 +169,22 @@ const pickRandom = async () => {
   await focusRecipeByName(pool[index].name)
 }
 
+/**
+ * 首页深链：/recipes?name=xxx
+ * VitePress 路由切换后会在 nextTick 里 scrollTo(0)，盖掉首次定位滚动，
+ * 故先只展开/翻页，错开路由复位后再滚（对齐页内「随机」体验）。
+ */
+const focusFromDeepLink = async (name) => {
+  const ok = await focusRecipeByName(name, { scroll: false })
+  if (!ok) return
+  await new Promise((r) => setTimeout(r, 80))
+  scrollRecipeIntoView(name)
+}
+
 onMounted(() => {
-  // 首页深链：/recipes?name=番茄炒蛋 → 展开并滚到该菜
   try {
     const name = new URLSearchParams(window.location.search).get('name')
-    if (name) focusRecipeByName(name)
+    if (name) focusFromDeepLink(name)
   } catch {}
 })
 
@@ -210,39 +247,63 @@ const formatTime = s => {
     max-width="1100px"
   >
     <section class="toolbar">
+      <div class="toolbar-search">
+        <input
+          v-model="searchQuery"
+          type="search"
+          enterkeyhint="search"
+          placeholder="搜索菜名、食材..."
+          class="search-input"
+        />
+      </div>
       <div class="toolbar-row">
         <button class="random-btn" type="button" @click="pickRandom">🎲 随机推荐</button>
-        <div class="search-box">
-          <input v-model="searchQuery" type="text" placeholder="搜索菜名、食材..." class="search-input" />
+        <div class="view-toggle" aria-label="视图切换">
+          <button
+            type="button"
+            :class="{ active: viewMode === 'grid' }"
+            title="网格视图"
+            @click="viewMode = 'grid'"
+          >▦</button>
+          <button
+            type="button"
+            :class="{ active: viewMode === 'list' }"
+            title="列表视图"
+            @click="viewMode = 'list'"
+          >☰</button>
         </div>
-        <div class="view-toggle">
-          <button :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" title="网格视图">▦</button>
-          <button :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" title="列表视图">☰</button>
-        </div>
-        <div class="filter-group">
-          <select v-model="selectedCategory" class="filter-select">
-            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <select v-model="sortBy" class="filter-select">
-            <option value="default">默认排序</option>
-            <option value="time-asc">时间 ↑</option>
-            <option value="time-desc">时间 ↓</option>
-            <option value="difficulty">难度</option>
-            <option value="favorites">收藏优先</option>
-          </select>
+        <div class="filters-scroll">
+          <div class="filter-group">
+            <select v-model="selectedCategory" class="filter-select" aria-label="分类">
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select v-model="sortBy" class="filter-select" aria-label="排序">
+              <option value="default">默认排序</option>
+              <option value="time-asc">时间 ↑</option>
+              <option value="time-desc">时间 ↓</option>
+              <option value="difficulty">难度</option>
+              <option value="favorites">收藏优先</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="tag-bar">
+      <div class="tag-bar" aria-label="标签筛选">
         <button
           v-for="tag in allTags"
           :key="tag"
+          type="button"
           class="tag-chip"
           :class="{ selected: selectedTags.includes(tag) }"
           @click="toggleTag(tag)"
         >{{ tag }}</button>
-        <button v-if="selectedTags.length > 0" class="tag-clear" @click="selectedTags = []">清除</button>
+        <button
+          v-if="selectedTags.length > 0"
+          type="button"
+          class="tag-clear"
+          @click="selectedTags = []"
+        >清除</button>
       </div>
     </section>
 
@@ -363,14 +424,21 @@ const formatTime = s => {
 <style scoped>
 /* ── Toolbar ── */
 .toolbar { margin-bottom: 1.5rem; }
+.toolbar-search { margin-bottom: 0.65rem; }
 .toolbar-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
   align-items: center;
   margin-bottom: 0.75rem;
 }
-.search-box { flex: 1; min-width: 180px; }
+.filters-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  min-width: 0;
+}
 .search-input {
   width: 100%;
   padding: 0.55rem 1rem;
@@ -395,6 +463,7 @@ const formatTime = s => {
   cursor: pointer;
   white-space: nowrap;
   transition: transform 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 .random-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(99,102,241,0.5); }
 .random-btn:active { transform: translateY(0); }
@@ -464,6 +533,7 @@ const formatTime = s => {
 }
 .tag-chip {
   padding: 0.3rem 0.7rem;
+  min-height: 34px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 20px;
   background: var(--vp-c-bg-soft);
@@ -471,6 +541,7 @@ const formatTime = s => {
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 .tag-chip:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
 .tag-chip.selected {
@@ -480,12 +551,14 @@ const formatTime = s => {
 }
 .tag-clear {
   padding: 0.3rem 0.6rem;
+  min-height: 34px;
   border: 1px dashed var(--vp-c-divider);
   border-radius: 20px;
   background: transparent;
   color: var(--vp-c-text-3);
   font-size: 0.75rem;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Recipe List ── */
@@ -493,6 +566,70 @@ const formatTime = s => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
+}
+
+/* ── Mobile：工具栏收束 + 标签横滑 ── */
+@media (max-width: 768px) {
+  .toolbar { margin-bottom: 1.1rem; }
+  .toolbar-search { margin-bottom: 0.55rem; }
+  .search-input {
+    font-size: 1rem; /* 避免 iOS 聚焦缩放 */
+    min-height: 44px;
+  }
+  .toolbar-row {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+  }
+  .random-btn {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+  }
+  .view-toggle { flex: 0 0 auto; }
+  .view-toggle button {
+    min-height: 40px;
+    padding: 0.4rem 0.65rem;
+  }
+  .filters-scroll {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 0.45rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .filters-scroll::-webkit-scrollbar { display: none; }
+  .filter-group { flex: 0 0 auto; }
+  .filter-select {
+    min-height: 40px;
+    font-size: 0.85rem;
+  }
+
+  .tag-bar {
+    flex-wrap: nowrap;
+    gap: 0.45rem;
+    margin-inline: -1.5rem;
+    padding: 0.1rem 1.5rem 0.25rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .tag-bar::-webkit-scrollbar { display: none; }
+  .tag-chip,
+  .tag-clear {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .recipe-list.grid {
+    grid-template-columns: 1fr;
+  }
 }
 .recipe-list.grid .recipe-card { margin-bottom: 0; }
 
