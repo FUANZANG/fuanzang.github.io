@@ -268,18 +268,28 @@ async function run() {
   }
 
   // Title characters fly in
+  // 手机端不用 rotateX：部分 WebKit/安卓内核在 3D + background-clip:text 下会整段不绘制
   const chars = hero.querySelectorAll('.char')
   if (chars.length) {
-    gsap.set(chars, { y: 120, opacity: 0, rotateX: -90 })
+    const mobile = window.matchMedia('(max-width: 768px)').matches
+    const from = mobile
+      ? { y: 36, opacity: 0 }
+      : { y: 120, opacity: 0, rotateX: -90 }
+    const to = mobile
+      ? { y: 0, opacity: 1 }
+      : { y: 0, opacity: 1, rotateX: 0 }
+    gsap.set(chars, from)
     tw.value.push(
       gsap.to(chars, {
-        y: 0,
-        opacity: 1,
-        rotateX: 0,
-        duration: 1.1,
-        stagger: 0.07,
-        ease: 'back.out(1.4)',
-        delay: 0.4
+        ...to,
+        duration: mobile ? 0.7 : 1.1,
+        stagger: mobile ? 0.04 : 0.07,
+        ease: mobile ? 'power2.out' : 'back.out(1.4)',
+        delay: mobile ? 0.15 : 0.4,
+        onComplete: () => {
+          // 清掉 transform，避免残留矩阵导致渐变字在部分浏览器消失
+          gsap.set(chars, { clearProps: 'transform' })
+        }
       })
     )
   }
@@ -835,6 +845,8 @@ onUnmounted(() => {
   box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  /* 避免点击时系统蓝闪（tap highlight / focus ring） */
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root.dark .code-window {
@@ -872,9 +884,23 @@ onUnmounted(() => {
   color: #94a3b8;
   text-decoration: none;
   transition: color 0.2s;
+  border-radius: 2px;
+  -webkit-tap-highlight-color: transparent;
 }
 .code-file:hover {
   color: #e2e8f0;
+}
+.code-file:focus {
+  outline: none;
+}
+.code-file:focus-visible {
+  color: #e2e8f0;
+  outline: 1px solid rgba(148, 163, 184, 0.55);
+  outline-offset: 2px;
+}
+.code-file:active {
+  color: #e2e8f0;
+  background: transparent;
 }
 
 .code-body-btn {
@@ -890,10 +916,17 @@ onUnmounted(() => {
   text-align: left;
   color: inherit;
   font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 盖住 VitePress button:focus 的系统蓝环，避免整窗闪蓝 */
+.code-body-btn:focus {
+  outline: none;
 }
 .code-body-btn:focus-visible {
-  outline: 2px solid rgba(139, 92, 246, 0.7);
-  outline-offset: -2px;
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.55);
 }
 .code-body-btn:hover .code-body {
   background: rgba(255, 255, 255, 0.02);
@@ -988,13 +1021,23 @@ onUnmounted(() => {
   }
 }
 
-/* Title */
+/* Title：渐变落到每个 .char 上，避免父级 clip + 子级 transform 在部分手机不绘制 */
 .hero-title {
   font-size: clamp(3rem, 9vw, 5.5rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
   margin-bottom: 0.5em;
+}
+
+.char-wrapper {
+  display: inline-flex;
+  perspective: 600px;
+}
+
+.char {
+  display: inline-block;
+  will-change: transform;
   background: linear-gradient(
     135deg,
     var(--c-blue) 0%,
@@ -1005,8 +1048,7 @@ onUnmounted(() => {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: none;
-  filter: drop-shadow(0 0 40px rgba(139, 92, 246, 0.15));
+  color: transparent;
   animation: title-flow 6s ease infinite;
 }
 
@@ -1022,13 +1064,13 @@ onUnmounted(() => {
   }
 }
 
-.char-wrapper {
-  display: inline-flex;
-}
-
-.char {
-  display: inline-block;
-  will-change: transform;
+/* JS/动效失败时仍保证标题可见 */
+@media (prefers-reduced-motion: reduce) {
+  .char {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none;
+  }
 }
 
 /* Subtitle */
