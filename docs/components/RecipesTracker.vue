@@ -7,6 +7,7 @@ const searchQuery = ref('')
 const selectedCategory = ref('全部')
 const selectedTags = ref([])
 const expandedId = ref(null)
+const randomNotice = ref('')
 const viewMode = ref('grid')
 const sortBy = ref('default')
 const currentPage = ref(1)
@@ -94,7 +95,7 @@ const filteredRecipes = computed(() => {
       return false
     if (
       selectedTags.value.length > 0 &&
-      !selectedTags.value.some(t => recipe.tags.includes(t))
+      !selectedTags.value.every(t => recipe.tags.includes(t))
     )
       return false
     return true
@@ -130,18 +131,49 @@ watch([searchQuery, selectedCategory, selectedTags, sortBy], () => {
   recommendedId.value = null
 })
 
-/** 滚到指定菜卡片；找不到则返回 false */
-const scrollRecipeIntoView = (name) => {
-  const el = document.querySelector(
-    `.recipe-card[data-name="${CSS.escape(name)}"]`
-  )
-  if (!el) return false
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  return true
+/**
+ * 滚到指定菜卡片。
+ * 翻页后目标卡片可能还没渲染进 DOM，故找不到时按帧重试（最多 ~20 帧 / ~330ms）。
+ * 找到后还需再等几帧让 Vue 完成重渲染与浏览器 reflow（否则滚动会读到旧布局），
+ * 然后用 window.scrollTo 按绝对位置滚动，避开顶部 sticky 工具栏。
+ * behavior 默认 'auto'（深链用，避免与 VitePress SPA 切换后的 scrollTo(0) 复位打架）；
+ * 页内随机传 'smooth' 恢复平滑滚动动画。返回 Promise<boolean>。
+ */
+const scrollRecipeIntoView = (name, { retries = 20, settleFrames = 3, behavior = 'auto' } = {}) => {
+  return new Promise((resolve) => {
+    const tryOnce = (n) => {
+      const el = document.querySelector(
+        `.recipe-card[data-name="${CSS.escape(name)}"]`
+      )
+      if (el) {
+        // 等布局稳定：再走 settleFrames 帧，确保翻页后的新卡片已完成 reflow
+        let f = settleFrames
+        const settle = () => {
+          if (f-- > 0) {
+            requestAnimationFrame(settle)
+            return
+          }
+          const top =
+            el.getBoundingClientRect().top + window.scrollY - 80
+          window.scrollTo({ top: Math.max(0, top), behavior })
+          resolve(true)
+        }
+        settle()
+      } else if (n > 0) {
+        requestAnimationFrame(() => tryOnce(n - 1))
+      } else {
+        resolve(false)
+      }
+    }
+    tryOnce(retries)
+  })
 }
 
-/** 定位到指定菜：展开、翻页；默认滚动（随机推荐 / 深链可关滚动后自行补滚） */
-const focusRecipeByName = async (name, { scroll = true } = {}) => {
+/**
+ * 定位到指定菜：重置筛选 → 展开 → 翻到所在页 → 滚动。
+ * 滚动用带重试的 scrollRecipeIntoView，避免翻页后卡片未渲染导致滚动失效。
+ */
+const focusRecipeByName = async (name, { scroll = true, behavior = 'auto' } = {}) => {
   if (!name) return false
   // 重置筛选，确保目标一定在列表里（空数组勿重复赋值，避免触发 watch）
   searchQuery.value = ''
@@ -156,29 +188,39 @@ const focusRecipeByName = async (name, { scroll = true } = {}) => {
   recommendedId.value = name
   expandedId.value = name
   currentPage.value = Math.floor(index / perPage) + 1
-  await nextTick()
   if (!scroll) return true
-  await new Promise((r) => requestAnimationFrame(r))
-  return scrollRecipeIntoView(name)
+  // 滚动交由 scrollRecipeIntoView 内部等布局稳定后再滚
+  return scrollRecipeIntoView(name, { behavior })
 }
-
 const pickRandom = async () => {
-  const pool = sortedRecipes.value
-  if (pool.length === 0) return
+  // 在当前筛选结果内随机（保留用户已选的标签/分类）
+  let pool = sortedRecipes.value
+  let fallback = false
+  if (pool.length === 0) {
+    // 筛选结果为空（如交集标签互斥）：回退到全量菜谱
+    pool = recipes
+    fallback = true
+  }
   const index = Math.floor(Math.random() * pool.length)
-  await focusRecipeByName(pool[index].name)
+  // 页内随机：无路由切换，用 smooth 恢复平滑滚动动画；不重置筛选
+  const name = pool[index].name
+  randomNotice.value = fallback
+    ? `当前筛选没有匹配的菜，已为你从全部 ${recipes.length} 道菜里随机一道`
+    : ''
+  await focusRecipeByName(name, { behavior: 'smooth', resetFilters: false })
 }
 
 /**
  * 首页深链：/recipes?name=xxx
- * VitePress 路由切换后会在 nextTick 里 scrollTo(0)，盖掉首次定位滚动，
- * 故先只展开/翻页，错开路由复位后再滚（对齐页内「随机」体验）。
+ * VitePress 在 SPA 切换后会异步 scrollTo(0) 复位（约 300ms 内），
+ * 若我们过早滚动会被顶回。故等一拍（nextTick + 延迟）让路由复位结束，
+ * 再交给 scrollRecipeIntoView 按绝对位置滚动。
  */
 const focusFromDeepLink = async (name) => {
-  const ok = await focusRecipeByName(name, { scroll: false })
-  if (!ok) return
-  await new Promise((r) => setTimeout(r, 80))
-  scrollRecipeIntoView(name)
+  await nextTick()
+  // 等 VitePress 路由切换的 scrollTo(0) 复位完成
+  await new Promise((r) => setTimeout(r, 350))
+  await focusRecipeByName(name, { scroll: true })
 }
 
 onMounted(() => {
@@ -258,6 +300,9 @@ const formatTime = s => {
       </div>
       <div class="toolbar-row">
         <button class="random-btn" type="button" @click="pickRandom">🎲 随机推荐</button>
+        <transition name="notice-fade">
+          <span v-if="randomNotice" class="random-notice">{{ randomNotice }}</span>
+        </transition>
         <div class="view-toggle" aria-label="视图切换">
           <button
             type="button"
@@ -467,6 +512,26 @@ const formatTime = s => {
 }
 .random-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(99,102,241,0.5); }
 .random-btn:active { transform: translateY(0); }
+
+/* 随机回退提示 */
+.random-notice {
+  margin-left: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--vp-c-warning-1, #b45309);
+  background: var(--vp-c-warning-soft, rgba(245, 158, 11, 0.12));
+  border: 1px solid var(--vp-c-warning-2, rgba(245, 158, 11, 0.3));
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.notice-fade-enter-active,
+.notice-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.notice-fade-enter-from,
+.notice-fade-leave-to {
+  opacity: 0;
+}
 
 /* 随机推荐后的悬浮换一道 */
 .random-fab {
