@@ -570,10 +570,10 @@ onUnmounted(() => {
               <pre
                 class="code-body"
                 :class="{ typing }"
-              ><code class="code-plain">{{ codeText }}<span class="code-caret">▋</span></code><code
+              ><code class="code-plain">{{ codeText }}<span class="code-caret" v-show="typing">▋</span></code><code
                 class="code-hl"
                 v-html="codeHtml"
-              /><span class="code-caret">▋</span></pre>
+              /><span class="code-caret" v-show="!typing">▋</span></pre>
             </button>
           </div>
         </div>
