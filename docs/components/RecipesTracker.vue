@@ -173,13 +173,15 @@ const scrollRecipeIntoView = (name, { retries = 20, settleFrames = 3, behavior =
  * 定位到指定菜：重置筛选 → 展开 → 翻到所在页 → 滚动。
  * 滚动用带重试的 scrollRecipeIntoView，避免翻页后卡片未渲染导致滚动失效。
  */
-const focusRecipeByName = async (name, { scroll = true, behavior = 'auto' } = {}) => {
+const focusRecipeByName = async (name, { scroll = true, behavior = 'auto', resetFilters = true } = {}) => {
   if (!name) return false
   // 重置筛选，确保目标一定在列表里（空数组勿重复赋值，避免触发 watch）
-  searchQuery.value = ''
-  selectedCategory.value = '全部'
-  if (selectedTags.value.length) selectedTags.value = []
-  sortBy.value = 'default'
+  if (resetFilters) {
+    searchQuery.value = ''
+    selectedCategory.value = '全部'
+    if (selectedTags.value.length) selectedTags.value = []
+    sortBy.value = 'default'
+  }
   await nextTick()
 
   const index = sortedRecipes.value.findIndex((r) => r.name === name)
