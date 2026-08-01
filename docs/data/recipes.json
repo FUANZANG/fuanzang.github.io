@@ -4491,5 +4491,511 @@
       "倒入西兰花翻炒，加小半勺盐、少许白胡椒粉炒匀即可"
     ],
     "tips": "西兰花先焯水保持翠绿且易熟；虾仁腌一下更嫩，炒的时间别太长"
+  },
+  {
+    "name": "凉拌蒜辣汁",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "白糖",
+        "amount": "适量"
+      },
+      {
+        "name": "生抽",
+        "amount": "适量"
+      },
+      {
+        "name": "耗油",
+        "amount": "适量"
+      },
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "醋",
+        "amount": "适量"
+      },
+      {
+        "name": "小米辣",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "拌匀所有调料，凉拌菜直接使用或按口味调整"
+    ],
+    "tips": "蒜末和小米辣可依口味增减；耗油和醋比例约 1:1。属生拌型清爽蒜辣汁，适合黄瓜、木耳、藕片等爽脆可生拌的凉菜，直接拌匀即可。"
+  },
+  {
+    "name": "鱼香酱汁",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "白糖",
+        "amount": "2勺"
+      },
+      {
+        "name": "醋",
+        "amount": "2勺"
+      },
+      {
+        "name": "耗油",
+        "amount": "半勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "淀粉",
+        "amount": "1勺"
+      },
+      {
+        "name": "清水",
+        "amount": "2勺"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "白糖、醋、耗油、生抽 按顺序加入碗中",
+      "加淀粉，用清水搅匀，调成光滑的酱汁"
+    ],
+    "tips": "比例 生抽:白糖:醋 ≈ 2:2:2，醋提供酸味，白糖提供甜味"
+  },
+  {
+    "name": "照烧酱汁",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "耗油",
+        "amount": "1勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "老抽",
+        "amount": "1勺"
+      },
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "蜂蜜",
+        "amount": "1勺"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "耗油、生抽、老抽、蜂蜜 按顺序加入碗中",
+      "加适量盐，搅拌均匀"
+    ],
+    "tips": "蜂蜜可以替换为白糖，约 1:1；老抽主要用于颜色"
+  },
+  {
+    "name": "炒素菜公式",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "食用油",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "锅热后倒油，油热爆香蒜末",
+      "下菜炒软，适时放盐调味"
+    ],
+    "tips": "油热再下蒜末，否则容易 burned"
+  },
+  {
+    "name": "炒肉菜公式",
+    "category": "调料配方",
+    "tags": [],
+    "time": "20分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "生抽",
+        "amount": "适量"
+      },
+      {
+        "name": "耗油",
+        "amount": "适量"
+      },
+      {
+        "name": "料酒",
+        "amount": "适量"
+      },
+      {
+        "name": "淀粉",
+        "amount": "适量"
+      },
+      {
+        "name": "老抽",
+        "amount": "适量"
+      },
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "食用油",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "肉类加入生抽、耗油、料酒、淀粉腌制 15 分钟",
+      "锅热倒油，油热爆香蒜末",
+      "下腌好的肉炒至变色，适时加入老抽上色"
+    ],
+    "tips": "腌肉 15 分钟可以让肉类更嫩滑；老抽主要用于颜色"
+  },
+  {
+    "name": "煲汤公式",
+    "category": "调料配方",
+    "tags": [],
+    "time": "2小时",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "肉类",
+        "amount": "适量"
+      },
+      {
+        "name": "葱",
+        "amount": "适量"
+      },
+      {
+        "name": "姜",
+        "amount": "适量"
+      },
+      {
+        "name": "料酒",
+        "amount": "适量"
+      },
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "红枣",
+        "amount": "适量"
+      },
+      {
+        "name": "枸杞",
+        "amount": "适量"
+      },
+      {
+        "name": "糖或鸡精",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "肉类焯水去血，放入葱姜料酒",
+      "加入盐、红枣、枸杞炖煲",
+      "最后适时放入糖或鸡精提鲜"
+    ],
+    "tips": "红枣和枸杞可以根据个人喜好增减；糖可以替换为鸡精"
+  },
+  {
+    "name": "辣炒类调料",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "盐",
+        "amount": "1勺"
+      },
+      {
+        "name": "耗油",
+        "amount": "半勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "姜片",
+        "amount": "适量"
+      },
+      {
+        "name": "小米辣",
+        "amount": "适量"
+      },
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "火锅底料",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "拌匀所有调料，炒菜时按需使用"
+    ],
+    "tips": "火锅底料可以替换为辣椒粉，约 1:1"
+  },
+  {
+    "name": "炖肉类调料",
+    "category": "调料配方",
+    "tags": [],
+    "time": "3小时",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "姜片",
+        "amount": "适量"
+      },
+      {
+        "name": "耗油",
+        "amount": "半勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "老抽",
+        "amount": "适量"
+      },
+      {
+        "name": "料酒",
+        "amount": "适量"
+      },
+      {
+        "name": "干辣椒",
+        "amount": "适量"
+      },
+      {
+        "name": "香叶",
+        "amount": "适量"
+      },
+      {
+        "name": "桂皮",
+        "amount": "适量"
+      },
+      {
+        "name": "八角",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "拌匀所有调料，炖肉时按需使用"
+    ],
+    "tips": "干辣椒、香叶、桂皮、八角主要用于提升香气；可以根据口味调整"
+  },
+  {
+    "name": "凉拌油泼汁",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "辣椒粉",
+        "amount": "适量"
+      },
+      {
+        "name": "芝麻",
+        "amount": "适量"
+      },
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "食用油",
+        "amount": "适量"
+      },
+      {
+        "name": "生抽",
+        "amount": "适量"
+      },
+      {
+        "name": "白糖",
+        "amount": "适量"
+      },
+      {
+        "name": "醋",
+        "amount": "适量"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "辣椒粉、芝麻、蒜末放入碗中",
+      "热油泼在辣椒粉上激发香味",
+      "加入生抽、白糖、醋拌匀"
+    ],
+    "tips": "油一定要够热才能激出辣椒粉和芝麻的香味；白糖和醋比例约 1:1。属红油型重口汁，适合叶菜、豆制品或拌面，泼油后更香更挂汁，比蒜辣汁味道更厚重。"
+  },
+  {
+    "name": "韩式拌饭酱",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "白糖",
+        "amount": "1勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "1勺"
+      },
+      {
+        "name": "辣椒粉",
+        "amount": "适量"
+      },
+      {
+        "name": "芝麻",
+        "amount": "1勺"
+      },
+      {
+        "name": "雪碧",
+        "amount": "2勺"
+      },
+      {
+        "name": "香油",
+        "amount": "1勺"
+      },
+      {
+        "name": "韩式辣酱",
+        "amount": "2勺"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "白糖、生抽、辣椒粉、芝麻放入碗中",
+      "加入雪碧、香油、韩式辣酱搅拌均匀"
+    ],
+    "tips": "雪碧可以替换为清水，约 1:1；香油尽量使用香油"
+  },
+  {
+    "name": "麻辣拌调料",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "白糖",
+        "amount": "1勺"
+      },
+      {
+        "name": "耗油",
+        "amount": "半勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "辣椒粉",
+        "amount": "适量"
+      },
+      {
+        "name": "小米辣",
+        "amount": "适量"
+      },
+      {
+        "name": "醋",
+        "amount": "1勺"
+      },
+      {
+        "name": "蒜末",
+        "amount": "适量"
+      },
+      {
+        "name": "盐",
+        "amount": "适量"
+      },
+      {
+        "name": "芝麻",
+        "amount": "1勺"
+      },
+      {
+        "name": "麻酱",
+        "amount": "2勺"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "拌匀所有调料，凉拌菜直接使用"
+    ],
+    "tips": "麻酱可以替换为花生酱，约 1:1"
+  },
+  {
+    "name": "糖醋比例",
+    "category": "调料配方",
+    "tags": [],
+    "time": "5分钟",
+    "difficulty": "简单",
+    "ingredients": [
+      {
+        "name": "白糖",
+        "amount": "3勺"
+      },
+      {
+        "name": "生抽",
+        "amount": "2勺"
+      },
+      {
+        "name": "醋",
+        "amount": "4勺"
+      },
+      {
+        "name": "料酒",
+        "amount": "1勺"
+      },
+      {
+        "name": "水",
+        "amount": "5勺"
+      }
+    ],
+    "seasonings": [],
+    "steps": [
+      "按比例 3:2:4:1:5 拌匀所有调料"
+    ],
+    "tips": "比例 白糖:生抽:醋:料酒:水 = 3:2:4:1:5"
   }
 ]
