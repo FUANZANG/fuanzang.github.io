@@ -173,7 +173,7 @@ const scrollRecipeIntoView = (name, { retries = 20, settleFrames = 3, behavior =
  * 定位到指定菜：重置筛选 → 展开 → 翻到所在页 → 滚动。
  * 滚动用带重试的 scrollRecipeIntoView，避免翻页后卡片未渲染导致滚动失效。
  */
-const focusRecipeByName = async (name, { scroll = true, behavior = 'auto', resetFilters = true } = {}) => {
+const focusRecipeByName = async (name, { scroll = true, behavior = 'auto', resetFilters = true, recommend = false } = {}) => {
   if (!name) return false
   // 重置筛选，确保目标一定在列表里（空数组勿重复赋值，避免触发 watch）
   if (resetFilters) {
@@ -187,20 +187,71 @@ const focusRecipeByName = async (name, { scroll = true, behavior = 'auto', reset
   const index = sortedRecipes.value.findIndex((r) => r.name === name)
   if (index === -1) return false
 
-  recommendedId.value = name
+  // 仅随机推荐才点亮「换一道」；调味参考/返回跳转不触发
+  if (recommend) recommendedId.value = name
   expandedId.value = name
   currentPage.value = Math.floor(index / perPage) + 1
   if (!scroll) return true
   // 滚动交由 scrollRecipeIntoView 内部等布局稳定后再滚
   return scrollRecipeIntoView(name, { behavior })
 }
+const EXCLUDED_RANDOM_CATEGORIES = ['调料配方']
+
+// 实例菜 → 调味公式 的交叉引用（不污染 JSON 数据，仅前端展示）
+const SEASONING_REF = {
+  '鱼香肉丝': '鱼香酱汁',
+  '鱼香茄子': '鱼香酱汁',
+  '鱼香鸡蛋': '鱼香酱汁',
+  '照烧鸡腿肉': '照烧酱汁',
+  '糖醋排骨': '糖醋比例',
+  '糖醋荷包蛋': '糖醋比例',
+  '凉拌黄瓜': '凉拌蒜辣汁',
+  '凉拌木耳': '凉拌蒜辣汁',
+  '凉拌海带丝': '凉拌蒜辣汁',
+  '凉拌金针菇': '凉拌蒜辣汁',
+  '凉拌猪肝': '凉拌蒜辣汁',
+  '凉拌粉丝': '凉拌蒜辣汁',
+  '皮蛋豆腐': '凉拌蒜辣汁',
+  '小葱豆腐': '凉拌蒜辣汁',
+  '蒜泥白肉': '凉拌蒜辣汁',
+  '红烧排骨': '炖肉类调料',
+  '红烧肉': '炖肉类调料',
+  '土豆炖排骨': '炖肉类调料',
+  '猪肉炖粉条': '炖肉类调料',
+  '萝卜炖排骨': '煲汤公式',
+  '鸡爪煲': '煲汤公式',
+  '青椒肉丝': '炒肉菜公式',
+  '宫保鸡丁': '炒肉菜公式',
+  '蒜薹炒肉丝': '炒肉菜公式',
+  '尖椒炒肉丝': '炒肉菜公式',
+  '京酱肉丝': '炒肉菜公式',
+  '包菜炒肉片': '炒肉菜公式',
+  '西葫芦炒肉片': '炒肉菜公式'
+}
+const seasoningRefFor = name => SEASONING_REF[name] || null
+
+// 调味参考跳转的返回来源（点链接时记录，展示返回按钮）
+const refFrom = ref(null)
+const openSeasoningRef = async (recipeName) => {
+  refFrom.value = recipeName
+  const target = seasoningRefFor(recipeName)
+  if (target) await focusRecipeByName(target, { behavior: 'smooth' })
+}
+const backToRecipe = async () => {
+  if (!refFrom.value) return
+  const from = refFrom.value
+  refFrom.value = null
+  await focusRecipeByName(from, { behavior: 'smooth' })
+}
 const pickRandom = async () => {
-  // 在当前筛选结果内随机（保留用户已选的标签/分类）
-  let pool = sortedRecipes.value
+  // 在当前筛选结果内随机（保留用户已选的标签/分类），但排除「调料配方」这类公式/调味汁
+  let pool = sortedRecipes.value.filter(
+    r => !EXCLUDED_RANDOM_CATEGORIES.includes(r.category)
+  )
   let fallback = false
   if (pool.length === 0) {
-    // 筛选结果为空（如交集标签互斥）：回退到全量菜谱
-    pool = recipes
+    // 筛选结果为空（如交集标签互斥）：回退到全量菜谱中排除调料配方后的集合
+    pool = recipes.filter(r => !EXCLUDED_RANDOM_CATEGORIES.includes(r.category))
     fallback = true
   }
   const index = Math.floor(Math.random() * pool.length)
@@ -209,7 +260,7 @@ const pickRandom = async () => {
   randomNotice.value = fallback
     ? `当前筛选没有匹配的菜，已为你从全部 ${recipes.length} 道菜里随机一道`
     : ''
-  await focusRecipeByName(name, { behavior: 'smooth', resetFilters: false })
+  await focusRecipeByName(name, { behavior: 'smooth', resetFilters: false, recommend: true })
 }
 
 /**
@@ -407,6 +458,14 @@ const formatTime = s => {
             <h4>💡 小贴士</h4>
             <p>{{ recipe.tips }}</p>
           </div>
+          <div v-if="seasoningRefFor(recipe.name)" class="section ref-section">
+            <h4>🔗 调味参考</h4>
+            <button
+              type="button"
+              class="ref-link"
+              @click.stop="openSeasoningRef(recipe.name)"
+            >{{ seasoningRefFor(recipe.name) }}</button>
+          </div>
           <button class="cook-btn" @click.stop="startCooking(recipe)">🔥 开始烹饪</button>
         </div>
       </div>
@@ -422,16 +481,29 @@ const formatTime = s => {
       共收录 {{ recipes.length }} 道菜谱 · 筛选出 {{ sortedRecipes.length }} 道
     </footer>
 
-    <!-- 随机后悬浮「换一道」，避免每次回到顶部 -->
+    <!-- 随机「换一道」+ 调味参考「返回」：同容器纵向排列，避免重叠 -->
     <Teleport to="body">
-      <button
-        v-if="recommendedId && !cookingMode"
-        class="random-fab"
-        type="button"
-        @click="pickRandom"
+      <div
+        v-if="(recommendedId || refFrom) && !cookingMode"
+        class="fab-stack"
       >
-        🎲 换一道
-      </button>
+        <button
+          v-if="refFrom"
+          class="ref-back-fab"
+          type="button"
+          @click="backToRecipe"
+        >
+          ← 返回 {{ refFrom }}
+        </button>
+        <button
+          v-if="recommendedId"
+          class="random-fab"
+          type="button"
+          @click="pickRandom"
+        >
+          🎲 换一道
+        </button>
+      </div>
     </Teleport>
 
     <!-- 烹饪模式弹窗 -->
@@ -536,11 +608,19 @@ const formatTime = s => {
 }
 
 /* 随机推荐后的悬浮换一道 */
-.random-fab {
+/* 悬浮按钮纵向容器：用 gap 控制间距，避免硬算 bottom 重叠 */
+.fab-stack {
   position: fixed;
   right: 1.25rem;
   bottom: 1.75rem;
   z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.random-fab {
   padding: 0.7rem 1.15rem;
   border: none;
   border-radius: 999px;
@@ -557,6 +637,27 @@ const formatTime = s => {
   box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.6);
 }
 .random-fab:active {
+  transform: translateY(0);
+}
+
+/* 调味参考跳转后的返回按钮 */
+.ref-back-fab {
+  padding: 0.6rem 1.05rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: #6366f1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px -8px rgba(99, 102, 241, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ref-back-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.5);
+}
+.ref-back-fab:active {
   transform: translateY(0);
 }
 
@@ -781,6 +882,20 @@ const formatTime = s => {
   border-left: 3px solid #f59e0b;
 }
 .tips-section p { font-size: 0.8rem; color: var(--vp-c-text-2); margin: 0; line-height: 1.5; }
+
+.ref-section {
+  margin-top: 0.6rem; padding: 0.55rem 0.75rem;
+  background: var(--vp-c-bg-soft); border-radius: 8px;
+  border-left: 3px solid #6366f1;
+}
+.ref-section h4 { margin: 0 0 0.4rem; font-size: 0.8rem; color: var(--vp-c-text-1); }
+.ref-link {
+  display: inline-block; padding: 0.3rem 0.7rem;
+  border: 1px solid var(--vp-c-divider); border-radius: 999px;
+  background: var(--vp-c-bg); color: #6366f1;
+  font-size: 0.8rem; cursor: pointer; transition: all 0.18s;
+}
+.ref-link:hover { border-color: #6366f1; background: rgba(99,102,241,0.08); }
 
 .cook-btn {
   margin-top: 1rem;
