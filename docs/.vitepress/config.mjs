@@ -130,6 +130,7 @@ export default defineConfig({
           items: [
             { text: 'CI/CD', link: '/notes/deploy/ci-cd' },
             { text: '前端部署', link: '/notes/deploy/frontend-deployment' },
+            { text: 'CDN 内容分发', link: '/notes/deploy/cdn' },
             { text: 'YApi 接口平台', link: '/notes/deploy/yapi' }
           ]
         },
