@@ -12,7 +12,7 @@
 | **qiankun** | 基于 single-spa，JS 沙箱 + CSS 隔离 | 中（Proxy 沙箱） | 无 | 企业级后台、老系统改造 |
 | **micro-app** | WebComponent 容器 | 高（Shadow DOM） | 无 | 京东体系、组件化思维 |
 | **wujie** | iframe + WebComponent | 高（iframe 天然隔离） | 无 | 对隔离性要求高的场景 |
-| **Module Federation** | Webpack 5 模块共享 | 低（共享运行时） | 需 Webpack 5 | 同技术栈、模块共享 |
+| **Module Federation** | Webpack 5 模块共享（1.0）/ 多构建器运行时共享（2.0） | 低（共享运行时） | 1.0 需 Webpack 5；2.0 无构建器限制 | 同技术栈、模块共享 |
 
 ## qiankun
 
@@ -78,6 +78,19 @@
   export async function unmount() {
     app.unmount()
     app = null
+  }
+  ```
+
++ 2.x 简化（官方 `@qiankunjs/bundler-plugin`，Vite 5+）：不再需要上面的 UMD 包装和 `window.__POWERED_BY_QIANKUN__` 判断。子应用 `vite.config` 加 `qiankun()` 插件后，入口直接导出生命周期即可，独立运行 / 被基座加载都正常（详见文末「微前端 × Vite 兼容性问题」节）
+
+  ```ts
+  // sub-app/src/main.ts —— 直接导出生命周期，无需 __POWERED_BY_QIANKUN__ 判断
+  export async function bootstrap() {}
+  export async function mount(props) {
+    // render into props.container
+  }
+  export async function unmount(props) {
+    // tear down
   }
   ```
 
@@ -197,6 +210,125 @@
     shared: ['vue', 'vue-router'],
   })
   ```
+
+## Module Federation 2.0
+
+> 版本说明：截至 2026-08，对应包版本为 `@module-federation/enhanced` / `@module-federation/runtime` `2.8.x`、`@module-federation/vite` `1.20.x`。1.0 是 Webpack 5 内置能力；2.0 由 module-federation 官方维护（`@module-federation/*` 系列），**解耦了构建器**。
+
+### 1.0 与 2.0 的核心差异
+
+| 维度 | 1.0（Webpack 5 内置） | 2.0（`@module-federation/*`） |
+|------|----------------------|-------------------------------|
+| 构建器 | 仅 Webpack 5 | Webpack / Rspack / **Vite** / Rollup / Rsbuild / Esbuild / Metro 均可 |
+| 插件体系 | 无（纯配置） | **Runtime Plugin System**（`runtimePlugins`），可在运行时拦截/扩展 |
+| 类型安全 | 远程模块无类型 | `mf dts` 自动生成/拉取远程模块 `.d.ts` |
+| 共享依赖 | 静态 `shared` | 更智能的共享 + `sharedStrategy`，支持 `singleton`/`requiredVersion`/`eager` |
+| 运行时 | 编译期注入到 `remoteEntry.js` | 独立 `@module-federation/runtime`，支持**运行时动态注册 remote** |
+| 产物描述 | 仅靠 `remoteEntry.js` | 额外产出 **Manifest**（运行时可被工具消费） |
+
+### 关键新概念
+
++ **Federation Runtime**：独立运行时包，可在代码里动态注册/加载 remote，不必写死在配置里
++ **Runtime Plugins**：`runtimePlugins` 字段注入插件，能做加载重试、缓存、监控等
++ **Manifest**：构建产物清单，配套 Chrome Devtool 做可视化调试
++ **动态类型提示**：`@module-federation/dts-plugin` + `mf dts` 命令，消费方可拿到远程模块类型
+
+### 在 Vite 下使用（官方包：`@module-federation/vite`）
+
+> 这是 2.0 解决「MF 只能 Webpack」痛点的关键。配置与 1.0 概念一致，但导入的是 `@module-federation/vite` 的 `federation`。
+
++ 安装
+
+  ```bash
+  npm i @module-federation/vite -D
+  ```
+
++ 推荐把 MF 配置抽到独立文件（`createModuleFederationConfig`）
+
+  ```ts
+  // module-federation.config.ts
+  import { createModuleFederationConfig } from '@module-federation/vite'
+
+  export default createModuleFederationConfig({
+    name: 'remote',
+    filename: 'remoteEntry.js',
+    exposes: {
+      './remote-app': './src/App.vue',
+    },
+    shared: ['vue'],
+  })
+  ```
+
++ remote（提供方）
+
+  ```ts
+  // remote/vite.config.ts
+  import { defineConfig } from 'vite'
+  import { federation } from '@module-federation/vite'
+  import moduleFederationConfig from './module-federation.config'
+
+  export default defineConfig({
+    plugins: [federation(moduleFederationConfig)],
+    server: {
+      // 必须显式设置 origin，否则 remoteEntry 里的资源地址会错
+      origin: 'http://localhost:8081',
+    },
+  })
+  ```
+
++ host（消费方）
+
+  ```ts
+  // host/vite.config.ts
+  import { defineConfig } from 'vite'
+  import { federation } from '@module-federation/vite'
+
+  export default defineConfig({
+    plugins: [
+      federation({
+        name: 'host',
+        remotes: {
+          remote: {
+            type: 'module', // Vite remote 推荐 'module'；兼容老 'var' 需对方开 varFilename
+            name: 'remote',
+            entry: 'http://localhost:8081/remoteEntry.js',
+            shareScope: 'default',
+          },
+        },
+        shared: ['vue'],
+      }),
+    ],
+  })
+  ```
+
++ 消费远程模块
+
+  ```ts
+  const RemoteApp = () => import('remote/remote-app')
+  ```
+
+### 运行时动态注册（Runtime 用法）
+
+> 不需要在构建配置里写死 `remotes` 时，用 `@module-federation/runtime` 在运行时注册。
+
+  ```ts
+  import { init, loadRemote } from '@module-federation/runtime'
+
+  init({
+    name: 'host',
+    remotes: [
+      { name: 'app2', entry: 'http://localhost:8082/remoteEntry.js' },
+    ],
+  })
+
+  // 任意位置按需加载
+  const mod = await loadRemote('app2/Button')
+  ```
+
+### 与 1.0 互通
+
++ 2.0 的 Vite remote 默认产出 ESM（`type: 'module'`）；要被 Webpack 5（1.0）host 消费，需在 remote 配 `varFilename`，host 侧 `type: 'var'`
++ `@originjs/vite-plugin-federation`（1.4.x）是社区对 1.0 协议的 Vite 实现，与 2.0 协议大体兼容但**无 runtime 插件/类型安全**，迁移到 2.0 官方包需复查动态 remote、共享依赖、混合构建器场景
 
 ## 应用间通信
 
@@ -486,3 +618,73 @@
               ├── 是 → sessionStorage 兜底 / keepAlive
               └── 否 → 不管，让它重建
 ```
+
+## 微前端 × Vite 兼容性问题
+
+> 版本说明：截至 2026-08。Vite 走原生 ESM（`<script type="module">`），与「基于 Webpack 打包 / 快照沙箱 / SystemJS」的传统微前端方案存在根本性摩擦。下面按方案梳理真实坑点与官方现状。
+
+### 为什么会有兼容性问题
+
++ **模块格式差异**：qiankun 1.x / 传统方案大多假设子应用被打包成 IIFE / UMD，并在一个被劫持的 `window`（Proxy 沙箱）里 `eval` 执行；Vite dev 下是原生 ESM，模块通过 `import` 加载，沙箱劫持 `window` 对 ESM 行为影响不一致
++ **`import.meta` / `import()` 动态导入**：Vite 的 HMR、裸模块（`import vue from 'vue'`）走 dev server 重写，被沙箱包裹时路径/作用域容易出错
++ **`document.currentScript` / `publicPath`**：Vite 不用 `__webpack_public_path__`，子应用资源定位逻辑要改
+
+### 各方案在 Vite 下的真实情况
+
+| 方案 | Vite 支持现状（官方口径） | 注意点 |
+|------|--------------------------|--------|
+| **qiankun** | **2.x（next 分支）原生支持 Vite 5+**，通过 `@qiankunjs/bundler-plugin` 的 Vite 插件；子应用以原生 ESM 运行在 qiankun 的 ESM 沙箱里，经 import maps 路由，**不再需要 SystemJS 转换** | 1.x 时代需社区 `vite-plugin-qiankun`（仅 1.0.15，长期未维护），2.x 已官方化；1.x 接 Vite 坑最多（dev 白屏、样式丢失） |
+| **micro-app** | 基于 WebComponent 容器，对 Vite 友好（官方文档站本身就是 VitePress）；子应用 `vite.config` 基本照常，无需特殊打包格式 | 注意子应用 `vite.config` 的 `base` 设为基座下挂载路径，dev 下 `@micro-zoe/micro-app` 直接 fetch ESM 即可 |
+| **wujie** | 官方明确「支持 vite 框架」；子应用 JS 跑在 iframe 沙箱、DOM 渲染在基座 WebComponent，天然隔离与构建器无关 | 子应用 Vite 配置照常，挂载到基座用 `<WujieVue :url>` 即可 |
+| **Module Federation** | 1.0 只能 Webpack 5；Vite 下用社区 `@originjs/vite-plugin-federation`（1.4.x，兼容 1.0 协议）；**2.0 有官方 `@module-federation/vite`**，原生支持 | 见上「Module Federation 2.0」节 |
+
+### qiankun 2.x + Vite 标准接法（官方）
+
+> 子应用直接 export 生命周期，不再手写 `window.__POWERED_BY_QIANKUN__` 那套 UMD 包装。
+
++ 主应用 / 子应用安装构建插件
+
+  ```bash
+  npm i @qiankunjs/bundler-plugin -D
+  ```
+
++ 子应用 `vite.config.ts`
+
+  ```ts
+  import { defineConfig } from 'vite'
+  import { qiankun } from '@qiankunjs/bundler-plugin/vite'
+
+  export default defineConfig({
+    plugins: [qiankun()], // 自动给 dev/preview 加 CORS、给入口 script 打 entry 标记
+    server: {
+      cors: true, // 主应用跨域拉入口 HTML / 模块图需要
+    },
+  })
+  ```
+
++ 子应用入口直接导出生命周期（dev 独立运行也正常）
+
+  ```ts
+  export async function bootstrap() {}
+  export async function mount(props) {
+    // render into props.container
+  }
+  export async function unmount(props) {
+    // tear down
+  }
+  ```
+
++ 主应用 `registerMicroApps` 写法与 1.x 一致，`entry` 指向子应用 dev/preview 地址
+
+### 1.x 时代接 Vite 的典型坑（历史参考，新项目请用 2.x）
+
++ **dev 白屏 / `strictOrigin` 报错**：Vite dev server 没开 CORS，主应用跨域拉不到模块图 → 子应用 `server.cors = true`
++ **`import.meta.env` / 动态 `import()` 在沙箱里失效**：1.x Proxy 沙箱 + Vite ESM 冲突，社区 `vite-plugin-qiankun` 用 `vite` 模式改写入口解决，但仍脆弱
++ **`__webpack_public_path__` 无效**：Vite 不用该变量，资源定位要靠 `base` 或运行时路径
++ **生产构建格式**：1.x 子应用需打成能被 `import-html-entry` 解析的格式，Vite 默认 ESM 产物需额外处理
+
+### 选型建议
+
++ 新项目想用 qiankun + Vite → **直接用 qiankun 2.x + `@qiankunjs/bundler-plugin`**，别碰已停更的 `vite-plugin-qiankun`
++ 隔离性优先、不想折腾沙箱 → micro-app / wujie 对 Vite 更「无感」
++ 走模块共享（不是应用级加载）→ Module Federation 2.0 的 `@module-federation/vite` 才是正解，不要拿 1.0 + Vite 硬凑
