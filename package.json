@@ -8,6 +8,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
+    "prettier": "^3.9.6",
     "vitepress": "^1.6.4"
   },
   "dependencies": {

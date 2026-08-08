@@ -1,5 +1,51 @@
 import { defineConfig } from 'vitepress'
 import { getExploreNavItems } from '../data/siteSections.js'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const DOCS_DIR = path.resolve(__dirname, '..')
+
+// 读取 algorithm 目录，按 index.md 表格的顺序和难度分组生成 sidebar
+function getAlgorithmSidebar() {
+  const algDir = path.join(DOCS_DIR, 'algorithm')
+  const indexPath = path.join(algDir, 'index.md')
+  // 解析 index.md 表格: | 题目 | 难度 | [slug](./slug.md) |
+  const order = [] // { text, slug, level }
+  if (fs.existsSync(indexPath)) {
+    const lines = fs.readFileSync(indexPath, 'utf-8').split('\n')
+    for (const ln of lines) {
+      const m = ln.match(/^\|\s*(.+?)\s*\|\s*(Easy|Medium|Hard)\s*\|\s*\[([\w-]+)\]\(\.\/([\w-]+)\.md\)\s*\|/)
+      if (m) {
+        order.push({ text: m[1].trim(), slug: m[4], level: m[2] })
+      }
+    }
+  }
+  // 若解析失败，回退到目录扫描
+  if (order.length === 0) {
+    for (const f of fs.readdirSync(algDir)) {
+      if (f.endsWith('.md') && f !== 'index.md') {
+        const slug = f.replace(/\.md$/, '')
+        order.push({ text: slug, slug, level: 'Medium' })
+      }
+    }
+  }
+  const groups = {
+    Easy: { text: 'Easy', items: [] },
+    Medium: { text: 'Medium', items: [] },
+    Hard: { text: 'Hard', items: [] },
+  }
+  for (const item of order) {
+    const grp = groups[item.level] || groups.Medium
+    grp.items.push({ text: item.text, link: `/algorithm/${item.slug}` })
+  }
+  const items = [
+    { text: '算法题库（目录）', link: '/algorithm/' },
+    ...Object.values(groups).filter((g) => g.items.length > 0),
+  ]
+  return [{ text: '算法题库', items }]
+}
 
 export default defineConfig({
   title: 'FUANZANG',
@@ -40,6 +86,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '笔记', link: '/notes/' },
+      { text: '算法', link: '/algorithm/' },
       { text: '博客', link: '/blog/hello-world' },
       {
         text: '探索',
@@ -48,6 +95,7 @@ export default defineConfig({
     ],
 
     sidebar: {
+      '/algorithm/': getAlgorithmSidebar(),
       '/blog/': [
         {
           text: '博客',
