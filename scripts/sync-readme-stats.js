@@ -38,6 +38,12 @@ function countNavCategories() {
   return (src.match(/name: '/g) || []).length
 }
 
+function countAlgorithm() {
+  const dir = path.join(ROOT, 'docs/algorithm')
+  if (!fs.existsSync(dir)) return 0
+  return fs.readdirSync(dir).filter(f => f.endsWith('.md') && f !== 'index.md').length
+}
+
 // ── 统计 ──
 const notesDir = path.join(ROOT, 'docs/notes')
 const subdirs = [
@@ -58,6 +64,7 @@ const stats = {
   tools: countTools(),
   navLinks: countNavLinks(),
   navCategories: countNavCategories(),
+  algorithm: countAlgorithm(),
   sub: {}
 }
 
@@ -83,7 +90,9 @@ readme = readme.replace(/(\d+)\+?\s*\u9053\u5BB6\u5E38\u83DC\u8C31/, stats.recip
 readme = readme.replace(/(\d+)\s*\u4E2A\u5206\u7C7B/, stats.navCategories + ' \u4E2A\u5206\u7C7B')
 readme = readme.replace(/(\d+)\+?\s*\u4E2A\u5F00\u53D1\u7F51\u7AD9/, stats.navLinks + '+ \u4E2A\u5F00\u53D1\u7F51\u7AD9')
 
-// 同步目录结构注释块里写死的数据文件描述数字（data/ 段）
+// 算法题库：目录块（algorithm/  # 算法题库（N 题））与汇总行（算法题库**：N 题）
+readme = readme.replace(/算法题库（\d+ 题）/g, `算法题库（${stats.algorithm} 题）`)
+readme = readme.replace(/算法题库\*\*：\d+ 题/g, `算法题库**：${stats.algorithm} 题`)
 readme = readme.replace(/(recipes\.json\s+#\s*)(\d+)/, `$1${stats.recipes}`)
 readme = readme.replace(/(tools\.js\s+#\s*)(\d+)/, `$1${stats.tools}`)
 readme = readme.replace(/(navLinks\.js\s+#\s*)(\d+)/, `$1${stats.navLinks}`)

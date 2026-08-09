@@ -1,4 +1,4 @@
-# 跳跃游戏 II
+# 跳跃游戏 II（Jump Game II）
 
 **难度：** Medium
 

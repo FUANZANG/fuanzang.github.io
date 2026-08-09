@@ -1,4 +1,4 @@
-# 最长回文子串
+# 最长回文子串（Longest Palindromic Substring）
 
 **难度：** Medium
 

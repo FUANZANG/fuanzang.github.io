@@ -1,4 +1,4 @@
-# 最长递增子序列（Longest Increasing Subsequence, LIS）
+# 最长递增子序列（Longest Increasing Subsequence）
 
 **难度：** Medium
 

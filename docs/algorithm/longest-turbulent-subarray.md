@@ -1,4 +1,4 @@
-# 最长湍流子数组
+# 最长湍流子数组（Longest Turbulent Subarray）
 
 **难度：** Medium
 

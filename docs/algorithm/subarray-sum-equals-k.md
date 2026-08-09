@@ -1,4 +1,4 @@
-# 和为 K 的子数组
+# 和为 K 的子数组（Subarray Sum Equals K）
 
 **难度：** Medium
 

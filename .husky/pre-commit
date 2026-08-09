@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+# 提交前同步 README 统计（算法题数、菜谱数等）
+node scripts/sync-readme-stats.js
+
+# 如果脚本改动了 README.md，自动加入本次提交
+if [ -n "$(git status --porcelain README.md)" ]; then
+  echo "README.md 统计已更新，自动加入提交"
+  git add README.md
+fi

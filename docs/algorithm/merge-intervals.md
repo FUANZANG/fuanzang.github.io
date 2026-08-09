@@ -1,4 +1,4 @@
-# 合并重叠区间
+# 合并重叠区间（Merge Intervals）
 
 **难度：** Medium
 

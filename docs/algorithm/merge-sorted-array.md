@@ -1,4 +1,4 @@
-# 合并两个有序数组
+# 合并两个有序数组（Merge Sorted Array）
 
 **难度：** Easy
 

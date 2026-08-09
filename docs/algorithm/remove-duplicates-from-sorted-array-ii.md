@@ -1,4 +1,4 @@
-# 移除有序数组中的重复项 II
+# 移除有序数组中的重复项 II（Remove Duplicates from Sorted Array II）
 
 **难度：** Medium
 

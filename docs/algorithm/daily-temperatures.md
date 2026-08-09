@@ -1,4 +1,4 @@
-# 每日温度
+# 每日温度（Daily Temperatures）
 
 **难度：** Medium
 

@@ -1,4 +1,4 @@
-# 有序数组的平方
+# 有序数组的平方（Squares of a Sorted Array）
 
 **难度：** Easy
 

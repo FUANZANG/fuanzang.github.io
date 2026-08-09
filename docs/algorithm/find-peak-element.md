@@ -1,4 +1,4 @@
-# 寻找峰值元素
+# 寻找峰值元素（Find Peak Element）
 
 **难度：** Medium
 
