@@ -1,4 +1,4 @@
-# 最长有效括号子串（LeetCode Longest Valid Parentheses）
+# 最长有效括号子串（Longest Valid Parentheses）
 
 **难度：** Hard
 

@@ -1,4 +1,4 @@
-# 最长连续递增子序列
+# 最长连续递增子序列（Longest Continuous Increasing Subsequence）
 
 **难度：** Easy
 

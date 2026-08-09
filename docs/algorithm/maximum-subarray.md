@@ -1,4 +1,4 @@
-# 最大子数组和
+# 最大子数组和（Maximum Subarray）
 
 **难度：** Medium
 

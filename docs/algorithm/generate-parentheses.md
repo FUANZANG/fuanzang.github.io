@@ -1,4 +1,4 @@
-# 有效的括号组合
+# 有效的括号组合（Generate Parentheses）
 
 **难度：** Easy
 

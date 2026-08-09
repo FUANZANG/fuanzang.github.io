@@ -1,4 +1,4 @@
-# 字符串的排列
+# 字符串的排列（Permutation in String）
 
 **难度：** Medium
 

@@ -1,4 +1,4 @@
-# 移动零  （Move Zeroes）
+# 移动零（Move Zeroes）
 
 **难度：** Easy
 

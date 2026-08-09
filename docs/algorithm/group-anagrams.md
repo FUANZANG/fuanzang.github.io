@@ -1,4 +1,4 @@
-# 字母异位词分组
+# 字母异位词分组（Group Anagrams）
 
 **难度：** Medium
 

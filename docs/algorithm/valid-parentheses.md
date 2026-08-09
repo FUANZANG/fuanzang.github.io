@@ -1,4 +1,4 @@
-# 有效的括号扩展（Valid Parentheses Expansion）
+# 有效的括号扩展（Valid Parentheses）
 
 **难度：** Medium
 

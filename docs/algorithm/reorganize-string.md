@@ -1,4 +1,4 @@
-# 重排字符串使相邻字符不同
+# 重排字符串使相邻字符不同（Reorganize String）
 
 **难度：** Medium
 

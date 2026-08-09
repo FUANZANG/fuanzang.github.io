@@ -1,4 +1,4 @@
-# 最长和谐子序列
+# 最长和谐子序列（Longest Harmonious Subsequence）
 
 **难度：** Easy
 

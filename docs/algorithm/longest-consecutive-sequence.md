@@ -1,4 +1,4 @@
-# 最长连续序列
+# 最长连续序列（Longest Consecutive Sequence）
 
 **难度：** Medium
 
