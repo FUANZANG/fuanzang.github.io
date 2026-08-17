@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 46 题（按 LeetCode 题组织，已去重合并）
+> 共 47 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -55,3 +55,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最长有效括号子串（Longest Valid Parentheses） | Hard | [longest-valid-parentheses](./longest-valid-parentheses.md) |
 | 最小覆盖子串（Minimum Window Substring） | Hard | [minimum-window-substring](./minimum-window-substring.md) |
 | 回文链表（Palindrome Linked List） | Medium | [palindrome-linked-list](./palindrome-linked-list.md) |
+| 前 K 个高频元素（Top K Frequent Elements） | Medium | [top-k-frequent-elements](./top-k-frequent-elements.md) |
