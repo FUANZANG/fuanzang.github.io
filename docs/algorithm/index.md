@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 50 题（按 LeetCode 题组织，已去重合并）
+> 共 51 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -59,3 +59,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 除自身以外数组的乘积（Product of Array Except Self） | Medium | [product-of-array-except-self](./product-of-array-except-self.md) |
 | 岛屿数量（Number of Islands） | Medium | [number-of-islands](./number-of-islands.md) |
 | 搜索旋转排序数组（Search in Rotated Sorted Array） | Medium | [search-in-rotated-sorted-array](./search-in-rotated-sorted-array.md) |
+| 旋转图像（Rotate Image） | Medium | [rotate-image](./rotate-image.md) |
