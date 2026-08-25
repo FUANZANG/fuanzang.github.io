@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 53 题（按 LeetCode 题组织，已去重合并）
+> 共 54 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -62,3 +62,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 旋转图像（Rotate Image） | Medium | [rotate-image](./rotate-image.md) |
 | 电话号码的字母组合（Letter Combinations of a Phone Number） | Medium | [letter-combinations-of-a-phone-number](./letter-combinations-of-a-phone-number.md) |
 | 两数之和（Two Sum） | Easy | [two-sum](./two-sum.md) |
+| 买卖股票的最佳时机（Best Time to Buy and Sell Stock） | Easy | [best-time-to-buy-and-sell-stock](./best-time-to-buy-and-sell-stock.md) |
