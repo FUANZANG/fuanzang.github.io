@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 56 题（按 LeetCode 题组织，已去重合并）
+> 共 57 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -65,3 +65,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 买卖股票的最佳时机（Best Time to Buy and Sell Stock） | Easy | [best-time-to-buy-and-sell-stock](./best-time-to-buy-and-sell-stock.md) |
 | 多数元素（Majority Element） | Easy | [majority-element](./majority-element.md) |
 | 解码方法（Decode Ways） | Medium | [decode-ways](./decode-ways.md) |
+| 罗马数字转整数（Roman to Integer） | Easy | [roman-to-integer](./roman-to-integer.md) |
