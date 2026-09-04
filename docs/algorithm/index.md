@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 61 题（按 LeetCode 题组织，已去重合并）
+> 共 62 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -69,4 +69,5 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 两数相加（Add Two Numbers） | Medium | [add-two-numbers](./add-two-numbers.md) |
 | 只出现一次的数字（Single Number） | Easy | [single-number](./single-number.md) |
 | 课程表（Course Schedule） | Medium | [course-schedule](./course-schedule.md) |
-| 子集（Subsets） | Medium | [subsets](./subsets.md) |
+|| 子集（Subsets） | Medium | [subsets](./subsets.md) |
+|| 颜色分类（Sort Colors） | Medium | [sort-colors](./sort-colors.md) |
