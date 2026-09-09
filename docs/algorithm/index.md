@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 66 题（按 LeetCode 题组织，已去重合并）
+> 共 67 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -74,4 +74,5 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 任务调度器（Task Scheduler） | Medium | [task-scheduler](./task-scheduler.md) |
 | 反转链表（Reverse Linked List） | Easy | [reverse-linked-list](./reverse-linked-list.md) |
 | 全排列（Permutations） | Medium | [permutations](./permutations.md) |
-| 打家劫舍（House Robber） | Medium | [house-robber](./house-robber.md) |
+|| 打家劫舍（House Robber） | Medium | [house-robber](./house-robber.md) |
+|| 找出数组中的重复数字（Find the Duplicate Number） | Medium | [find-the-duplicate-number](./find-the-duplicate-number.md) |
