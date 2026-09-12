@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 69 题（按 LeetCode 题组织，已去重合并）
+> 共 70 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -76,5 +76,6 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 全排列（Permutations） | Medium | [permutations](./permutations.md) |
 || 打家劫舍（House Robber） | Medium | [house-robber](./house-robber.md) |
 || 找出数组中的重复数字（Find the Duplicate Number） | Medium | [find-the-duplicate-number](./find-the-duplicate-number.md) |
-|| 缺失的第一个正数（First Missing Positive） | Hard | [first-missing-positive](./first-missing-positive.md) |
-|| 整数反转（Reverse Integer） | Medium | [reverse-integer](./reverse-integer.md) |
+||| 缺失的第一个正数（First Missing Positive） | Hard | [first-missing-positive](./first-missing-positive.md) |
+||| 整数反转（Reverse Integer） | Medium | [reverse-integer](./reverse-integer.md) |
+|| LRU 缓存（LRU Cache） | Medium | [lru-cache](./lru-cache.md) |
