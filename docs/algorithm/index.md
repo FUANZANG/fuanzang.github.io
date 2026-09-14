@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 71 题（按 LeetCode 题组织，已去重合并）
+> 共 72 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -79,4 +79,5 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 ||| 缺失的第一个正数（First Missing Positive） | Hard | [first-missing-positive](./first-missing-positive.md) |
 ||| 整数反转（Reverse Integer） | Medium | [reverse-integer](./reverse-integer.md) |
 ||| LRU 缓存（LRU Cache） | Medium | [lru-cache](./lru-cache.md) |
-|| 爬楼梯（Climbing Stairs） | Easy | [climbing-stairs](./climbing-stairs.md) |
+||| 爬楼梯（Climbing Stairs） | Easy | [climbing-stairs](./climbing-stairs.md) |
+|| 单词拆分（Word Break） | Medium | [word-break](./word-break.md) |
