@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 72 题（按 LeetCode 题组织，已去重合并）
+> 共 73 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -81,3 +81,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 ||| LRU 缓存（LRU Cache） | Medium | [lru-cache](./lru-cache.md) |
 ||| 爬楼梯（Climbing Stairs） | Easy | [climbing-stairs](./climbing-stairs.md) |
 || 单词拆分（Word Break） | Medium | [word-break](./word-break.md) |
+| 实现 Trie (前缀树)（Implement Trie (Prefix Tree)） | Medium | [implement-trie-prefix-tree](./implement-trie-prefix-tree.md) |
