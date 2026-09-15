@@ -8,7 +8,9 @@ import { computed } from 'vue'
 const props = defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
-  maxWidth: { type: String, default: '880px' }
+  maxWidth: { type: String, default: '880px' },
+  /** 满高模式：占满「视口 − 导航 − 页脚」，页面 body 不再滚动，仅内部区域滚动 */
+  fill: { type: Boolean, default: false }
 })
 
 /** 拆出标题开头的 emoji，其余走渐变字 */
@@ -22,7 +24,7 @@ const titleParts = computed(() => {
 </script>
 
 <template>
-  <div class="page-shell" :style="{ maxWidth }">
+  <div class="page-shell" :class="{ fill }" :style="{ maxWidth }">
     <header class="page-header">
       <h1>
         <span v-if="titleParts.emoji" class="title-emoji">{{ titleParts.emoji }}</span>
@@ -95,5 +97,20 @@ const titleParts = computed(() => {
   margin: 0.3rem auto 0;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--c-blue), var(--c-purple));
+}
+
+/* 满高模式（仅桌面）：锁住高度，body 不滚动，内部区域各自滚动 */
+@media (min-width: 861px) {
+  .page-shell.fill {
+    height: calc(100vh - var(--vp-nav-height, 64px) - var(--footer-h, 64px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page-shell.fill .page-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
 }
 </style>

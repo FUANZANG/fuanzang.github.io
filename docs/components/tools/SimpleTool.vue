@@ -18,6 +18,7 @@ const caseStyle = ref('camel')
 const hashAlgo = ref('SHA-256')
 const fromBase = ref(10)
 const toBase = ref(16)
+const newlineTarget = ref('lf')
 const lineOpts = reactive({
   dedupe: false,
   sort: false,
@@ -25,64 +26,78 @@ const lineOpts = reactive({
   dropEmpty: false
 })
 const preview = ref('')
-const hashOut = ref('')
 
 const meta = computed(() => simpleMeta[props.id] || {})
 const hasMode = computed(() => !!meta.value.mode)
 const modeLabels = computed(() => meta.value.modeLabels || ['编码', '解码'])
 const placeholder = computed(() => placeholderMap[props.id] || '')
 
-const syncOut = computed(() => {
+// 输入字符数，便于判断文本规模
+const charCount = computed(() => input.value.length)
+
+// 换行符工具：基于「防抖后的输入快照」统计，避免对每次按键都跑整段正则
+const newlineInfo = computed(() => {
+  if (props.id !== 'newline' || !debouncedInput.value) return ''
+  const s = debouncedInput.value
+  const crlf = (s.match(/\r\n/g) || []).length
+  const cr = (s.match(/\r/g) || []).length - crlf
+  const lf = (s.match(/\n/g) || []).length - crlf
+  return `检测到：CRLF ${crlf} 处 · LF ${lf} 处 · CR ${cr} 处`
+})
+
+// 防抖执行：大量文本时避免每次按键都整段重算，停顿 250ms 后再转换
+const debouncedInput = ref('')
+const result = ref('')
+let timer = null
+
+function runNow() {
+  debouncedInput.value = input.value
   error.value = ''
-  preview.value = ''
-  if (!input.value) return ''
+  result.value = ''
+  if (!input.value) return
   try {
     if (props.id === 'color') preview.value = colorPreview(input.value)
-    return runTransform(props.id, input.value, {
+    result.value = runTransform(props.id, input.value, {
       mode: mode.value,
       caseStyle: caseStyle.value,
       fromBase: fromBase.value,
       toBase: toBase.value,
+      newlineTarget: newlineTarget.value,
       lineOpts
     })
   } catch (e) {
     error.value = '转换失败：' + (e && e.message ? e.message : e)
-    return ''
+    result.value = ''
   }
-})
+  if (props.id === 'hash') {
+    if (!crypto || !crypto.subtle) {
+      error.value = '当前环境不支持 Web Crypto'
+      return
+    }
+    const data = new TextEncoder().encode(input.value)
+    crypto.subtle
+      .digest(hashAlgo.value, data)
+      .then(buf => {
+        result.value = Array.from(new Uint8Array(buf))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+      })
+      .catch(e => {
+        error.value = '计算失败：' + (e && e.message ? e.message : e)
+        result.value = ''
+      })
+  }
+}
 
-// 哈希为异步（Web Crypto），单独处理
+function schedule() {
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(runNow, 250)
+}
+
 watch(
-  [() => props.id, input, hashAlgo],
-  async () => {
-    if (props.id !== 'hash') {
-      hashOut.value = ''
-      return
-    }
-    if (!input.value) {
-      hashOut.value = ''
-      error.value = ''
-      return
-    }
-    error.value = ''
-    try {
-      if (!crypto || !crypto.subtle)
-        throw new Error('当前环境不支持 Web Crypto')
-      const data = new TextEncoder().encode(input.value)
-      const buf = await crypto.subtle.digest(hashAlgo.value, data)
-      hashOut.value = Array.from(new Uint8Array(buf))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
-    } catch (e) {
-      error.value = '计算失败：' + (e && e.message ? e.message : e)
-      hashOut.value = ''
-    }
-  },
+  [input, () => props.id, mode, caseStyle, hashAlgo, fromBase, toBase, newlineTarget, lineOpts],
+  schedule,
   { immediate: true }
-)
-
-const result = computed(() =>
-  props.id === 'hash' ? hashOut.value : syncOut.value
 )
 
 function swap() {
@@ -91,7 +106,10 @@ function swap() {
 function clearAll() {
   input.value = ''
   error.value = ''
+  result.value = ''
+  debouncedInput.value = ''
   lineOpts.dedupe = lineOpts.sort = lineOpts.trim = lineOpts.dropEmpty = false
+  newlineTarget.value = 'lf'
 }
 </script>
 
@@ -134,6 +152,17 @@ function clearAll() {
           <option :value="16">16 进制</option>
         </select>
       </div>
+      <select
+        v-else-if="meta.control === 'newline'"
+        v-model="newlineTarget"
+        class="style-select"
+      >
+        <option value="lf">LF（\n，Unix / Linux）</option>
+        <option value="crlf">CRLF（\r\n，Windows）</option>
+        <option value="cr">CR（\r，老 Mac）</option>
+        <option value="unescape">去转义（\n → 换行，便于阅读）</option>
+        <option value="escape">转义（换行 → \n，便于粘贴进代码）</option>
+      </select>
       <div v-else-if="meta.control === 'lines'" class="line-opts">
         <label><input type="checkbox" v-model="lineOpts.dedupe" /> 去重</label>
         <label><input type="checkbox" v-model="lineOpts.sort" /> 排序</label>
@@ -158,9 +187,11 @@ function clearAll() {
       </div>
     </div>
 
+    <p v-if="newlineInfo" class="newline-info">{{ newlineInfo }}</p>
+
     <div class="io">
       <div class="io-col">
-        <label class="io-label">输入</label>
+        <label class="io-label">输入<span class="count">{{ charCount }} 字符</span></label>
         <textarea
           v-model="input"
           class="io-area"
@@ -293,6 +324,11 @@ function clearAll() {
   color: var(--vp-c-text-2);
   margin-bottom: 0.5rem;
 }
+.io-label .count {
+  font-size: 0.74rem;
+  color: var(--vp-c-text-3);
+  font-variant-numeric: tabular-nums;
+}
 .copy-btn {
   border: none;
   background: none;
@@ -334,6 +370,11 @@ function clearAll() {
   margin-top: 1rem;
   color: #dc2626;
   font-size: 0.85rem;
+}
+.newline-info {
+  margin: -0.4rem 0 1rem;
+  font-size: 0.8rem;
+  color: var(--vp-c-text-3);
 }
 @media (max-width: 640px) {
   .io {
