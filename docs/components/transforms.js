@@ -176,6 +176,30 @@ function processLines(s, opts) {
   return lines.join('\n')
 }
 
+function convertNewlines(s, target) {
+  // 去转义：把字面量 \n \r \t 还原成真实换行/回车/制表符
+  if (target === 'unescape') {
+    return s
+      .replace(/\\r/g, '\r')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t')
+  }
+  // 转义：把真实换行/回车/制表符写成 \n \r \t（先处理反斜杠本身）
+  if (target === 'escape') {
+    return s
+      .replace(/\\/g, '\\\\')
+      .replace(/\r\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n')
+      .replace(/\t/g, '\\t')
+  }
+  // 行尾统一：先归一成 LF，再按目标展开，避免 CRLF 被二次替换
+  const unified = s.replace(/\r\n|\r|\n/g, '\n')
+  if (target === 'crlf') return unified.replace(/\n/g, '\r\n')
+  if (target === 'cr') return unified.replace(/\n/g, '\r')
+  return unified
+}
+
 function b64urlDecode(s) {
   s = s.replace(/-/g, '+').replace(/_/g, '/')
   while (s.length % 4) s += '='
@@ -267,6 +291,8 @@ export function runTransform(id, input, o) {
       return parseJwt(input)
     case 'lines':
       return processLines(input, o.lineOpts)
+    case 'newline':
+      return convertNewlines(input, o.newlineTarget)
     case 'color':
       return formatColor(parseColor(input))
     default:
@@ -285,6 +311,7 @@ export const simpleMeta = {
   hash: { control: 'hash' },
   base: { control: 'base' },
   lines: { control: 'lines' },
+  newline: { control: 'newline' },
   color: {},
   text: {},
   jwt: {}
@@ -302,5 +329,6 @@ export const placeholderMap = {
   base: '输入数字，如：255 或 FF（按左侧进制解析）',
   text: '粘贴文本，统计字符、行数、词数与字节',
   jwt: '粘贴 JWT（header.payload.signature）',
-  lines: '粘贴多行文本，勾选处理方式'
+  lines: '粘贴多行文本，勾选处理方式',
+  newline: '粘贴文本；选「去转义」把 \\n \\r \\t 还原成真实换行便于阅读，或选 LF/CRLF/CR 统一行尾'
 }
