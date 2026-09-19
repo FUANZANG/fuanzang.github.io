@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 76 题（按 LeetCode 题组织，已去重合并）
+> 共 77 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -84,4 +84,5 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 || 实现 Trie (前缀树)（Implement Trie (Prefix Tree)） | Medium | [implement-trie-prefix-tree](./implement-trie-prefix-tree.md) |
 | 组合总和（Combination Sum） | Medium | [combination-sum](./combination-sum.md) |
 || 搜索二维矩阵（Search a 2D Matrix） | Medium | [search-a-2d-matrix](./search-a-2d-matrix.md) |
-| 有效的数独（Valid Sudoku） | Medium | [valid-sudoku](./valid-sudoku.md) |
+|| 有效的数独（Valid Sudoku） | Medium | [valid-sudoku](./valid-sudoku.md) |
+|| 下一个排列（Next Permutation） | Medium | [next-permutation](./next-permutation.md) |
