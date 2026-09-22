@@ -74,17 +74,17 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 任务调度器（Task Scheduler） | Medium | [task-scheduler](./task-scheduler.md) |
 | 反转链表（Reverse Linked List） | Easy | [reverse-linked-list](./reverse-linked-list.md) |
 | 全排列（Permutations） | Medium | [permutations](./permutations.md) |
-|| 打家劫舍（House Robber） | Medium | [house-robber](./house-robber.md) |
-|| 找出数组中的重复数字（Find the Duplicate Number） | Medium | [find-the-duplicate-number](./find-the-duplicate-number.md) |
-||| 缺失的第一个正数（First Missing Positive） | Hard | [first-missing-positive](./first-missing-positive.md) |
-||| 整数反转（Reverse Integer） | Medium | [reverse-integer](./reverse-integer.md) |
-||| LRU 缓存（LRU Cache） | Medium | [lru-cache](./lru-cache.md) |
-||| 爬楼梯（Climbing Stairs） | Easy | [climbing-stairs](./climbing-stairs.md) |
-|| 单词拆分（Word Break） | Medium | [word-break](./word-break.md) |
-|| 实现 Trie (前缀树)（Implement Trie (Prefix Tree)） | Medium | [implement-trie-prefix-tree](./implement-trie-prefix-tree.md) |
+| 打家劫舍（House Robber） | Medium | [house-robber](./house-robber.md) |
+| 找出数组中的重复数字（Find the Duplicate Number） | Medium | [find-the-duplicate-number](./find-the-duplicate-number.md) |
+| 缺失的第一个正数（First Missing Positive） | Hard | [first-missing-positive](./first-missing-positive.md) |
+| 整数反转（Reverse Integer） | Medium | [reverse-integer](./reverse-integer.md) |
+| LRU 缓存（LRU Cache） | Medium | [lru-cache](./lru-cache.md) |
+| 爬楼梯（Climbing Stairs） | Easy | [climbing-stairs](./climbing-stairs.md) |
+| 单词拆分（Word Break） | Medium | [word-break](./word-break.md) |
+| 实现 Trie (前缀树)（Implement Trie (Prefix Tree)） | Medium | [implement-trie-prefix-tree](./implement-trie-prefix-tree.md) |
 | 组合总和（Combination Sum） | Medium | [combination-sum](./combination-sum.md) |
-|| 搜索二维矩阵（Search a 2D Matrix） | Medium | [search-a-2d-matrix](./search-a-2d-matrix.md) |
-|| 有效的数独（Valid Sudoku） | Medium | [valid-sudoku](./valid-sudoku.md) |
-|| 下一个排列（Next Permutation） | Medium | [next-permutation](./next-permutation.md) |
-|| 复制带随机指针的链表（Copy List with Random Pointer） | Medium | [copy-list-with-random-pointer](./copy-list-with-random-pointer.md) |
+| 搜索二维矩阵（Search a 2D Matrix） | Medium | [search-a-2d-matrix](./search-a-2d-matrix.md) |
+| 有效的数独（Valid Sudoku） | Medium | [valid-sudoku](./valid-sudoku.md) |
+| 下一个排列（Next Permutation） | Medium | [next-permutation](./next-permutation.md) |
+| 复制带随机指针的链表（Copy List with Random Pointer） | Medium | [copy-list-with-random-pointer](./copy-list-with-random-pointer.md) |
 | 数组中的第K个最大元素（Kth Largest Element in an Array） | Medium | [kth-largest-element-in-an-array](./kth-largest-element-in-an-array.md) |
