@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 78 题（按 LeetCode 题组织，已去重合并）
+> 共 79 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -86,4 +86,5 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 || 搜索二维矩阵（Search a 2D Matrix） | Medium | [search-a-2d-matrix](./search-a-2d-matrix.md) |
 || 有效的数独（Valid Sudoku） | Medium | [valid-sudoku](./valid-sudoku.md) |
 || 下一个排列（Next Permutation） | Medium | [next-permutation](./next-permutation.md) |
+|| 复制带随机指针的链表（Copy List with Random Pointer） | Medium | [copy-list-with-random-pointer](./copy-list-with-random-pointer.md) |
 | 数组中的第K个最大元素（Kth Largest Element in an Array） | Medium | [kth-largest-element-in-an-array](./kth-largest-element-in-an-array.md) |
