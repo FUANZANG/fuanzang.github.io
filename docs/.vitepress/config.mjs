@@ -183,10 +183,18 @@ export default defineConfig({
           ]
         },
         {
-          text: '后端与运维',
+          text: '后端基础',
           collapsed: false,
           items: [
             { text: 'Node.js', link: '/notes/backend/node' },
+            { text: 'Docker', link: '/notes/backend/docker' },
+            { text: 'Linux', link: '/notes/backend/linux' }
+          ]
+        },
+        {
+          text: 'Java 后端',
+          collapsed: false,
+          items: [
             { text: 'Java 基础', link: '/notes/backend/java-basics' },
             { text: 'Java 生态与工具链', link: '/notes/backend/java-ecosystem' },
             { text: 'Java 并发', link: '/notes/backend/java-concurrency' },
@@ -196,15 +204,19 @@ export default defineConfig({
             { text: 'JPA 与 Spring Data JPA', link: '/notes/backend/jpa' },
             { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
             { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
-            { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' },
+            { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' }
+          ]
+        },
+        {
+          text: '数据库与大数据',
+          collapsed: false,
+          items: [
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
             { text: '数据库设计', link: '/notes/backend/db-design' },
             { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' },
             { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
-            { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
-            { text: 'Docker', link: '/notes/backend/docker' },
-            { text: 'Linux', link: '/notes/backend/linux' }
+            { text: 'Redis 基础', link: '/notes/backend/redis-basics' }
           ]
         },
         {
