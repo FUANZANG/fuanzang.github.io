@@ -195,12 +195,15 @@ export default defineConfig({
             { text: 'MyBatis', link: '/notes/backend/mybatis' },
             { text: 'JPA 与 Spring Data JPA', link: '/notes/backend/jpa' },
             { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
-            { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' },
-            { text: 'Docker', link: '/notes/backend/docker' },
-            { text: 'Linux', link: '/notes/backend/linux' },
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
-            { text: 'Redis 基础', link: '/notes/backend/redis-basics' }
+            { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
+            { text: '数据库设计', link: '/notes/backend/db-design' },
+            { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' },
+            { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
+            { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
+            { text: 'Docker', link: '/notes/backend/docker' },
+            { text: 'Linux', link: '/notes/backend/linux' }
           ]
         },
         {
