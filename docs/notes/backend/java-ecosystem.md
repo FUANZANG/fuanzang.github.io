@@ -170,6 +170,37 @@ Maven 也解析传递依赖（A 依赖 B、B 依赖 C），但策略与 npm 不�
 
 读后端代码时的速记：`spring-boot-starter-xxx` 是 Boot 的"场景包"——引入一个 starter，相关的依赖和默认配置自动就位（≈ 装 Nuxt module）。
 
+## 日志体系：SLF4J + Logback
+
+Java 日志是出了名的"套娃"——历史包袱导致**门面**和**实现**分离，前端没有对应物，第一次见必然困惑：
+
+```
+你的代码 → SLF4J（门面：统一 API，只管调用）
+              ↓ 桥接
+           Logback（实现：真正写日志，决定格式/输出/滚动）
+```
+
+为什么分离：早年日志实现混战（Log4j、java.util.logging…），库作者不知道用户最终用哪个实现，于是都面向 SLF4J 门面编程，用户自己插实现。**类比：SLF4J ≈ 前端 ORM 接口，Logback ≈ 具体数据库驱动**——代码只依赖接口，底层可换。
+
+```java
+// 用法（Lombok 的 @Slf4j 注解自动生成下面这行）
+private static final Logger log = LoggerFactory.getLogger(MyService.class);
+
+log.info("user {} logged in", userId);   // 占位符 {}，不要字符串拼接（省掉无谓的格式化开销）
+log.error("save failed", e);             // 异常作为最后一个参数，打印完整堆栈
+```
+
+Spring Boot 默认带 Logback + 预设格式，`application.yml` 调级别即可：
+
+```yaml
+logging:
+  level:
+    com.example.demo: debug      # 自己的包开 debug
+    root: info
+```
+
+读代码时认脸即可：`log.info`/`@Slf4j` 就是这个体系，别深究桥接细节（除非真要排查日志冲突）。
+
 ## 参考
 
 + [Maven 官方文档](https://maven.apache.org/guides/)

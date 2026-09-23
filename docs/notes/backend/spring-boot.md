@@ -214,6 +214,62 @@ app:
 
 **Profile 环境隔离**：`application-dev.yml` / `application-prod.yml`，启动时 `--spring.profiles.active=dev` 激活（≈ Vite 的 mode + .env.development/.env.production）。
 
+## 参数校验与全局异常处理
+
+真实项目必备三件套（学习路径里提过，此处展开）：
+
+**1. 参数校验 `@Valid`**（依赖 `spring-boot-starter-validation`）：
+
+```java
+public record CreateUserRequest(
+    @NotBlank(message = "用户名不能为空") String name,
+    @Min(0) @Max(150) Integer age,
+    @Email String email
+) {}
+
+@PostMapping
+public UserDTO create(@Valid @RequestBody CreateUserRequest req) { ... }
+// 校验失败自动抛 MethodArgumentNotValidException，不会进方法体
+```
+
+**2. 全局异常处理 `@RestControllerAdvice`**——所有 Controller 的异常统一接住（≈ 前端 axios 拦截器统一处理错误响应，但这是服务端视角）：
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)   // 参数校验失败 → 400
+    public ResponseEntity<Map<String, String>> onInvalidArg(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldErrors().stream()
+            .map(f -> f.getField() + ": " + f.getDefaultMessage())
+            .collect(Collectors.joining("; "));
+        return ResponseEntity.badRequest().body(Map.of("message", msg));
+    }
+
+    @ExceptionHandler(BizException.class)                      // 业务异常 → 400/自定义码
+    public ResponseEntity<Map<String, String>> onBiz(BizException e) {
+        return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+    }
+    // 不接住的（如 RuntimeException）走 Boot 默认 → 500 + 白label页
+}
+```
+
+没有这层，任何异常都会变成 Spring 默认的 500 JSON；有了它，错误响应格式统一、堆栈不泄露给前端。
+
+**3. Lombok**——编译期生成样板代码，真实代码库满地都是：
+
+```java
+@Data                      // getter/setter/equals/hashCode/toString 全生成
+@RequiredArgsConstructor   // final 字段的构造器（配合 @Autowired 省掉手写注入）
+@Slf4j                     // 自动生成 log 字段（见生态篇日志节）
+public class UserService {
+    private final UserRepository repo;   // @RequiredArgsConstructor 生成构造器 → 构造器注入
+    public void doWork() { log.info("working"); }
+}
+```
+
+IDEA 装插件 + `annotationProcessor` 依赖后无感使用。record 类（DTO）不需要 Lombok——两者职责不同：record 是不可变数据载体，Lombok 消除的是可变实体类的样板。
+
 ## 3.x / 4.x 注意点
 
 + 基线：Boot 3 要 Java 17 起，Boot 4 同样 Java 17 起（推荐 21/25 LTS）
