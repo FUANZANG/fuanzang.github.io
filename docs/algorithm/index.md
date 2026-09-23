@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 79 题（按 LeetCode 题组织，已去重合并）
+> 共 80 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -88,3 +88,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 下一个排列（Next Permutation） | Medium | [next-permutation](./next-permutation.md) |
 | 复制带随机指针的链表（Copy List with Random Pointer） | Medium | [copy-list-with-random-pointer](./copy-list-with-random-pointer.md) |
 | 数组中的第K个最大元素（Kth Largest Element in an Array） | Medium | [kth-largest-element-in-an-array](./kth-largest-element-in-an-array.md) |
+| 滑动窗口最大值（Sliding Window Maximum） | Medium | [sliding-window-maximum](./sliding-window-maximum.md) |
