@@ -187,6 +187,9 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Node.js', link: '/notes/backend/node' },
+            { text: 'Java 基础', link: '/notes/backend/java-basics' },
+            { text: 'Java 生态与工具链', link: '/notes/backend/java-ecosystem' },
+            { text: 'Spring Boot', link: '/notes/backend/spring-boot' },
             { text: 'Docker', link: '/notes/backend/docker' },
             { text: 'Linux', link: '/notes/backend/linux' },
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
