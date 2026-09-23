@@ -195,6 +195,7 @@ export default defineConfig({
             { text: 'MyBatis', link: '/notes/backend/mybatis' },
             { text: 'JPA 与 Spring Data JPA', link: '/notes/backend/jpa' },
             { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
+            { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' },
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
