@@ -249,6 +249,7 @@ export default defineConfig({
             { text: 'Web AI', link: '/notes/frontier/web-ai' },
             { text: 'WebAssembly', link: '/notes/frontier/wasm' },
             { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' },
+            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' },
             { text: 'WebGPU', link: '/notes/frontier/webgpu' },
             { text: 'Three.js', link: '/notes/frontier/threejs' }
           ]
