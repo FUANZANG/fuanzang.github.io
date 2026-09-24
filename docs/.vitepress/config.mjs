@@ -242,14 +242,24 @@ export default defineConfig({
           ]
         },
         {
-          text: 'AI 与前沿技术',
+          text: 'AI 工程',
           collapsed: false,
           items: [
+            { text: 'LLM 基础概念', link: '/notes/frontier/llm-fundamentals' },
             { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
-            { text: 'Web AI', link: '/notes/frontier/web-ai' },
-            { text: 'WebAssembly', link: '/notes/frontier/wasm' },
             { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' },
-            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' },
+            { text: 'Web AI', link: '/notes/frontier/web-ai' },
+            { text: 'RAG 检索增强生成', link: '/notes/frontier/rag' },
+            { text: 'MCP 与工具调用', link: '/notes/frontier/mcp-tools' },
+            { text: '本地大模型', link: '/notes/frontier/local-llm' },
+            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' }
+          ]
+        },
+        {
+          text: '前沿技术',
+          collapsed: false,
+          items: [
+            { text: 'WebAssembly', link: '/notes/frontier/wasm' },
             { text: 'WebGPU', link: '/notes/frontier/webgpu' },
             { text: 'Three.js', link: '/notes/frontier/threejs' }
           ]

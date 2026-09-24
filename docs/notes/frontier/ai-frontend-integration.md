@@ -64,6 +64,74 @@ async function chatCompletion(
 ✅ 环境变量注入（仅构建时可用，运行时无暴露）
 ```
 
+### 结构化输出（JSON）
+
+让模型输出严格合法的 JSON——表单填充、数据提取、分类打标等场景的刚需。三档实现，优先级从高到低：
+
+```ts
+// ① JSON Schema 约束（服务端强制解码，100% 合法，首选）
+const response = await fetch('/api/chat', {
+  method: 'POST',
+  body: JSON.stringify({
+    messages: [{ role: 'user', content: '把这段简历提取成结构化数据：...' }],
+    response_format: {
+      type: 'json_schema',
+      json_schema: {
+        name: 'resume',
+        schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            skills: { type: 'array', items: { type: 'string' } },
+            years: { type: 'number' }
+          },
+          required: ['name', 'skills'],
+          additionalProperties: false
+        }
+      }
+    }
+  })
+})
+// 各家参数名略异：OpenAI response_format、Claude tool 强制调用、DeepSeek json_object
+
+// ② JSON mode：只保证是合法 JSON，不保证字段结构（需 prompt 里给示例）
+
+// ③ 纯 prompt 约定 + 前端兜底校验（Zod parse 失败就走重试/降级）
+```
+
+原理：把"生成任意文本"约束成"只在合法 JSON 的语法空间里采样"——类似表单校验下沉到了生成过程。概念详见 [LLM 基础概念](/notes/frontier/llm-fundamentals)。
+
+### 多模态：图片输入（Vision）
+
+截图提问、OCR、扫题识别——前端高频场景。图片以 `image_url` 消息传入（base64 或 URL 二选一）：
+
+```ts
+const body = {
+  model: 'gpt-4o',
+  messages: [{
+    role: 'user',
+    content: [
+      { type: 'text', text: '这张报错截图里的问题是什么？' },
+      { type: 'image_url', image_url: {
+        url: `data:image/png;base64,${base64Str}`   // 本地图片：base64；公网图：https URL
+      } }
+    ]
+  }]
+}
+```
+
+工程要点：
+
++ **成本**：图片按分辨率折算 token 计费（一张高清图 ≈ 数百到上千 token，细节图比文字贵得多）——前端压缩/降采样再上传是省钱第一步
++ **多图**：一次请求可传多张（数组里多个 `image_url`），上限各家不同（几十到几百张）
++ **格式**：PNG/JPEG/WebP/GIF 通用；PDF 部分模型支持（按页折算）
++ **前端链路**：`<input type="file">` → FileReader/`canvas.toDataURL` 压缩 → base64 上传；大图走 URL 更省请求体
++ **局限**：精确文字识别（密集小字表格）不如专用 OCR，先试再选型
+
+### Batch API：异步批处理半价
+
+不要求实时的任务（离线打标、批量翻译、日志分析）走 Batch 接口：提交任务队列，24 小时内返回结果，**价格约五折**。前端无感知，纯后端成本优化——量大的离线任务必用。
+
 **后端代理模式（Node.js）：**
 
 ```typescript
