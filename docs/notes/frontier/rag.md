@@ -102,7 +102,7 @@ RAG 应用的前端有明确的模式库：
 1. 100 行代码跑通最小 RAG：拿你的 VitePress 笔记当语料，OpenAI embedding + pgvector/Chroma + API 生成
 2. 故意用型号/专有名词提问，看纯向量检索翻车，加 BM25 混合修复
 3. 加 rerank，对比前后 top-5 的相关性变化（体感明显）
-4. 之后按需：Agentic RAG、评估体系、增量索引
+4. 之后按需：Agentic RAG、[AI 评测与可观测](/notes/frontier/ai-eval-observability)、增量索引
 
 ## 参考
 
