@@ -55,7 +55,8 @@ const subdirs = [
   { key: 'backend', label: '后端' },
   { key: 'cross-platform', label: '跨端' },
   { key: 'practice', label: '场景实战' },
-  { key: 'frontier', label: 'AI 与前沿' }
+  // 目录仍为 frontier/；侧边栏拆为「AI 工程」+「前沿技术」
+  { key: 'frontier', label: 'AI 工程与前沿' }
 ]
 
 const stats = {
@@ -82,6 +83,12 @@ for (const { key, label } of subdirs) {
   const replacement = label + '\uFF08' + stats.sub[key] + ' \u7BC7\uFF09'
   readme = readme.replace(regex, replacement)
 }
+
+// 更新目录树汇总：技术笔记（N 大分类，M 篇）
+readme = readme.replace(
+  /\u6280\u672F\u7B14\u8BB0\uFF08\d+ \u5927\u5206\u7C7B\uFF0C\d+ \u7BC7\uFF09/,
+  `\u6280\u672F\u7B14\u8BB0\uFF08${subdirs.length} \u5927\u5206\u7C7B\uFF0C${stats.totalNotes} \u7BC7\uFF09`
+)
 
 // 更新汇总行
 readme = readme.replace(/(\d+)\+?\s*\u7BC7\u6280\u672F\u6587\u7AE0/, stats.totalNotes + ' \u7BC7\u6280\u672F\u6587\u7AE0')
