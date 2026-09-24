@@ -104,6 +104,8 @@ public void rename(Long id) {
 
 推论：同一个事务内两次 `findById(1L)` 只发一条 SQL（一级缓存命中）；`save` 的语义是"合并托管状态"，不是简单的 INSERT。
 
+**flush ≠ commit**：**flush** 是"把内存里挂起的变更刷成 SQL 发出去"（`UPDATE ...` 已执行但事务未提交），**commit** 才是真正持久化。正常无需手动 flush——事务提交时 Hibernate 自动 flush；但要注意 flush 后数据库里已能看到未提交数据（同连接可见），事务回滚则一并撤销。
+
 ## N+1：必踩的坑
 
 ```java

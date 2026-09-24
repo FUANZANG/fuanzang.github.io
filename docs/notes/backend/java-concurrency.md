@@ -78,10 +78,12 @@ private volatile boolean running = true;
 ### java.util.concurrent：日常首选
 
 ```java
-// 原子类：无锁的原子操作（CAS 实现）
+// 原子类：无锁的原子操作
+// CAS（Compare-And-Swap）：CPU 硬件级指令——"内存值还是我读到的旧值吗？是才写入新值，否则重试"
+// 比加锁轻：不阻塞线程，失败就自旋重试。JS 无对应（单线程不需要）
 private final AtomicInteger count = new AtomicInteger();
-count.incrementAndGet();          // 原子的 ++
-private final LongAdder total = new LongAdder();   // 高并发计数更优
+count.incrementAndGet();          // 原子的 ++（内部 CAS 循环）
+private final LongAdder total = new LongAdder();   // 高并发计数更优（分段累加，读时合并）
 
 // 并发容器：≈ JS 单线程下不需要，多线程必用
 Map<String, Integer> map = new ConcurrentHashMap<>();   // 并发安全 HashMap
@@ -143,7 +145,7 @@ CompletableFuture.anyOf(f1, f2).join();                // ≈ Promise.race
 
 关键差异：
 
-+ **默认没有微任务调度**：`supplyAsync` 不指定线程池时跑在全局 `ForkJoinPool.commonPool()` 上——**CPU 密集任务才会用它，I/O 任务要传自己的线程池**：`supplyAsync(supplier, ioPool)`，否则可能饿死
++ **默认没有微任务调度**：`supplyAsync` 不指定线程池时跑在全局 `ForkJoinPool.commonPool()` 上。**ForkJoinPool** 是为 CPU 密集的"分治任务"设计的线程池（任务可拆分成子任务、工作线程互相偷任务，"work-stealing"）。它线程数 ≈ CPU 核数——所以 **CPU 密集任务才用它，I/O 任务要传自己的线程池**：`supplyAsync(supplier, ioPool)`，否则 I/O 阻塞占满核数，所有任务饿死
 + `join()` ≈ 同步等待的 `await`（Java 没有语言级协程，虚拟线程之前"等结果"要么阻塞线程要么回调）
 + 回调默认在**完成动作的线程**执行，想切线程用 `thenApplyAsync(fn, pool)`
 
@@ -178,7 +180,7 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 + **虚拟线程只适合 I/O 密集**（等网络/磁盘/锁）；CPU 密集任务它帮不了你（总核数就那么多）
 + **不要池化**：它便宜到用完即弃，池化反而限制并发
-+ **避免 ThreadLocal 滥用**：百万级虚拟线程各存一份缓存对象会爆内存（替代方案 ScopedValue，JDK 25 定稿）
++ **避免 ThreadLocal 滥用**：**ThreadLocal** = 每个线程各存一份私有副本的变量（`ThreadLocal<User> current` 在 100 个线程里有 100 份值，互不可见）——典型用途是"当前登录用户"这类上下文传递。虚拟线程百万级时"每线程一份"就变成百万份对象，内存爆（替代方案 ScopedValue，不可变共享、JDK 25 定稿）
 + JDK 21 的坑：`synchronized` 块里阻塞会**钉住**（pin）载体线程；**JDK 24（JEP 491）已解决**，新项目无需再绕
 + Spring Boot 3.2+ 一个开关启用：`spring.threads.virtual.enabled=true`（Tomcat 每请求一个虚拟线程）
 
@@ -203,6 +205,11 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
 | **原子性** | 操作不可分割 | `count++` | `synchronized` / 原子类 / `Lock` |
 | **可见性** | 写对其他线程立即可见 | CPU 缓存 | `volatile` / `synchronized` |
 | **有序性** | 执行顺序符合预期 | 指令重排 | `volatile` / `happens-before` 规则 |
+
+两个词展开：
+
++ **指令重排**：CPU 和编译器为提速会调整指令顺序（只要单线程结果不变）。单线程无害，多线程下另一个线程可能看到"先写后读"被重排成"先读后写"的中间状态
++ **happens-before**：JMM（Java 内存模型）定义的偏序关系——"A 操作的结果对 B 可见，则 A happens-before B"（如解锁 happens-before 后续加锁、`volatile` 写 happens-before 后续读）。它是判断并发代码正确性的**理论依据**，日常记住"锁和 volatile 能建立可见性保证"即可
 
 JS 开发者的翻译：**这三性在事件循环里全部免费**（单线程串行），在 Java 里全部要自己负责——这就是并发难的全部根源。
 

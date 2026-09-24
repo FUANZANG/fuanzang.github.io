@@ -55,6 +55,19 @@ User user = userMapper.findById(1L);
 
 ## #{} 与 ${}：第一个必懂的坑
 
+先讲**预编译（prepared statement）**——这是 `#{}` 防注入的原理：
+
+```
+普通执行：把 SQL 和参数拼成完整字符串发给数据库
+  "SELECT * FROM users WHERE name = 'tom' OR '1'='1'"   ← 参数混进了 SQL 结构，注入就发生在这
+
+预编译执行：先发"SQL 骨架"，数据库解析好语法树；参数单独发，只当"值"填空
+  第一步：SELECT * FROM users WHERE name = ?    ← ? 是占位符，语法已定死
+  第二步：参数 ['tom' OR '1'='1'] 作为纯字符串填入   ← 它只是个名字很怪的值，不会变成 SQL
+```
+
+**SQL 结构与数据彻底分离**，无论参数内容是什么都只被当值处理——这就是防注入的全部原理（前端同理：URL 参数要 `encodeURIComponent`，不能直接拼进地址）。
+
 ```xml
 <!-- #{}：预编译参数占位，值以 ? 传给 JDBC —— 防 SQL 注入 -->
 SELECT * FROM users WHERE name = #{name}
