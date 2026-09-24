@@ -114,6 +114,7 @@ server.tool(
 
 + **A2A**（Agent2Agent，Google 推）：agent 之间互相对话的协议（MCP 是 agent↔工具，A2A 是 agent↔agent）
 + **AGENTS.md**：仓库里的说明文件，告诉 agent 这个项目怎么构建/测试（≈ README 的 agent 版）
++ **Skill**（`SKILL.md`）：可按需加载的「怎么做某类事」流程包——和 MCP（双手）不同，见 [Agent Skill](/notes/frontier/agent-skills)
 - 2026 年趋势：MCP 与 A2A 在对齐（MCP Server 也能作为 agent 对等体），边界还在演化
 
 ## 参考

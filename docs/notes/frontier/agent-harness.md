@@ -56,7 +56,7 @@ Simon Willison 的一句话定义流传最广：**"models using tools in a loop"
 | **V**erification 验证 | "跑完了"≠"跑对了" | LLM-as-judge、回归评测 |
 | **G**overnance 治理 | 安全与权限 | 审批钩子、审计、人机交接 |
 
-前四层（E/T/C/L）是**结构支柱**——让 agent 跑起来；后三层（O/V/G）是**控制面**——让它可观测、可验证、可治理。综述的发现：开源生态在 E/T/C/L 很密，O/V/G 是普遍短板（89% 团队有可观测，只有 52% 跑离线评测——看得见做了什么，不判断做得对不对）。
+前四层（E/T/C/L）是**结构支柱**——让 agent 跑起来；后三层（O/V/G）是**控制面**——让它可观测、可验证、可治理。综述的发现：开源生态在 E/T/C/L 很密，O/V/G 是普遍短板（89% 团队有可观测，只有 52% 跑离线评测——看得见做了什么，不判断做得对不对）。O/V 落地见 [AI 评测与可观测](/notes/frontier/ai-eval-observability)。
 
 ## Harness 工程三阶段
 
@@ -99,8 +99,8 @@ Anthropic 官方博客《Agent Harness Design》的核心观点——**模型越
 Harness 工程是**前端转 AI 工程最顺的切入点**——它的核心技能全是你的既有栈：
 
 + CLI/TUI 交互、流式渲染（[AI 流式输出](/notes/frontier/ai-streaming)就是 harness 的输出层）
-+ 工具调用协议（JSON schema 描述能力 ≈ 前端 API 层的类型定义）
-+ 上下文管理 ≈ 前端状态管理（什么该进 store、什么该丢弃、什么该持久化）
++ 工具调用协议（JSON schema 描述能力 ≈ 前端 API 层的类型定义）；可复用流程打包见 [Agent Skill](/notes/frontier/agent-skills)
++ 上下文管理 ≈ 前端状态管理（什么该进 store、什么该丢弃、什么该持久化）——Skill 是按需加载的那一类上下文
 + 沙箱、权限审批流 ≈ 前端安全与权限设计
 
 模型是别人的（API 调用），harness 是你的产品——**应用层的价值沉淀在 harness**。
@@ -112,3 +112,4 @@ Harness 工程是**前端转 AI 工程最顺的切入点**——它的核心技�
 + [Agent Harness Engineering: A Survey（ETCLOVG，arXiv 2507.15330）](https://arxiv.org/abs/2507.15330)
 + [lm-evaluation-harness（EleutherAI）](https://github.com/EleutherAI/lm-evaluation-harness)
 + [Microsoft Agent Framework — Harness 概念](https://learn.microsoft.com/en-us/agent-framework/concepts/harness)
++ 本站：[AI 评测与可观测](/notes/frontier/ai-eval-observability)
