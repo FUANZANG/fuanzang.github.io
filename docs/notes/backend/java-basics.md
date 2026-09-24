@@ -42,25 +42,41 @@ JS 只有 `number`（双精度浮点），Java 按用途和位数细分：
 
 每个原始类型有对应引用类型的**包装类**：`Integer`、`Long`、`Double`、`Boolean`…（类似 TS 里 `number` 与 `Number` 的关系，但 Java 中这个区分是强制且常用的）。
 
+为什么需要两套：`int` 是纯数值（栈上 4 字节，性能好），但 Java 的泛型、集合、`null` 语义都只认**对象**——所以要有"把 1 包成对象的壳"，就是 `Integer`。
+
+**自动装箱/拆箱**就是这个"包/拆壳"动作的自动化（Java 5 起，编译器替你写转换代码）：
+
 ```java
 int a = 1;
-Integer b = a;        // 自动装箱（autoboxing）
-int c = b;            // 自动拆箱（unboxing）
+Integer b = a;        // 自动装箱：编译器实际执行 Integer.valueOf(a)
+                      // ——把栈上的 1 包成堆上的 Integer 对象
+int c = b;            // 自动拆箱：编译器实际执行 b.intValue()
+                      // ——从对象里取出原始值
 
-// 泛型只能用包装类
+// 泛型只能装对象，所以必须装箱
 List<Integer> list = new ArrayList<>();  // ✅
-// List<int> list2 = ...;                // ❌ 编译错误
+// List<int> list2 = ...;                // ❌ 编译错误：泛型不接受原始类型
 ```
+
+前端类比：JS 的 `number` 会**隐式**包装成 `Number` 对象（`(1.23).toFixed(2)` 能跑就是临时的装箱），但 JS 里你无感；Java 里这是显式的类型区分，且性能敏感场景（循环里大量装箱）要留意。
 
 经典陷阱——`Integer` 缓存：
 
 ```java
 Integer x = 127, y = 127;
-x == y          // true（-128~127 有缓存，同一对象）
+x == y          // true（-128~127 有缓存，valueOf 复用同一对象）
 
 Integer m = 128, n = 128;
-m == n          // false（不同对象，== 比较引用）
+m == n          // false（超出缓存范围，各自 new 了新对象，== 比较的是引用地址）
 m.equals(n)     // true（比较值）
+```
+
+NPE 陷阱：拆箱遇 null 直接炸——
+
+```java
+Integer userId = null;
+int id = userId;          // ❌ NullPointerException（null.intValue() 不存在）
+// 数据库字段可空时，实体字段用 Integer 而非 int，取值前判空
 ```
 
 **规则：引用类型一律用 `equals()` 比较，`==` 只用于原始类型。**
@@ -188,10 +204,12 @@ map.forEach((k, v) -> System.out.println(k + "=" + v));
 
 ### 泛型：与 TS 的关键区别
 
-两者都是**编译期检查、之后擦除**（Java 泛型信息运行时不存在，`new ArrayList<String>()` 运行时就是 `ArrayList`）。但：
+两者都是**编译期检查、之后擦除**。**类型擦除**的意思：泛型标记只活在编译期，编译完就删掉——`new ArrayList<String>()` 和 `new ArrayList<Integer>()` 运行时是同一个类 `ArrayList`，里面装了什么类型运行时不知道（所以 `List<Integer>` 不能 `new Integer[10]` 这类运行时类型操作）。TS 编译成 JS 后类型消失是同一回事，区别只是 Java 编译产物（字节码）里也没有。
+
+但两点不同：
 
 + Java 检查更严：`List<String>` 传给 `List<Object>` 参数会直接编译错误（TS 结构类型下通常允许）
-+ 通配符 `? extends T`（只读，生产者）/ `? super T`（只写，消费者），TS 没有型变的显式语法（`in/out` 位置自动推断）
++ 通配符 `? extends T` / `? super T` 是 **型变（variance）**的显式语法——型变描述"容器类型之间的关系是否随元素类型的关系变化"：`Integer` 是 `Number` 的子类，但 `List<Integer>` **不是** `List<Number>` 的子类（不变型，否则你就能往 `List<Integer>` 里塞 `Double`）。`? extends` 把它放宽为"可以是任何 Number 的子类列表"（只读安全），`? super` 反向（只写安全）。TS 没有这套显式语法（`in/out` 位置自动推断），所以前端第一次见必然绕
 
 日常开发记住一条：**集合读用 `extends`、写用 `super`，拿不准就别用通配符**。
 
