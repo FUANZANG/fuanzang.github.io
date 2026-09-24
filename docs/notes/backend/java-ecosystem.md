@@ -161,8 +161,8 @@ Maven 也解析传递依赖（A 依赖 B、B 依赖 C），但策略与 npm 不�
 | **Spring Framework** | 核心：IoC 容器、AOP、事务 | Vue core |
 | **Spring Boot** | 约定+自动配置+内嵌服务器，让 Spring 好用 | Nuxt（让 Vue 好用） |
 | Spring Data | 统一的数据库访问层（JPA/Redis/Mongo…） | — |
-| Spring Security | 认证授权 | — |
-| Spring Cloud | 微服务治理（网关/注册/配置中心） | — |
+| Spring Security | 认证授权 | 见 [Spring Security 鉴权](/notes/backend/spring-security) |
+| Spring Cloud | 微服务治理（网关/注册/配置中心） | 见 [Spring Cloud](/notes/backend/spring-cloud) |
 | **MyBatis**（非 Spring 出品） | SQL 映射框架，国内主流 | — |
 | Jackson | JSON 序列化（Spring 默认） | `JSON.parse` / axios 的序列化层 |
 | Lombok | 编译期生成 getter/setter 等样板代码 | — |

@@ -159,7 +159,7 @@ class UserApiIT {
 }
 ```
 
-起整个容器，慢（秒级），只留给关键链路。测试数据库惯用 Testcontainers（Docker 起真库，比 H2 内存库保真）——见 [Docker](/notes/backend/docker) 篇。
+起整个容器，慢（秒级），只留给关键链路。测试数据库惯用 Testcontainers（Docker 起真库，比 H2 内存库保真）——原理与最小示例见 [Docker · Testcontainers](/notes/backend/docker#testcontainers)。
 
 ## 运行测试
 

@@ -200,10 +200,13 @@ export default defineConfig({
             { text: 'Java 并发', link: '/notes/backend/java-concurrency' },
             { text: 'JVM 基础', link: '/notes/backend/jvm-basics' },
             { text: 'Spring Boot', link: '/notes/backend/spring-boot' },
+            { text: 'Spring Web 实用', link: '/notes/backend/spring-web' },
+            { text: 'Spring Security 鉴权', link: '/notes/backend/spring-security' },
             { text: 'MyBatis', link: '/notes/backend/mybatis' },
             { text: 'JPA 与 Spring Data JPA', link: '/notes/backend/jpa' },
             { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
             { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
+            { text: '消息队列识字', link: '/notes/backend/message-queue' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' }
           ]
         },
@@ -216,7 +219,8 @@ export default defineConfig({
             { text: '数据库设计', link: '/notes/backend/db-design' },
             { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' },
             { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
-            { text: 'Redis 基础', link: '/notes/backend/redis-basics' }
+            { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
+            { text: 'Redis 与 Java', link: '/notes/backend/redis-java' }
           ]
         },
         {
