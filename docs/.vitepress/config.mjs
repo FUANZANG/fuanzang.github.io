@@ -207,6 +207,8 @@ export default defineConfig({
             { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
             { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
             { text: '消息队列识字', link: '/notes/backend/message-queue' },
+            { text: '消息队列与 Java', link: '/notes/backend/message-queue-java' },
+            { text: '后端可观测', link: '/notes/backend/observability' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' }
           ]
         },
@@ -217,10 +219,10 @@ export default defineConfig({
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
             { text: '数据库设计', link: '/notes/backend/db-design' },
-            { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' },
             { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
             { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
-            { text: 'Redis 与 Java', link: '/notes/backend/redis-java' }
+            { text: 'Redis 与 Java', link: '/notes/backend/redis-java' },
+            { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' }
           ]
         },
         {
@@ -242,6 +244,7 @@ export default defineConfig({
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
             { text: 'ECharts', link: '/notes/practice/echarts' },
             { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
+            { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
             { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
           ]
         },
@@ -252,11 +255,13 @@ export default defineConfig({
             { text: 'LLM 基础概念', link: '/notes/frontier/llm-fundamentals' },
             { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
             { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' },
-            { text: 'Web AI', link: '/notes/frontier/web-ai' },
             { text: 'RAG 检索增强生成', link: '/notes/frontier/rag' },
             { text: 'MCP 与工具调用', link: '/notes/frontier/mcp-tools' },
+            { text: 'Agent Skill', link: '/notes/frontier/agent-skills' },
+            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' },
             { text: '本地大模型', link: '/notes/frontier/local-llm' },
-            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' }
+            { text: 'Web AI', link: '/notes/frontier/web-ai' },
+            { text: 'AI 评测与可观测', link: '/notes/frontier/ai-eval-observability' }
           ]
         },
         {

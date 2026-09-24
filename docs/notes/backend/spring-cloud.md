@@ -33,7 +33,7 @@ Spring Cloud 不是单一框架，是微服务基础设施的"全家桶品牌"�
 | 挂了怎么办 | 熔断限流 | Sentinel（国内主流）/ Resilience4j（取代 Hystrix） |
 | 统一入口 | Spring Cloud Gateway | 边缘网关：路由、鉴权、限流（≈ 前端的 Nginx 反代 + 中间层） |
 | 配置怎么管 | 配置中心 | Nacos Config / Spring Cloud Config，配置热更新 |
-| 谁动了我的服务 | 链路追踪 | Micrometer Tracing（原 Sleuth）/ SkyWalking |
+| 谁动了我的服务 | 链路追踪 | Micrometer Tracing / SkyWalking（见 [后端可观测](/notes/backend/observability)） |
 
 > Netflix OSS（Eureka/Ribbon/Hystrix/Zuul）是微服务教材时代的标配，现已全线维护模式或停更——读老教程时统一映射到 Nacos/LoadBalancer/Resilience4j/Gateway。国内实际项目基本是 **Spring Cloud Alibaba** 套件：Nacos（注册+配置）+ Gateway + OpenFeign + Sentinel。
 
@@ -137,7 +137,7 @@ public class UserClientFallback implements UserClient {
 2. 写 order-service 用 Feign 调它，多刷几次观察负载均衡轮询
 3. 杀掉一个实例，观察调用不中断（摘除后流量全到另一个）
 4. 加 fallback 和超时，模拟慢响应看降级生效
-5. 之后按需：Gateway 路由/过滤器、Sentinel 规则、链路追踪接入
+5. 之后按需：Gateway 路由/过滤器、Sentinel 规则、[后端可观测](/notes/backend/observability)（链路追踪）
 
 ## 参考
 

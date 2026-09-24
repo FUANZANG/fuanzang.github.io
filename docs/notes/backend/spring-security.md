@@ -147,7 +147,7 @@ public class OrderService {
 2. 接 Session + 表单登录，Postman 看 Set-Cookie / 后续自动带 Cookie
 3. 改成 JWT：登录签发、过滤器验签、前端用 Bearer 调 `/api/me`
 4. 加 `@PreAuthorize` 与角色账号，对照前端「管理员菜单」——确认改请求也无法越权
-5. 之后按需：OAuth2 登录、网关统一鉴权（[Spring Cloud](/notes/backend/spring-cloud) Gateway）
+5. 之后按需：OAuth2 Resource Server、[SSO 与 OIDC](/notes/practice/sso-oidc)、网关统一鉴权（[Spring Cloud](/notes/backend/spring-cloud) Gateway）
 
 ## 参考
 

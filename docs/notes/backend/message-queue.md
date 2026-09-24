@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点的工程共识（Kafka 仍是日志流/大数据标配，RabbitMQ 仍是业务解耦常客）。定位与 [Spring Cloud](/notes/backend/spring-cloud)、[数仓](/notes/backend/data-warehouse) 相同：**听懂黑话、会读链路**，不覆盖集群搭建与运维调优。
 
-> 关联：[Redis 基础](/notes/backend/redis-basics)（List/Stream 可做轻量队列，但不是正经 MQ）；Java 落地见 Spring AMQP / Spring for Apache Kafka（本篇不展开 API）。
+> 关联：[Redis 基础](/notes/backend/redis-basics)（List/Stream 可做轻量队列，但不是正经 MQ）；Java 发收落地见 [消息队列与 Java](/notes/backend/message-queue-java)。
 
 ## 为什么需要消息队列
 
@@ -107,7 +107,7 @@ Gateway / 鉴权仍然在同步链路上；MQ 消费者是内部服务，靠网�
 2. 模拟「下单成功发邮件」：订单服务发、通知服务收；故意让通知抛错，观察重试
 3. 同一消息发两次，给消费逻辑加幂等，确认不会双发短信
 4. 有大数据/日志场景再碰 Kafka：搞清 Topic、分区、Consumer Group、offset
-5. 之后按需：Spring AMQP / Spring Kafka、事务消息（发件箱模式）、延迟队列
+5. 之后按需：[消息队列与 Java](/notes/backend/message-queue-java)、发件箱与延迟队列、Kafka 事务
 
 ## 参考
 

@@ -101,21 +101,11 @@ location.href = `https://idp.example/authorize?${new URLSearchParams({
 
 JWT 只是格式：前端 `atob` 看 `exp` 仅供展示，**验签在服务端**（结构见安全篇）。
 
-### 5.2 单点登录（SSO）——站内目前没有专篇
+### 5.2 单点登录（SSO）
 
-**现状**：笔记体系里**没有 SSO 专篇**；仅 [YApi](/notes/deploy/yapi) 插件表提到过 SSO，不算实战说明。
+多系统共用登录态的协议与流程见专篇：[SSO 与 OIDC](/notes/practice/sso-oidc)（统一登出、静默续期、Cookie 域、与 BFF 分工）。
 
-**SSO 是什么（前端要懂的部分）**：
-
-| 概念 | 含义 |
-|------|------|
-| SSO | 在**同一身份域**登录一次，访问多个系统不用再输密码 |
-| 常见协议 | **OIDC**（OAuth2 + 身份层，Web 最常见）、SAML（偏企业老系统）、CAS 等 |
-| 前端体感 | 未登录 → 重定向到统一认证中心 → 带回 code/ticket → 自家后端建本地会话 |
-
-和「第三方登录」的差别：第三方登录是「用别家账号进**你这一个**应用」；SSO 是「**多个自家/生态应用**共用一个登录态」。实现上 Web 端很多 SSO 就是 **OIDC 授权码**，前端动作仍是跳转 + 回调，会话落点仍归到上面第 2～4 节。
-
-若以后要补专篇，建议放 `practice/sso-oidc.md`，覆盖：统一登出（SLO）、静默续期 `prompt=none`、多子系统 Cookie 域、与 BFF 的分工——而不是再把 CSRF/拦截器写第三遍。
+此处只留对照：第三方登录是「用别家账号进**你这一个**应用」；SSO 是「**多个自家/生态应用**共用一个登录态」。Web 端很多 SSO 就是 OIDC 授权码，前端动作仍是跳转 + 回调，会话落点归上面第 2～4 节。
 
 ---
 
@@ -173,12 +163,13 @@ function safeRedirect(path: string | null) {
 ## 9. 笔记地图
 
 ```
-方案怎么选、OAuth/SSO 前端视角、多页签  → 本篇
+方案怎么选、第三方登录入口、多页签  → 本篇
+SSO / OIDC / 统一登出                  → SSO 与 OIDC
 Cookie / XSS / CSRF / JWT 安全         → 前端安全
 存储 API                               → Web 存储
 拦截器 + 无感刷新                      → HTTP 请求
 路由守卫完整示例                       → 前端路由
-```
+Java 过滤器链 / JWT                    → Spring Security```
 
 ---
 

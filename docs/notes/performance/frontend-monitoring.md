@@ -1125,3 +1125,4 @@ GDPR（欧盟）:
 - [Core Web Vitals](https://web.dev/articles/vitals) — Google 性能指标
 - [source-map](https://github.com/mozilla/source-map) — Mozilla SourceMap 解析库
 - [OpenTelemetry](https://opentelemetry.io/) — 可观测性标准
+- 本站：[后端可观测](/notes/backend/observability)（Metrics / Tracing / 日志串起来）
