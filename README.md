@@ -40,7 +40,7 @@ docs/
 │   ├── recipes.json        # 117 道菜谱数据
 │   ├── tools.js            # 22 款工具定义
 │   └── navLinks.js         # 112 导航链接
-├── notes/                  # 技术笔记（9 大分类，70 篇）
+├── notes/                  # 技术笔记（9 大分类，90 篇）
 │   ├── foundations/         # 前端基础（17 篇）
 │   ├── frameworks/          # 框架（10 篇）
 │   ├── engineering/         # 工程化（13 篇）
@@ -49,7 +49,7 @@ docs/
 │   ├── backend/             # 后端（19 篇）
 │   ├── cross-platform/      # 跨端（3 篇）
 │   ├── practice/            # 场景实战（7 篇）
-│   ├── frontier/            # AI 与前沿（11 篇）
+│   ├── frontier/            # AI 工程与前沿（11 篇）
 ├── algorithm/             # 算法题库（81 题）
 ├── blog/                   # 博客文章
 ├── public/                 # 静态资源
