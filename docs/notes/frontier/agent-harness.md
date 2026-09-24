@@ -25,9 +25,22 @@ Agent Harness：
   └─ 护栏            权限边界、审批策略、沙箱
 ```
 
+### 多 Agent 编排（认脸）
+
+复杂任务把"一个 agent 全干"拆成"多个专职 agent 协作"——核心动机不是分工好看，而是**上下文隔离**：主 agent 只看任务与结论，不泡在子任务的工具输出细节里，上下文窗口不被噪音填满。
+
+```
+Orchestrator（主 agent：拆任务、收结果、定下一步）
+  ├─ Subagent A：搜索调研（产出摘要给主 agent）
+  ├─ Subagent B：写代码（只回传 diff）
+  └─ Subagent C：跑测试（只回传通过/失败）
+```
+
+常见模式：**orchestrator-worker**（主从分发，最常用）、**sequential pipeline**（流水线接力）、**reviewer**（生成者+审查者对抗）。代价是延迟与 token 翻倍——简单任务单 agent 更优。Claude Code 的 delegate、Hermes 的子代理都是这套。
+
 Simon Willison 的一句话定义流传最广：**"models using tools in a loop"**——用着工具的模型跑在循环里。
 
-**你天天在用的就是 harness**：Claude Code、Codex CLI、Cursor、OpenCode，包括我（Hermes）——同一个模型换不同 harness，表现天差地别。
+**你天天在用的就是 harness**：Claude Code、Codex CLI、Cursor、OpenCode、Hermes 等——同一个模型换不同 harness，表现天差地别。
 
 ### ETCLOVG：七层解剖
 
@@ -88,7 +101,7 @@ Harness 工程是**前端转 AI 工程最顺的切入点**——它的核心技�
 + CLI/TUI 交互、流式渲染（[AI 流式输出](/notes/frontier/ai-streaming)就是 harness 的输出层）
 + 工具调用协议（JSON schema 描述能力 ≈ 前端 API 层的类型定义）
 + 上下文管理 ≈ 前端状态管理（什么该进 store、什么该丢弃、什么该持久化）
-- 沙箱、权限审批流 ≈ 前端安全与权限设计
++ 沙箱、权限审批流 ≈ 前端安全与权限设计
 
 模型是别人的（API 调用），harness 是你的产品——**应用层的价值沉淀在 harness**。
 
