@@ -181,3 +181,26 @@ CMD ["nginx", "-g", "daemon off;"]
 docker build -t my-site .
 docker run -d -p 80:80 my-site
 ```
+
+## Testcontainers
+
+Java 集成测试常不想用 H2「假库」，而是**测试启动时拉起真 MySQL/Redis 容器，测完销毁**——这就是 [Testcontainers](https://java.testcontainers.org/)。它依赖本机 Docker，和上面 Compose 是同一套引擎，只是生命周期绑在 JUnit 上。
+
+```java
+@Testcontainers
+@SpringBootTest
+class UserRepoIT {
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4")
+        .withDatabaseName("test");
+
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry r) {
+        r.add("spring.datasource.url", mysql::getJdbcUrl);
+        r.add("spring.datasource.username", mysql::getUsername);
+        r.add("spring.datasource.password", mysql::getPassword);
+    }
+}
+```
+
+要点：CI 机器要有 Docker；容器镜像首次拉取较慢，可缓存。用法细节与测试分层见 [Java 测试](/notes/backend/java-testing)。

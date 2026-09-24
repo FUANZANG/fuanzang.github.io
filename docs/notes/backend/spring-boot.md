@@ -282,7 +282,7 @@ IDEA 装插件 + `annotationProcessor` 依赖后无感使用。record 类（DTO�
 1. start.spring.io 建项目，跑通一个 Controller 返回 JSON（半天）
 2. 加一层 Service + 内存 Map 存储，理解 DI（一天）
 3. 接 Spring Data JPA 连数据库，跑通完整 CRUD
-4. 之后按需深入：事务、异常处理（`@RestControllerAdvice`）、拦截器、参数校验（`@Valid`）
+4. 之后按需深入：事务、[Spring Web 实用](/notes/backend/spring-web)（拦截器/分页/上传）、[Spring Security](/notes/backend/spring-security)、参数校验（`@Valid`）
 
 ## 参考
 
