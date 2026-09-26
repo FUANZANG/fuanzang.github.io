@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 82 题（按 LeetCode 题组织，已去重合并）
+> 共 83 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -91,3 +91,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 滑动窗口最大值（Sliding Window Maximum） | Medium | [sliding-window-maximum](./sliding-window-maximum.md) |
 | 最小栈（Min Stack） | Medium | [min-stack](./min-stack.md) |
 | 不同路径（Unique Paths） | Medium | [unique-paths](./unique-paths.md) |
+| 单词搜索（Word Search） | Medium | [word-search](./word-search.md) |
