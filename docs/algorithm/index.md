@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 84 题（按 LeetCode 题组织，已去重合并）
+> 共 85 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -93,3 +93,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 不同路径（Unique Paths） | Medium | [unique-paths](./unique-paths.md) |
 | 单词搜索（Word Search） | Medium | [word-search](./word-search.md) |
 | 寻找两个正序数组的中位数（Median of Two Sorted Arrays） | Hard | [median-of-two-sorted-arrays](./median-of-two-sorted-arrays.md) |
+| 删除链表中的节点（Delete Node in a Linked List） | Easy | [delete-node-in-a-linked-list](./delete-node-in-a-linked-list.md) |
