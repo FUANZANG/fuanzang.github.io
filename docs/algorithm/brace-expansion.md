@@ -1,4 +1,4 @@
-# 有效的括号扩展（Valid Parentheses）
+# 括号展开（Brace Expansion）
 
 **难度：** Medium
 
@@ -38,15 +38,12 @@
 
 ```
 输入: "(a,(b,c),d)"
-输出: ["abd", "acd", "ad"]
-解释: (a,(b,c),d) 是一个整体，从中选一个：
-       - 选 "a"，后面无内容 → "a"
-       - 选 (b,c) 的结果 → "b" 或 "c"，后面接 "d" → "bd" 或 "cd"
-       - 选 "d" → "d"
-       等等，这里需要重新理解...
+输出: ["a", "b", "c", "d"]
+解释: 整个字符串是一个括号组，从三项里选一个，没有括号外的固定后缀：
+       - "a"
+       - (b,c) 展开为 "b" 或 "c"
+       - "d"
 ```
-
-> 💡 提示：示例 3 的输出可能需要你仔细推导。先理解括号解析规则再尝试。
 
 ## 提示 / 解题思路
 
@@ -150,8 +147,6 @@ const expand = (s) => {
 // 验证
 console.log(JSON.stringify(expand("(a,b)c"))) // ["ac","bc"]
 console.log(JSON.stringify(expand("a,(b,c)d"))) // ["abd","acd"]
-// 注意：源文件示例3声称 "(a,(b,c),d)" → ["abd","acd","ad"]，与解析规则矛盾。
-// 按规则从 {a, (b,c), d} 中三选一并无后缀，正确结果应为 ["a","b","c","d"]：
 console.log(JSON.stringify(expand("(a,(b,c),d)"))) // ["a","b","c","d"]
 console.log(JSON.stringify(expand("abc"))) // ["abc"]
 ```

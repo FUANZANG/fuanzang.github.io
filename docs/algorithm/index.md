@@ -34,10 +34,10 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最长回文子串（Longest Palindromic Substring） | Medium | [longest-palindromic-substring](./longest-palindromic-substring.md) |
 | 最长无重复子串的长度（Longest Substring Without Repeating Characters） | Medium | [longest-substring-without-repeating-characters](./longest-substring-without-repeating-characters.md) |
 | 最长湍流子数组（Longest Turbulent Subarray） | Medium | [longest-turbulent-subarray](./longest-turbulent-subarray.md) |
-| 最长连续子数组和不超过 K（Shortest Subarray with Sum at Least K） | Medium | [shortest-subarray-with-sum-at-least-k](./shortest-subarray-with-sum-at-least-k.md) |
+| 最长连续子数组和不超过 K（Longest Subarray with Sum at Most K） | Medium | [longest-subarray-with-sum-at-most-k](./longest-subarray-with-sum-at-most-k.md) |
 | 最长连续序列（Longest Consecutive Sequence） | Medium | [longest-consecutive-sequence](./longest-consecutive-sequence.md) |
 | 最长递增子序列（Longest Increasing Subsequence） | Medium | [longest-increasing-subsequence](./longest-increasing-subsequence.md) |
-| 有效的括号扩展（Valid Parentheses） | Medium | [valid-parentheses](./valid-parentheses.md) |
+| 括号展开（Brace Expansion） | Medium | [brace-expansion](./brace-expansion.md) |
 | 有效的括号组合（Generate Parentheses） | Medium | [generate-parentheses](./generate-parentheses.md) |
 | 每日温度（Daily Temperatures） | Medium | [daily-temperatures](./daily-temperatures.md) |
 | 盛最多水的容器（Container With Most Water） | Medium | [container-with-most-water](./container-with-most-water.md) |
