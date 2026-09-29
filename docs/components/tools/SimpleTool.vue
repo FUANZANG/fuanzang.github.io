@@ -19,6 +19,7 @@ const hashAlgo = ref('SHA-256')
 const fromBase = ref(10)
 const toBase = ref(16)
 const newlineTarget = ref('lf')
+const urlMode = ref('parse')
 const lineOpts = reactive({
   dedupe: false,
   sort: false,
@@ -30,7 +31,16 @@ const preview = ref('')
 const meta = computed(() => simpleMeta[props.id] || {})
 const hasMode = computed(() => !!meta.value.mode)
 const modeLabels = computed(() => meta.value.modeLabels || ['编码', '解码'])
-const placeholder = computed(() => placeholderMap[props.id] || '')
+const placeholder = computed(() => {
+  if (props.id === 'urlparse') {
+    if (urlMode.value === 'q2j') return '输入查询串，如：a=1&b=2&b=3'
+    if (urlMode.value === 'j2q') return '输入 JSON 对象，如：{"a":"1","b":["2","3"]}'
+  }
+  if (props.id === 'csv' && mode.value === 'decode') {
+    return '输入 JSON 数组，如：[{"name":"alice","age":"18"}]'
+  }
+  return placeholderMap[props.id] || ''
+})
 
 // 输入字符数，便于判断文本规模
 const charCount = computed(() => input.value.length)
@@ -49,8 +59,33 @@ const newlineInfo = computed(() => {
 const debouncedInput = ref('')
 const result = ref('')
 let timer = null
+let hashSeq = 0
+
+function applyHash(buf, seq) {
+  if (seq !== hashSeq) return
+  result.value = Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+function runHash(text, algo, seq) {
+  if (!crypto || !crypto.subtle) {
+    error.value = '当前环境不支持 Web Crypto'
+    return
+  }
+  const data = new TextEncoder().encode(text)
+  crypto.subtle
+    .digest(algo, data)
+    .then(buf => applyHash(buf, seq))
+    .catch(e => {
+      if (seq !== hashSeq) return
+      error.value = '计算失败：' + (e && e.message ? e.message : e)
+      result.value = ''
+    })
+}
 
 function runNow() {
+  const seq = ++hashSeq
   debouncedInput.value = input.value
   error.value = ''
   result.value = ''
@@ -63,30 +98,14 @@ function runNow() {
       fromBase: fromBase.value,
       toBase: toBase.value,
       newlineTarget: newlineTarget.value,
+      urlMode: urlMode.value,
       lineOpts
     })
   } catch (e) {
     error.value = '转换失败：' + (e && e.message ? e.message : e)
     result.value = ''
   }
-  if (props.id === 'hash') {
-    if (!crypto || !crypto.subtle) {
-      error.value = '当前环境不支持 Web Crypto'
-      return
-    }
-    const data = new TextEncoder().encode(input.value)
-    crypto.subtle
-      .digest(hashAlgo.value, data)
-      .then(buf => {
-        result.value = Array.from(new Uint8Array(buf))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('')
-      })
-      .catch(e => {
-        error.value = '计算失败：' + (e && e.message ? e.message : e)
-        result.value = ''
-      })
-  }
+  if (props.id === 'hash') runHash(input.value, hashAlgo.value, seq)
 }
 
 function schedule() {
@@ -95,7 +114,7 @@ function schedule() {
 }
 
 watch(
-  [input, () => props.id, mode, caseStyle, hashAlgo, fromBase, toBase, newlineTarget, lineOpts],
+  [input, () => props.id, mode, caseStyle, hashAlgo, fromBase, toBase, newlineTarget, urlMode, lineOpts],
   schedule,
   { immediate: true }
 )
@@ -110,7 +129,17 @@ function clearAll() {
   debouncedInput.value = ''
   lineOpts.dedupe = lineOpts.sort = lineOpts.trim = lineOpts.dropEmpty = false
   newlineTarget.value = 'lf'
+  urlMode.value = 'parse'
+  mode.value = 'encode'
 }
+
+watch(
+  () => props.id,
+  (id, prev) => {
+    if (!prev || prev === id) return
+    clearAll()
+  }
+)
 </script>
 
 <template>
@@ -152,6 +181,15 @@ function clearAll() {
           <option :value="16">16 进制</option>
         </select>
       </div>
+      <select
+        v-else-if="meta.control === 'urlparse'"
+        v-model="urlMode"
+        class="style-select"
+      >
+        <option value="parse">解析完整 URL</option>
+        <option value="q2j">Query → JSON</option>
+        <option value="j2q">JSON → Query</option>
+      </select>
       <select
         v-else-if="meta.control === 'newline'"
         v-model="newlineTarget"

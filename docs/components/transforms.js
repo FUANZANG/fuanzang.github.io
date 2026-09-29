@@ -1,4 +1,5 @@
 // 各「输入 → 输出」类工具的纯函数与元信息，供 SimpleTool 复用
+import { explainCron } from './cron.js'
 
 function utf8ToB64(str) {
   const bytes = new TextEncoder().encode(str)
@@ -28,19 +29,31 @@ function htmlDecode(str) {
   return ta.value
 }
 
+function toUnicodeEscape(cp) {
+  const hex = cp.toString(16)
+  if (cp <= 0xffff) return '\\u' + hex.padStart(4, '0')
+  return '\\u{' + hex + '}'
+}
+
 function toUnicode(str) {
   let out = ''
   for (const ch of str) {
     const cp = ch.codePointAt(0)
-    out += cp > 0x7f ? '\\u' + cp.toString(16).padStart(4, '0') : ch
+    out += cp > 0x7f ? toUnicodeEscape(cp) : ch
   }
   return out
 }
 
 function fromUnicode(str) {
-  return str.replace(/\\u([0-9a-fA-F]{1,4})/g, (_, h) =>
-    String.fromCharCode(parseInt(h, 16))
-  )
+  return str
+    .replace(/\\u\{([0-9a-fA-F]+)\}/g, (_, hex) => {
+      const cp = parseInt(hex, 16)
+      if (cp > 0x10ffff) throw new Error('非法 Unicode 码点')
+      return String.fromCodePoint(cp)
+    })
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    )
 }
 
 function capitalize(w) {
@@ -235,6 +248,143 @@ function timestampTransform(input, mode) {
   }
 }
 
+function parseUrlParts(input) {
+  const raw = input.trim()
+  if (!raw) throw new Error('请输入 URL')
+  let url
+  try {
+    url = new URL(raw)
+  } catch {
+    url = new URL(raw.includes('://') ? raw : 'https://' + raw)
+  }
+  return (
+    '协议\t' +
+    url.protocol +
+    '\n主机\t' +
+    url.host +
+    '\n路径\t' +
+    url.pathname +
+    '\n查询\t' +
+    (url.search || '（无）') +
+    '\n哈希\t' +
+    (url.hash || '（无）') +
+    '\n\nQuery JSON:\n' +
+    queryToJson(url.search || '')
+  )
+}
+
+function queryToJson(input) {
+  const raw = input.trim().replace(/^\?/, '')
+  const params = new URLSearchParams(raw)
+  const obj = {}
+  for (const [key, value] of params) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      obj[key] = [].concat(obj[key], value)
+    } else {
+      obj[key] = value
+    }
+  }
+  return JSON.stringify(obj, null, 2)
+}
+
+function jsonToQuery(input) {
+  const obj = JSON.parse(input)
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+    throw new Error('需要 JSON 对象，如 {"a":"1","b":["2","3"]}')
+  }
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(obj)) {
+    if (Array.isArray(value)) {
+      value.forEach(item => params.append(key, item == null ? '' : String(item)))
+    } else if (value != null) {
+      params.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value))
+    }
+  }
+  return params.toString()
+}
+
+function parseCsv(text) {
+  const rows = []
+  let row = []
+  let cell = ''
+  let inQuotes = false
+  const source = text.replace(/^\uFEFF/, '')
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i]
+    if (inQuotes) {
+      if (ch === '"') {
+        if (source[i + 1] === '"') {
+          cell += '"'
+          i++
+        } else {
+          inQuotes = false
+        }
+      } else {
+        cell += ch
+      }
+    } else if (ch === '"') {
+      inQuotes = true
+    } else if (ch === ',') {
+      row.push(cell)
+      cell = ''
+    } else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && source[i + 1] === '\n') i++
+      row.push(cell)
+      rows.push(row)
+      row = []
+      cell = ''
+    } else {
+      cell += ch
+    }
+  }
+  if (cell.length || row.length) {
+    row.push(cell)
+    rows.push(row)
+  }
+  while (rows.length && rows[rows.length - 1].every(item => item === '')) rows.pop()
+  return rows
+}
+
+function csvCell(value) {
+  const text =
+    value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value)
+  return /[",\n\r]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text
+}
+
+function csvToJson(input) {
+  const rows = parseCsv(input.trim())
+  if (!rows.length) return '[]'
+  const headers = rows[0].map((name, index) => name.trim() || 'col' + (index + 1))
+  const data = rows.slice(1).map(row => {
+    const item = {}
+    headers.forEach((name, index) => {
+      item[name] = row[index] ?? ''
+    })
+    return item
+  })
+  return JSON.stringify(data, null, 2)
+}
+
+function jsonToCsv(input) {
+  const data = JSON.parse(input)
+  if (!Array.isArray(data)) throw new Error('需要 JSON 数组')
+  if (!data.length) return ''
+  const headers = []
+  for (const row of data) {
+    if (row === null || typeof row !== 'object' || Array.isArray(row)) {
+      throw new Error('数组元素需要是对象')
+    }
+    for (const key of Object.keys(row)) {
+      if (!headers.includes(key)) headers.push(key)
+    }
+  }
+  const lines = [headers.map(csvCell).join(',')]
+  for (const row of data) {
+    lines.push(headers.map(key => csvCell(row[key])).join(','))
+  }
+  return lines.join('\n')
+}
+
 function formatColor(c) {
   const hsl = rgbToHsl(c)
   return (
@@ -267,6 +417,12 @@ export function runTransform(id, input, o) {
       return o.mode === 'encode'
         ? encodeURIComponent(input)
         : decodeURIComponent(input)
+    case 'urlparse':
+      if (o.urlMode === 'q2j') return queryToJson(input)
+      if (o.urlMode === 'j2q') return jsonToQuery(input)
+      return parseUrlParts(input)
+    case 'csv':
+      return o.mode === 'encode' ? csvToJson(input) : jsonToCsv(input)
     case 'base64':
       return o.mode === 'encode' ? utf8ToB64(input) : b64ToUtf8(input)
     case 'html':
@@ -289,6 +445,8 @@ export function runTransform(id, input, o) {
       return textStats(input)
     case 'jwt':
       return parseJwt(input)
+    case 'cron':
+      return explainCron(input)
     case 'lines':
       return processLines(input, o.lineOpts)
     case 'newline':
@@ -302,6 +460,8 @@ export function runTransform(id, input, o) {
 
 export const simpleMeta = {
   url: { mode: true, modeLabels: ['编码', '解码'] },
+  urlparse: { control: 'urlparse' },
+  csv: { mode: true, modeLabels: ['CSV → JSON', 'JSON → CSV'] },
   base64: { mode: true, modeLabels: ['编码', '解码'] },
   html: { mode: true, modeLabels: ['编码', '解码'] },
   unicode: { mode: true, modeLabels: ['编码', '解码'] },
@@ -314,11 +474,14 @@ export const simpleMeta = {
   newline: { control: 'newline' },
   color: {},
   text: {},
-  jwt: {}
+  jwt: {},
+  cron: {}
 }
 
 export const placeholderMap = {
   url: '输入待编码的文本，如：前端 开发',
+  urlparse: '输入完整 URL，如：https://example.com/path?a=1&b=2#top',
+  csv: '粘贴 CSV（首行为表头），如：name,age\nalice,18',
   base64: '输入任意文本（支持中文）',
   html: '输入 <div>前端 & "开发"</div>',
   unicode: '输入中文或特殊字符，如：你好🌏',
@@ -329,6 +492,7 @@ export const placeholderMap = {
   base: '输入数字，如：255 或 FF（按左侧进制解析）',
   text: '粘贴文本，统计字符、行数、词数与字节',
   jwt: '粘贴 JWT（header.payload.signature）',
+  cron: '输入 Cron，如：*/5 9-18 * * 1-5',
   lines: '粘贴多行文本，勾选处理方式',
   newline: '粘贴文本；选「去转义」把 \\n \\r \\t 还原成真实换行便于阅读，或选 LF/CRLF/CR 统一行尾'
 }
