@@ -228,6 +228,7 @@ onBeforeUnmount(() => {
   .layout {
     display: block;
     height: auto;
+    min-width: 0;
     overflow: visible;
   }
   .tool-nav {
@@ -235,19 +236,24 @@ onBeforeUnmount(() => {
     flex-direction: row;
     align-items: flex-end;
     gap: 0.85rem;
+    width: calc(100% + 2rem);
+    min-width: 0;
     max-height: none;
-    margin-inline: -1.5rem;
+    margin-inline: -1rem;
     margin-bottom: 1.15rem;
-    padding: 0.15rem 1.5rem 0.35rem;
+    padding: 0.15rem 1rem 0.5rem;
+    box-sizing: border-box;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
   }
   .tool-group {
     flex: 0 0 auto;
     gap: 0.3rem;
+    scroll-snap-align: start;
   }
   .group-tabs {
     flex-direction: row;
@@ -329,6 +335,26 @@ onBeforeUnmount(() => {
   }
   .layout .tool-main .diff-out {
     max-height: 460px;
+  }
+}
+
+/* 窄屏：工作区单列、表单不撑破视口、字号避免 iOS 聚焦放大 */
+@media (max-width: 860px) {
+  .layout .tool-main .panel {
+    padding: 1rem;
+  }
+  .layout .tool-main .io {
+    grid-template-columns: 1fr;
+  }
+  .layout .tool-main .io-area,
+  .layout .tool-main input,
+  .layout .tool-main select,
+  .layout .tool-main textarea {
+    max-width: 100%;
+    font-size: 16px;
+  }
+  .layout .tool-main .seg {
+    max-width: 100%;
   }
 }
 </style>

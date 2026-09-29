@@ -87,6 +87,20 @@ const titleParts = computed(() => {
   margin: 0;
   color: var(--vp-c-text-2);
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 860px) {
+  .page-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .page-header {
+    margin-bottom: 1rem;
+    padding-top: 0.4rem;
+  }
+  .subtitle {
+    font-size: 0.86rem;
+  }
 }
 
 .subtitle::after {

@@ -232,4 +232,20 @@ function useNow() {
   color: #dc2626;
   font-size: 0.85rem;
 }
+@media (max-width: 860px) {
+  .tz-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tz-row input,
+  .tz-row select,
+  .tz-row .text-btn {
+    width: 100%;
+  }
+  .tz-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+}
 </style>
