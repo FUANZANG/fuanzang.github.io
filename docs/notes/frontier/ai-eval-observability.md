@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点的应用层实践（Langfuse / Phoenix 类平台已成常见默认；LLM-as-judge 是生成质量主路径）。定位补齐 [Agent Harness](/notes/frontier/agent-harness) 的 **O（可观测）与 V（验证）**：看得见花了什么、判得出好不好。
 
-> 关联：[RAG](/notes/frontier/rag)（检索要测 recall）、[LLM 基础](/notes/frontier/llm-fundamentals)（幻觉）、[后端可观测](/notes/backend/observability)（Trace 概念通用，信号不同）。
+> 关联：[RAG](/notes/frontier/rag)（检索要测 recall）、[LLM 基础](/notes/frontier/llm-fundamentals)（幻觉）、[后端可观测](/notes/ops/observability)（Trace 概念通用，信号不同）。
 
 ## 为什么「能跑」不等于「能用」
 
@@ -37,7 +37,7 @@ Trace: user_chat_982
   └─ Span: guardrail / 输出过滤
 ```
 
-平台认脸：Langfuse、LangSmith、Arize Phoenix、OpenLLMetry——选一个接入，别自建半套。协议层仍可走 OpenTelemetry，和 [后端可观测](/notes/backend/observability) 同一套世界观。
+平台认脸：Langfuse、LangSmith、Arize Phoenix、OpenLLMetry——选一个接入，别自建半套。协议层仍可走 OpenTelemetry，和 [后端可观测](/notes/ops/observability) 同一套世界观。
 
 ```ts
 // 伪代码：在现有 OpenAI 封装外包一层
@@ -105,7 +105,7 @@ Agent 场景再用任务级基准（能否完成改 bug、能否通过测试）�
 |---|---|
 | Harness O/V/G 概念 | [Agent Harness](/notes/frontier/agent-harness) |
 | RAG 检索与生成质量 | [RAG](/notes/frontier/rag) + 本篇指标 |
-| HTTP/服务 Trace、Metrics | [后端可观测](/notes/backend/observability) |
+| HTTP/服务 Trace、Metrics | [后端可观测](/notes/ops/observability) |
 | Token/成本直觉 | [LLM 基础](/notes/frontier/llm-fundamentals) |
 | 应用层 AI Trace / 评测门禁 | 本篇 |
 

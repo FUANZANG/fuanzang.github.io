@@ -2,7 +2,7 @@
 
 SQL（Structured Query Language）是用于操作**关系型数据库**（MySQL、PostgreSQL、SQLite 等）的标准语言。本篇面向前端补足"会写基本查询、理解表关系"的能力，不深入调优与运维。
 
-> 配合 [Node.js](/notes/backend/node) 与 [Linux](/notes/backend/linux) 使用；键值缓存另见 [Redis 基础](/notes/backend/redis-basics)。
+> 配合 [Node.js](/notes/backend/node) 与 [Linux](/notes/ops/linux) 使用；键值缓存另见 [Redis 基础](/notes/backend/redis-basics)。
 
 ## 核心概念
 

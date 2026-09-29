@@ -2,7 +2,7 @@
 
 GitHub Actions 是 GitHub 原生的 **CI/CD（持续集成 / 持续部署）** 服务。通过在工作仓库的 `.github/workflows/` 目录下放 YAML 配置文件，即可在代码推送、PR、定时等事件触发时自动运行流水线。
 
-> 本篇聚焦 GitHub Actions 本身；更宏观的 CI/CD 理念见 [CI/CD](/notes/deploy/ci-cd)。
+> 本篇聚焦 GitHub Actions 本身；更宏观的 CI/CD 理念见 [CI/CD](/notes/ops/ci-cd)。
 
 ## 核心概念
 

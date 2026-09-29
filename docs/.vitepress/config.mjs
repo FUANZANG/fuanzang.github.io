@@ -127,7 +127,7 @@ export default defineConfig({
           ]
         },
         {
-          text: '框架',
+          text: '前端框架',
           collapsed: true,
           items: [
             { text: 'Vue 总览', link: '/notes/frameworks/vue' },
@@ -156,9 +156,7 @@ export default defineConfig({
             { text: '微前端', link: '/notes/engineering/micro-frontend' },
             { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
             { text: 'CSS 工程化方案', link: '/notes/engineering/css-engineering' },
-            { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' },
-            { text: 'GitHub Actions', link: '/notes/engineering/github-actions' },
-            { text: 'Nginx 生产配置', link: '/notes/engineering/nginx' }
+            { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' }
           ]
         },
         {
@@ -174,22 +172,50 @@ export default defineConfig({
           ]
         },
         {
-          text: '部署与运维',
+          text: '场景实战',
           collapsed: true,
           items: [
-            { text: 'CI/CD', link: '/notes/deploy/ci-cd' },
-            { text: '前端部署', link: '/notes/deploy/frontend-deployment' },
-            { text: 'CDN 内容分发', link: '/notes/deploy/cdn' },
-            { text: 'YApi 接口平台', link: '/notes/deploy/yapi' }
+            { text: '大文件上传', link: '/notes/practice/large-file-upload' },
+            { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
+            { text: '虚拟列表', link: '/notes/practice/virtual-list' },
+            { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
+            { text: 'ECharts', link: '/notes/practice/echarts' },
+            { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
+            { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
+            { text: 'Web Workers 实战', link: '/notes/practice/web-workers' },
+            { text: 'YApi 接口平台', link: '/notes/ops/yapi' }
           ]
         },
         {
-          text: '后端基础',
+          text: '跨端开发',
           collapsed: true,
           items: [
-            { text: 'Node.js', link: '/notes/backend/node' },
-            { text: 'Docker', link: '/notes/backend/docker' },
-            { text: 'Linux', link: '/notes/backend/linux' }
+            { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
+            { text: 'React Native', link: '/notes/cross-platform/react-native' },
+            { text: 'Electron', link: '/notes/cross-platform/electron' }
+          ]
+        },
+        {
+          text: '运维与部署',
+          collapsed: true,
+          items: [
+            { text: 'Linux', link: '/notes/ops/linux' },
+            { text: 'Docker', link: '/notes/ops/docker' },
+            { text: 'Kubernetes', link: '/notes/ops/kubernetes' },
+            { text: 'Rancher 管理平台', link: '/notes/ops/rancher' },
+            { text: 'Nginx 生产配置', link: '/notes/ops/nginx' },
+            { text: 'CDN 内容分发', link: '/notes/ops/cdn' },
+            { text: 'CI/CD', link: '/notes/ops/ci-cd' },
+            { text: 'GitHub Actions', link: '/notes/engineering/github-actions' },
+            { text: '前端部署', link: '/notes/ops/frontend-deployment' },
+            { text: '监控栈（Prometheus/Grafana/ELK）', link: '/notes/ops/monitoring' }
+          ]
+        },
+        {
+          text: 'Node 后端',
+          collapsed: true,
+          items: [
+            { text: 'Node.js', link: '/notes/backend/node' }
           ]
         },
         {
@@ -209,7 +235,7 @@ export default defineConfig({
             { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
             { text: '消息队列识字', link: '/notes/backend/message-queue' },
             { text: '消息队列与 Java', link: '/notes/backend/message-queue-java' },
-            { text: '后端可观测', link: '/notes/backend/observability' },
+            { text: '后端可观测', link: '/notes/ops/observability' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' }
           ]
         },
@@ -224,29 +250,6 @@ export default defineConfig({
             { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
             { text: 'Redis 与 Java', link: '/notes/backend/redis-java' },
             { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' }
-          ]
-        },
-        {
-          text: '跨端开发',
-          collapsed: true,
-          items: [
-            { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
-            { text: 'React Native', link: '/notes/cross-platform/react-native' },
-            { text: 'Electron', link: '/notes/cross-platform/electron' }
-          ]
-        },
-        {
-          text: '场景实战',
-          collapsed: true,
-          items: [
-            { text: '大文件上传', link: '/notes/practice/large-file-upload' },
-            { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
-            { text: '虚拟列表', link: '/notes/practice/virtual-list' },
-            { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
-            { text: 'ECharts', link: '/notes/practice/echarts' },
-            { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
-            { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
-            { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
           ]
         },
         {
