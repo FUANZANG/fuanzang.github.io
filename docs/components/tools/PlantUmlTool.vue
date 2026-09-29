@@ -175,7 +175,9 @@ function loadSample() {
 }
 .server-input {
   flex: 1;
-  min-width: 200px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   padding: 0.5rem 1rem;
   border-radius: 10px;
   border: 1px solid var(--vp-c-divider);
