@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { tools } from '../data/tools.js'
+import { tools, groupTools } from '../data/tools.js'
 import { useTool } from './useTool.js'
 import PageShell from './PageShell.vue'
 import SimpleTool from './tools/SimpleTool.vue'
@@ -12,10 +12,31 @@ import ImageTool from './tools/ImageTool.vue'
 import QrTool from './tools/QrTool.vue'
 import DiffTool from './tools/DiffTool.vue'
 import PlantUmlTool from './tools/PlantUmlTool.vue'
+import MarkdownTool from './tools/MarkdownTool.vue'
+import TimezoneTool from './tools/TimezoneTool.vue'
 
 const { toast } = useTool()
-const activeTool = ref(tools[0].id)
+const groups = groupTools()
 const tabsRef = ref(null)
+
+function toolFromUrl() {
+  try {
+    const id = new URLSearchParams(window.location.search).get('tool')
+    return tools.some(tool => tool.id === id) ? id : tools[0].id
+  } catch {
+    return tools[0].id
+  }
+}
+
+const activeTool = ref(toolFromUrl())
+
+function selectTool(id) {
+  if (!tools.some(tool => tool.id === id)) return
+  activeTool.value = id
+  const url = new URL(window.location.href)
+  url.searchParams.set('tool', id)
+  window.history.replaceState(window.history.state, '', url)
+}
 
 const compMap = {
   password: PasswordTool,
@@ -25,7 +46,9 @@ const compMap = {
   img: ImageTool,
   qrcode: QrTool,
   diff: DiffTool,
-  plantuml: PlantUmlTool
+  plantuml: PlantUmlTool,
+  markdown: MarkdownTool,
+  timezone: TimezoneTool
 }
 const current = computed(() => compMap[activeTool.value] || SimpleTool)
 
@@ -37,6 +60,10 @@ const scrollActiveTabIntoView = async () => {
 }
 
 watch(activeTool, scrollActiveTabIntoView)
+
+function onPopState() {
+  activeTool.value = toolFromUrl()
+}
 
 // 量取全局页脚高度，写入 :root 的 --footer-h，供 PageShell 满高布局计算（视口 − 导航 − 页脚）
 const footerH = ref(64)
@@ -50,6 +77,7 @@ function measureFooter() {
 }
 
 onMounted(() => {
+  window.addEventListener('popstate', onPopState)
   measureFooter()
   const f = document.querySelector('.VPFooter')
   if (f && 'ResizeObserver' in window) {
@@ -62,6 +90,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   footerRO?.disconnect()
   window.removeEventListener('resize', measureFooter)
+  window.removeEventListener('popstate', onPopState)
 })
 </script>
 
@@ -73,19 +102,24 @@ onBeforeUnmount(() => {
     fill
   >
     <div class="layout">
-      <nav ref="tabsRef" class="tool-nav" role="tablist" aria-label="工具列表">
-        <button
-          v-for="t in tools"
-          :key="t.id"
-          type="button"
-          role="tab"
-          class="tab"
-          :class="{ active: activeTool === t.id }"
-          :aria-selected="activeTool === t.id"
-          @click="activeTool = t.id"
-        >
-          {{ t.name }}
-        </button>
+      <nav ref="tabsRef" class="tool-nav" aria-label="工具列表">
+        <div v-for="group in groups" :key="group.label" class="tool-group">
+          <div class="group-label">{{ group.label }}</div>
+          <div class="group-tabs" role="tablist" :aria-label="group.label">
+            <button
+              v-for="t in group.items"
+              :key="t.id"
+              type="button"
+              role="tab"
+              class="tab"
+              :class="{ active: activeTool === t.id }"
+              :aria-selected="activeTool === t.id"
+              @click="selectTool(t.id)"
+            >
+              {{ t.name }}
+            </button>
+          </div>
+        </div>
       </nav>
 
       <div class="tool-main">
@@ -107,7 +141,7 @@ onBeforeUnmount(() => {
 /* 默认（桌面）：左侧竖向工具导航 + 右侧工作区，两栏在满高外壳内各自内部滚动 */
 .layout {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
+  grid-template-columns: 208px minmax(0, 1fr);
   gap: 1.8rem;
   align-items: start;
 }
@@ -115,8 +149,27 @@ onBeforeUnmount(() => {
 .tool-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.85rem;
   padding-right: 0.2rem;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.group-label {
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3);
+}
+
+.group-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .tool-main {
@@ -180,7 +233,8 @@ onBeforeUnmount(() => {
   .tool-nav {
     position: static;
     flex-direction: row;
-    gap: 0.45rem;
+    align-items: flex-end;
+    gap: 0.85rem;
     max-height: none;
     margin-inline: -1.5rem;
     margin-bottom: 1.15rem;
@@ -190,6 +244,14 @@ onBeforeUnmount(() => {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
+  }
+  .tool-group {
+    flex: 0 0 auto;
+    gap: 0.3rem;
+  }
+  .group-tabs {
+    flex-direction: row;
+    gap: 0.45rem;
   }
   .tool-nav::-webkit-scrollbar {
     display: none;
