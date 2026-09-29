@@ -48,14 +48,15 @@ function countAlgorithm() {
 const notesDir = path.join(ROOT, 'docs/notes')
 const subdirs = [
   { key: 'foundations', label: '前端基础' },
-  { key: 'frameworks', label: '框架' },
-  { key: 'engineering', label: '工程化' },
+  { key: 'frameworks', label: '前端框架' },
+  { key: 'engineering', label: '构建与工程化' },
   { key: 'performance', label: '性能与质量' },
-  { key: 'deploy', label: '部署' },
+  { key: 'ops', label: '运维与部署' },
   { key: 'backend', label: '后端' },
   { key: 'cross-platform', label: '跨端' },
   { key: 'practice', label: '场景实战' },
   // 目录仍为 frontier/；侧边栏拆为「AI 工程」+「前沿技术」
+  // backend/ 同理：侧栏拆为「Node 后端」+「Java 后端」+「数据库与大数据」
   { key: 'frontier', label: 'AI 工程与前沿' }
 ]
 
