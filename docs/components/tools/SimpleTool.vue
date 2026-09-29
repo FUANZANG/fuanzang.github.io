@@ -211,11 +211,21 @@ watch(
           ><input type="checkbox" v-model="lineOpts.dropEmpty" /> 去空行</label
         >
       </div>
-      <div v-else-if="hasMode" class="seg">
-        <button :class="{ on: mode === 'encode' }" @click="mode = 'encode'">
+      <div v-else-if="hasMode" class="seg" role="group">
+        <button
+          type="button"
+          :class="{ on: mode === 'encode' }"
+          :aria-pressed="mode === 'encode'"
+          @click="mode = 'encode'"
+        >
           {{ modeLabels[0] }}
         </button>
-        <button :class="{ on: mode === 'decode' }" @click="mode = 'decode'">
+        <button
+          type="button"
+          :class="{ on: mode === 'decode' }"
+          :aria-pressed="mode === 'decode'"
+          @click="mode = 'decode'"
+        >
           {{ modeLabels[1] }}
         </button>
       </div>
@@ -279,18 +289,26 @@ watch(
 }
 .seg {
   display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 10px;
-  overflow: hidden;
+  background: var(--vp-c-bg-soft);
+  box-sizing: border-box;
 }
 .seg button {
-  padding: 0.45rem 1.2rem;
-  border: none;
+  margin: 0;
+  padding: 0.38rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--vp-c-text-2);
   cursor: pointer;
   font-size: 0.88rem;
-  transition: all 0.2s;
+  line-height: 1.25;
+  box-sizing: border-box;
+  appearance: none;
 }
 .seg button.on {
   background: var(--vp-c-brand-1);

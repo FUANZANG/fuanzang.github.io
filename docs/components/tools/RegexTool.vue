@@ -74,22 +74,24 @@ const outText = computed(() =>
 <template>
   <div class="panel">
     <div class="mode-row">
-      <button
-        type="button"
-        class="text-btn"
-        :class="{ on: mode === 'match' }"
-        @click="mode = 'match'"
-      >
-        匹配
-      </button>
-      <button
-        type="button"
-        class="text-btn"
-        :class="{ on: mode === 'replace' }"
-        @click="mode = 'replace'"
-      >
-        替换
-      </button>
+      <div class="seg" role="group">
+        <button
+          type="button"
+          :class="{ on: mode === 'match' }"
+          :aria-pressed="mode === 'match'"
+          @click="mode = 'match'"
+        >
+          匹配
+        </button>
+        <button
+          type="button"
+          :class="{ on: mode === 'replace' }"
+          :aria-pressed="mode === 'replace'"
+          @click="mode = 'replace'"
+        >
+          替换
+        </button>
+      </div>
     </div>
     <div class="regex-row">
       <span class="slash">/</span>
@@ -155,19 +157,32 @@ const outText = computed(() =>
   gap: 0.5rem;
   margin-bottom: 0.8rem;
 }
-.text-btn {
-  padding: 0.4rem 0.9rem;
-  border-radius: 8px;
+.seg {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+  box-sizing: border-box;
+}
+.seg button {
+  margin: 0;
+  padding: 0.38rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--vp-c-text-2);
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
+  line-height: 1.25;
+  box-sizing: border-box;
+  appearance: none;
 }
-.text-btn.on {
+.seg button.on {
+  background: var(--vp-c-brand-1);
   color: #fff;
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--c-blue), var(--c-purple));
 }
 .replace-input {
   width: 100%;
