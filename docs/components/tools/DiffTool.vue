@@ -1,11 +1,15 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useTool } from '../useTool.js'
 
-const { error, copy } = useTool()
+const DIFF_CELL_LIMIT = 250000
+
+const { error } = useTool()
 const diffOld = ref('')
 const diffNew = ref('')
 const diffIgnoreWs = ref(false)
+const result = ref([])
+let diffTimer = null
 
 function diffLines(oldStr, newStr, ignoreWs) {
   const a = oldStr.split(/\r\n|\r|\n/)
@@ -13,6 +17,9 @@ function diffLines(oldStr, newStr, ignoreWs) {
   const eq = (x, y) => (ignoreWs ? x.trim() === y.trim() : x === y)
   const n = a.length
   const m = b.length
+  if (n * m > DIFF_CELL_LIMIT) {
+    throw new Error(`文本过长（${n} × ${m} 行），请缩短后再对比`)
+  }
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0))
   for (let i = n - 1; i >= 0; i--) {
     for (let j = m - 1; j >= 0; j--) {
@@ -41,10 +48,26 @@ function diffLines(oldStr, newStr, ignoreWs) {
   return res
 }
 
-const result = computed(() => {
-  if (!diffOld.value && !diffNew.value) return []
-  return diffLines(diffOld.value, diffNew.value, diffIgnoreWs.value)
-})
+function runDiff() {
+  error.value = ''
+  if (!diffOld.value && !diffNew.value) {
+    result.value = []
+    return
+  }
+  try {
+    result.value = diffLines(diffOld.value, diffNew.value, diffIgnoreWs.value)
+  } catch (e) {
+    result.value = []
+    error.value = e && e.message ? e.message : String(e)
+  }
+}
+
+function scheduleDiff() {
+  if (diffTimer) clearTimeout(diffTimer)
+  diffTimer = setTimeout(runDiff, 300)
+}
+
+watch([diffOld, diffNew, diffIgnoreWs], scheduleDiff)
 
 function swapDiff() {
   const tmp = diffOld.value

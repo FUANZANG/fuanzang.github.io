@@ -13,23 +13,37 @@ const pwOpts = reactive({
 })
 const password = ref('')
 
-function genPassword() {
+function randomIndex(length) {
+  const limit = Math.floor(0x100000000 / length) * length
+  const buf = new Uint32Array(1)
+  let value = 0
+  do {
+    crypto.getRandomValues(buf)
+    value = buf[0]
+  } while (value >= limit)
+  return value % length
+}
+
+function buildPool() {
   let pool = ''
   if (pwOpts.lower) pool += 'abcdefghijklmnopqrstuvwxyz'
   if (pwOpts.upper) pool += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   if (pwOpts.digit) pool += '0123456789'
   if (pwOpts.symbol) pool += '!@#$%^&*()-_=+[]{};:,.<>?'
   if (pwOpts.noSimilar) pool = pool.replace(/[il1Lo0O]/g, '')
+  return pool
+}
+
+function genPassword() {
+  const pool = buildPool()
   if (!pool) {
     error.value = '请至少选择一种字符类型'
     password.value = ''
     return
   }
   error.value = ''
-  const arr = new Uint32Array(pwLen.value)
-  crypto.getRandomValues(arr)
   let res = ''
-  for (let i = 0; i < pwLen.value; i++) res += pool[arr[i] % pool.length]
+  for (let i = 0; i < pwLen.value; i++) res += pool[randomIndex(pool.length)]
   password.value = res
 }
 
