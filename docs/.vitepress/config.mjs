@@ -105,6 +105,7 @@ export default defineConfig({
       '/notes/': [
         {
           text: '前端基础',
+          collapsed: true,
           items: [
             { text: 'HTML', link: '/notes/foundations/html' },
             { text: 'CSS', link: '/notes/foundations/css' },
@@ -127,7 +128,7 @@ export default defineConfig({
         },
         {
           text: '框架',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'Vue 总览', link: '/notes/frameworks/vue' },
             { text: 'Vue 2 (Options API)', link: '/notes/frameworks/vue2' },
@@ -143,7 +144,7 @@ export default defineConfig({
         },
         {
           text: '构建与工程化',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'Webpack 性能优化', link: '/notes/engineering/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/engineering/vite-optimization' },
@@ -162,7 +163,7 @@ export default defineConfig({
         },
         {
           text: '性能与质量',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: '前端性能优化', link: '/notes/performance/performance-optimization' },
             { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
@@ -174,7 +175,7 @@ export default defineConfig({
         },
         {
           text: '部署与运维',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'CI/CD', link: '/notes/deploy/ci-cd' },
             { text: '前端部署', link: '/notes/deploy/frontend-deployment' },
@@ -184,7 +185,7 @@ export default defineConfig({
         },
         {
           text: '后端基础',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'Node.js', link: '/notes/backend/node' },
             { text: 'Docker', link: '/notes/backend/docker' },
@@ -193,7 +194,7 @@ export default defineConfig({
         },
         {
           text: 'Java 后端',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'Java 基础', link: '/notes/backend/java-basics' },
             { text: 'Java 生态与工具链', link: '/notes/backend/java-ecosystem' },
@@ -214,7 +215,7 @@ export default defineConfig({
         },
         {
           text: '数据库与大数据',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
             { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
@@ -227,7 +228,7 @@ export default defineConfig({
         },
         {
           text: '跨端开发',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
             { text: 'React Native', link: '/notes/cross-platform/react-native' },
@@ -236,7 +237,7 @@ export default defineConfig({
         },
         {
           text: '场景实战',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: '大文件上传', link: '/notes/practice/large-file-upload' },
             { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
@@ -250,7 +251,7 @@ export default defineConfig({
         },
         {
           text: 'AI 工程',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'LLM 基础概念', link: '/notes/frontier/llm-fundamentals' },
             { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
@@ -266,7 +267,7 @@ export default defineConfig({
         },
         {
           text: '前沿技术',
-          collapsed: false,
+          collapsed: true,
           items: [
             { text: 'WebAssembly', link: '/notes/frontier/wasm' },
             { text: 'WebGPU', link: '/notes/frontier/webgpu' },
