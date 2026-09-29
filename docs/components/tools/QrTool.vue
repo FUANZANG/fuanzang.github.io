@@ -3,30 +3,48 @@ import { ref, watch } from 'vue'
 import QRCode from 'qrcode'
 import { useTool } from '../useTool.js'
 
+const QR_FILENAME = 'qrcode.png'
+
 const { error, copy } = useTool()
 const qrText = ref('')
 const qrSize = ref(240)
 const qrLevel = ref('M')
 const qrDataUrl = ref('')
+let qrSeq = 0
 
-watch([qrText, qrSize, qrLevel], async () => {
-  if (!qrText.value) {
+async function renderQr() {
+  const seq = ++qrSeq
+  const text = qrText.value
+  if (!text) {
     qrDataUrl.value = ''
     error.value = ''
     return
   }
   try {
-    qrDataUrl.value = await QRCode.toDataURL(qrText.value, {
+    const url = await QRCode.toDataURL(text, {
       margin: 1,
       width: qrSize.value,
       errorCorrectionLevel: qrLevel.value
     })
+    if (seq !== qrSeq) return
+    qrDataUrl.value = url
     error.value = ''
   } catch (e) {
+    if (seq !== qrSeq) return
     error.value = '生成失败：' + (e && e.message ? e.message : e)
     qrDataUrl.value = ''
   }
-})
+}
+
+function downloadPng() {
+  if (!qrDataUrl.value) return
+  const link = document.createElement('a')
+  link.href = qrDataUrl.value
+  link.download = QR_FILENAME
+  link.click()
+}
+
+watch([qrText, qrSize, qrLevel], renderQr)
 </script>
 
 <template>
@@ -71,9 +89,12 @@ watch([qrText, qrSize, qrLevel], async () => {
           />
           <span v-else class="qr-empty">输入内容后自动生成</span>
         </div>
-        <button v-if="qrDataUrl" class="copy-btn" @click="copy(qrDataUrl)">
-          复制图片 DataURL
-        </button>
+        <div v-if="qrDataUrl" class="qr-actions">
+          <button type="button" class="copy-btn" @click="downloadPng">下载 PNG</button>
+          <button type="button" class="copy-btn" @click="copy(qrDataUrl)">
+            复制 DataURL
+          </button>
+        </div>
       </div>
     </div>
     <p v-if="error" class="err">{{ error }}</p>
@@ -172,6 +193,11 @@ watch([qrText, qrSize, qrLevel], async () => {
   color: var(--vp-c-text-3);
   font-size: 0.85rem;
 }
+.qr-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
 .copy-btn {
   border: none;
   background: none;
@@ -179,7 +205,6 @@ watch([qrText, qrSize, qrLevel], async () => {
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;
-  margin-top: 0.5rem;
 }
 .err {
   margin-top: 1rem;
