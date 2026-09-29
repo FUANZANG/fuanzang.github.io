@@ -2,7 +2,7 @@
 
 > 本文基于 Spring AMQP（RabbitMQ）与 Spring for Apache Kafka（2026-09 时点）。[消息队列识字](/notes/backend/message-queue) 讲概念与选型；本篇讲 **Boot 项目里怎么发、怎么收、怎么幂等**。
 
-> 前置：消息队列识字、[Spring Boot](/notes/backend/spring-boot)。链路追踪见 [后端可观测](/notes/backend/observability)。
+> 前置：消息队列识字、[Spring Boot](/notes/backend/spring-boot)。链路追踪见 [后端可观测](/notes/ops/observability)。
 
 ## 选型回顾（一秒）
 
@@ -165,7 +165,7 @@ Spring 没有「开箱万能事务 MQ」；Kafka 事务 / Rabbit 确认模式要
 
 ## 和可观测的衔接
 
-发送与消费日志带上 `orderId` + `traceId`（从入口 HTTP 透传进消息 header）。消费者挂了只看业务单号也能定位——详见 [后端可观测](/notes/backend/observability)。
+发送与消费日志带上 `orderId` + `traceId`（从入口 HTTP 透传进消息 header）。消费者挂了只看业务单号也能定位——详见 [后端可观测](/notes/ops/observability)。
 
 ## 和识字篇的分工
 

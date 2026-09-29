@@ -2,7 +2,7 @@
 
 > 📌 本文件记录前端视角的 API 契约：GraphQL 查询模型、tRPC 端到端类型，以及与 REST 的选型。
 >
-> ⚠️ **边界说明**：fetch / Axios / React Query 等传输与缓存见 [HTTP 请求与数据层](/notes/frameworks/http-request)；接口 Mock / 文档平台见 [YApi](/notes/deploy/yapi)。本文聚焦 **契约形态与客户端用法**。
+> ⚠️ **边界说明**：fetch / Axios / React Query 等传输与缓存见 [HTTP 请求与数据层](/notes/frameworks/http-request)；接口 Mock / 文档平台见 [YApi](/notes/ops/yapi)。本文聚焦 **契约形态与客户端用法**。
 >
 > 📅 参考：GraphQL 2021 | Apollo Client 3.x | urql | tRPC 11.x
 
@@ -311,4 +311,4 @@ await trpc.user.byId.query({ id: '1' }) // → { name: string, ... }
 + [GraphQL 官网](https://graphql.org/learn/)
 + [Apollo Client 文档](https://www.apollographql.com/docs/react/)
 + [tRPC 文档](https://trpc.io/docs)
-+ 本站：[HTTP 请求与数据层](/notes/frameworks/http-request) · [YApi](/notes/deploy/yapi)
++ 本站：[HTTP 请求与数据层](/notes/frameworks/http-request) · [YApi](/notes/ops/yapi)
