@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
 <template>
   <PageShell
     title="🛠 前端小工具"
-    subtitle="纯浏览器本地运行，数据不上传，随用随走"
+    subtitle="本地运行，随用随走；PlantUML 预览会把图发给渲染服务"
     max-width="1120px"
     fill
   >
@@ -126,7 +126,7 @@ onBeforeUnmount(() => {
         <component :is="current" :id="activeTool" />
 
         <footer class="tips">
-          提示：除 PlantUML 等需服务端渲染的工具外，其余转换均在本地完成，刷新页面即清空，不会保存任何内容。
+          提示：PlantUML 预览会把源码发给渲染服务。其余转换都在本地完成，刷新页面即清空，不会保存任何内容。
         </footer>
       </div>
     </div>

@@ -356,16 +356,18 @@ const formatTime = s => {
         <transition name="notice-fade">
           <span v-if="randomNotice" class="random-notice">{{ randomNotice }}</span>
         </transition>
-        <div class="view-toggle" aria-label="视图切换">
+        <div class="view-toggle" role="group" aria-label="视图切换">
           <button
             type="button"
             :class="{ active: viewMode === 'grid' }"
+            :aria-pressed="viewMode === 'grid'"
             title="网格视图"
             @click="viewMode = 'grid'"
           >▦</button>
           <button
             type="button"
             :class="{ active: viewMode === 'list' }"
+            :aria-pressed="viewMode === 'list'"
             title="列表视图"
             @click="viewMode = 'list'"
           >☰</button>
@@ -662,19 +664,27 @@ const formatTime = s => {
 }
 
 .view-toggle {
-  display: flex;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 6px;
-  overflow: hidden;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  box-sizing: border-box;
 }
 .view-toggle button {
-  padding: 0.45rem 0.7rem;
-  border: none;
-  background: var(--vp-c-bg-soft);
+  margin: 0;
+  padding: 0.32rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
   color: var(--vp-c-text-2);
   cursor: pointer;
   font-size: 1rem;
-  transition: background 0.15s, color 0.15s;
+  line-height: 1.25;
+  box-sizing: border-box;
+  appearance: none;
 }
 .view-toggle button.active {
   background: var(--vp-c-brand-1);
@@ -755,11 +765,7 @@ const formatTime = s => {
     padding: 0.5rem 0.85rem;
     font-size: 0.85rem;
   }
-  .view-toggle { flex: 0 0 auto; }
-  .view-toggle button {
-    min-height: 40px;
-    padding: 0.4rem 0.65rem;
-  }
+  .view-toggle { display: none; }
   .filters-scroll {
     flex: 1 1 auto;
     flex-wrap: nowrap;
