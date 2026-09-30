@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 86 题（按 LeetCode 题组织，已去重合并）
+> 共 87 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -95,3 +95,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 寻找两个正序数组的中位数（Median of Two Sorted Arrays） | Hard | [median-of-two-sorted-arrays](./median-of-two-sorted-arrays.md) |
 | 删除链表中的节点（Delete Node in a Linked List） | Easy | [delete-node-in-a-linked-list](./delete-node-in-a-linked-list.md) |
 | 买卖股票的最佳时机 II（Best Time to Buy and Sell Stock II） | Medium | [best-time-to-buy-and-sell-stock-ii](./best-time-to-buy-and-sell-stock-ii.md) |
+| 跳跃游戏（Jump Game） | Medium | [jump-game](./jump-game.md) |
