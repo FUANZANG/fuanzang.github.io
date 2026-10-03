@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 89 题（按 LeetCode 题组织，已去重合并）
+> 共 90 题（按 LeetCode 题组织，已去重合并）
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -98,3 +98,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 跳跃游戏（Jump Game） | Medium | [jump-game](./jump-game.md) |
 | 旋转数组（Rotate Array） | Medium | [rotate-array](./rotate-array.md) |
 | 回文数（Palindrome Number） | Easy | [palindrome-number](./palindrome-number.md) |
+| 有效的括号（Valid Parentheses） | Easy | [valid-parentheses](./valid-parentheses.md) |
