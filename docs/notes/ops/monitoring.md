@@ -54,7 +54,7 @@ Prometheus Server
 # docker-compose.yml
 services:
   prometheus:
-    image: prom/prometheus:v2.54.0
+    image: prom/prometheus:v3.15.0
     ports:
       - "9090:9090"
     volumes:
@@ -165,7 +165,7 @@ groups:
 # docker-compose.yml
 services:
   grafana:
-    image: grafana/grafana:11.2.0
+    image: grafana/grafana:13.2.3
     ports:
       - "3000:3000"
     environment:
@@ -225,7 +225,7 @@ volumes:
 ```yaml
 services:
   elasticsearch:
-    image: elasticsearch:8.15.0
+    image: elasticsearch:9.5.5
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -235,14 +235,14 @@ services:
       - es-data:/usr/share/elasticsearch/data
 
   kibana:
-    image: kibana:8.15.0
+    image: kibana:9.5.5
     ports:
       - "5601:5601"
     depends_on:
       - elasticsearch
 
   fluentd:
-    image: fluent/fluentd:v1.16
+    image: fluent/fluentd:v1.18
     volumes:
       - ./fluent.conf:/fluentd/etc/fluent.conf
       - /var/log:/var/log:ro
@@ -254,7 +254,7 @@ volumes:
 ```
 
 ```xml
-# fluent.conf>
+# fluent.conf
 <source>
   @type tail
   path /var/log/app/*.log
@@ -276,7 +276,7 @@ volumes:
 
 ### Kibana 查询
 
-```
+```text
 # 搜索 ERROR 级别日志
 level:ERROR AND service:order-service
 
@@ -297,24 +297,26 @@ Loki 是 Grafana 出品的日志聚合系统，比 ELK 轻量很多：
 应用日志 → Promtail → Loki → Grafana
 ```
 
-+ **Promtail** — 日志采集器（类似 Filebeat）
++ **Grafana Alloy** — 日志/指标/链路采集器（Promtail 已废弃，功能合并进 Alloy）
 + **Loki** — 日志存储（只索引标签，不索引全文，省资源）
 + **Grafana** — 可视化（和指标面板放一起）
+
+> ⚠️ Promtail 在 Loki 3.6 标记废弃，3.7.3 起完全移除。新部署建议直接用 Grafana Alloy 替代。
 
 ```yaml
 # docker-compose.yml
 services:
   loki:
-    image: grafana/loki:3.2.0
+    image: grafana/loki:3.7.8
     ports:
       - "3100:3100"
     volumes:
       - ./loki-config.yml:/etc/loki/local-config.yaml
 
   promtail:
-    image: grafana/promtail:3.2.0
+    image: grafana/alloy:v1.8.0
     volumes:
-      - ./promtail-config.yml:/etc/promtail/config.yml
+      - ./alloy-config.yml:/etc/alloy/config.yml
       - /var/log:/var/log:ro
     depends_on:
       - loki
@@ -351,7 +353,7 @@ Node Exporter（节点指标）
     +
 App /metrics（应用指标）
     +
-Loki + Promtail（日志）
+Loki + Grafana Alloy（日志）
     +
 OpenTelemetry（链路追踪）
     +
@@ -375,6 +377,7 @@ Uptime Kuma（可用性监控）
 + **告警疲劳** — 只对"需要人处理"的告警设通知，其他只记录
 + **ELK 内存不够** — Elasticsearch 是 JVM 应用，生产至少 4GB 堆内存
 + **Loki 查询慢** — 标签设计要合理，避免高基数标签（如 userId）
++ **Promtail 已废弃** — Loki 3.6 标记废弃，3.7.3 起完全移除，新部署用 Grafana Alloy
 + **监控数据断点** — 检查 Prometheus 的 scrape 间隔和目标健康状态
 
 ## 参考
