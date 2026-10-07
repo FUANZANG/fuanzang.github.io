@@ -1,5 +1,7 @@
 # Node.js
 
+> 运行时、模块、Express 基础与进程模型。结构化 API 见 [NestJS](/notes/backend/nestjs)；连库见 [Node 数据访问](/notes/backend/node-data)；登录鉴权见 [Node 鉴权](/notes/backend/node-auth)。
+
 ## Node.js 基础
 
 ### 事件循环（Event Loop）
@@ -485,6 +487,8 @@ ac.abort()
 
 ## Web 开发
 
+> 中大型 API 优先 [NestJS](/notes/backend/nestjs)。下面 Express 示例用来建立中间件与路由直觉。
+
 ### Express 基础
 
 ```js
@@ -590,6 +594,8 @@ app.use(cors({
   + Content-Type 不是 `text/plain`、`multipart/form-data`、`application/x-www-form-urlencoded`
 
 ### JWT 认证
+
+> 生产形态（Guard / Refresh / 角色）见专篇 [Node 鉴权](/notes/backend/node-auth)。此处只留最小签发与校验。
 
 ```js
 const jwt = require('jsonwebtoken')
