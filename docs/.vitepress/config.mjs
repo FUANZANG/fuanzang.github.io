@@ -135,6 +135,7 @@ export default defineConfig({
             { text: 'Vue 3 (Composition API)', link: '/notes/frameworks/vue3' },
             { text: 'Nuxt', link: '/notes/frameworks/nuxt' },
             { text: 'React', link: '/notes/frameworks/react' },
+            { text: 'Next.js', link: '/notes/frameworks/nextjs' },
             { text: 'React vs Vue 对比', link: '/notes/frameworks/react-vs-vue' },
             { text: '状态管理', link: '/notes/frameworks/state-management' },
             { text: '状态管理框架对比', link: '/notes/frameworks/state-managers-compare' },
