@@ -42,7 +42,7 @@ app/
 │   └── [slug]/
 │       └── page.tsx      → /blog/:slug (ISR)
 ├── admin/
-│   └── page.tsx          → /admin (SPA, dynamic = 'force-dynamic')
+│   └── page.tsx          → /admin (Client Component, 'use client')
 └── api/
     └── route.ts          → /api/* (API 路由)
 ```

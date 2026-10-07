@@ -2988,4 +2988,9 @@ const { data, loading } = useFetch('/api/data')
 | 全局状态 | Zustand / Redux | Pinia |
 | 路由 | React Router | Vue Router |
 
+## 相关笔记
+
++ [Next.js](/notes/frameworks/nextjs) — React 全栈框架，App Router 与 Server Components
++ [SSR / SSG](/notes/engineering/ssr-ssg) — 渲染模式原理与选型
+
 

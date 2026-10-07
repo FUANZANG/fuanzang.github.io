@@ -4667,3 +4667,8 @@ keyword.value = 'vue3' // URL 变为 ?keyword=vue3
 | `useId()` | SSR 安全唯一 ID（3.5+） |
 | `defineSlots()` | 声明插槽类型（3.3+） |
 | `onWatcherCleanup()` | watcher 清理函数（3.5+） |
+
+## 相关笔记
+
++ [Nuxt](/notes/frameworks/nuxt) — Vue 全栈框架，在 Vue 3 之上加 SSR/SSG
++ [SSR / SSG](/notes/engineering/ssr-ssg) — 渲染模式原理与选型

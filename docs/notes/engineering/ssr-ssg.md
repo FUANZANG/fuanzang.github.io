@@ -1037,6 +1037,11 @@ CMD ["node", "server.js"]
 
 ---
 
+## 相关笔记
+
++ [Nuxt](/notes/frameworks/nuxt) — Vue 全栈框架，SSR/SSG/ISR 实践
++ [Next.js](/notes/frameworks/nextjs) — React 全栈框架，App Router 与 Server Components
+
 ## 参考资源
 
 - [Next.js 官方文档](https://nextjs.org/docs)
