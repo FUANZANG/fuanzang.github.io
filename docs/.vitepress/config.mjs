@@ -215,7 +215,10 @@ export default defineConfig({
           text: 'Node 后端',
           collapsed: true,
           items: [
-            { text: 'Node.js', link: '/notes/backend/node' }
+            { text: 'Node.js', link: '/notes/backend/node' },
+            { text: 'NestJS', link: '/notes/backend/nestjs' },
+            { text: 'Node 数据访问', link: '/notes/backend/node-data' },
+            { text: 'Node 鉴权', link: '/notes/backend/node-auth' }
           ]
         },
         {
