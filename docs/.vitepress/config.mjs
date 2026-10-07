@@ -133,6 +133,7 @@ export default defineConfig({
             { text: 'Vue 总览', link: '/notes/frameworks/vue' },
             { text: 'Vue 2 (Options API)', link: '/notes/frameworks/vue2' },
             { text: 'Vue 3 (Composition API)', link: '/notes/frameworks/vue3' },
+            { text: 'Nuxt', link: '/notes/frameworks/nuxt' },
             { text: 'React', link: '/notes/frameworks/react' },
             { text: 'React vs Vue 对比', link: '/notes/frameworks/react-vs-vue' },
             { text: '状态管理', link: '/notes/frameworks/state-management' },
