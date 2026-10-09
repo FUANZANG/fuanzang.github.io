@@ -42,6 +42,7 @@ function getAlgorithmSidebar() {
   }
   const items = [
     { text: '算法题库（目录）', link: '/algorithm/' },
+    { text: '数据结构与算法基础', link: '/algorithm/fundamentals' },
     ...Object.values(groups).filter((g) => g.items.length > 0),
   ]
   return [{ text: '算法题库', items }]
@@ -110,20 +111,21 @@ export default defineConfig({
             { text: 'HTML', link: '/notes/foundations/html' },
             { text: 'CSS', link: '/notes/foundations/css' },
             { text: '响应式与自适应', link: '/notes/foundations/responsive-design' },
+            { text: '前端无障碍（a11y）', link: '/notes/foundations/frontend-a11y' },
             { text: 'JavaScript', link: '/notes/foundations/javascript' },
-            { text: 'TypeScript', link: '/notes/foundations/typescript' },
+            { text: 'JS 实用片段', link: '/notes/foundations/javascript-snippets' },
             { text: 'ECMAScript 标准', link: '/notes/foundations/ecma-script-standard' },
+            { text: '正则与校验', link: '/notes/foundations/regex-and-validation' },
+            { text: 'TypeScript', link: '/notes/foundations/typescript' },
+            { text: '前端设计模式', link: '/notes/foundations/frontend-design-patterns' },
             { text: '浏览器原理', link: '/notes/foundations/browser' },
             { text: '网络协议', link: '/notes/foundations/network-protocol' },
-            { text: '正则与校验', link: '/notes/foundations/regex-and-validation' },
-            { text: '前端国际化', link: '/notes/foundations/frontend-i18n' },
-            { text: '前端动画', link: '/notes/foundations/frontend-animation' },
-            { text: '前端设计模式', link: '/notes/foundations/frontend-design-patterns' },
-            { text: 'PWA', link: '/notes/foundations/pwa' },
-            { text: '前端无障碍（a11y）', link: '/notes/foundations/frontend-a11y' },
             { text: 'Web 存储', link: '/notes/foundations/web-storage' },
             { text: 'Web Components', link: '/notes/foundations/web-components' },
-            { text: 'Canvas & WebGL', link: '/notes/foundations/canvas-webgl' }
+            { text: '前端动画', link: '/notes/foundations/frontend-animation' },
+            { text: 'Canvas & WebGL', link: '/notes/foundations/canvas-webgl' },
+            { text: 'PWA', link: '/notes/foundations/pwa' },
+            { text: '前端国际化', link: '/notes/foundations/frontend-i18n' }
           ]
         },
         {
@@ -133,6 +135,7 @@ export default defineConfig({
             { text: 'Vue 总览', link: '/notes/frameworks/vue' },
             { text: 'Vue 2 (Options API)', link: '/notes/frameworks/vue2' },
             { text: 'Vue 3 (Composition API)', link: '/notes/frameworks/vue3' },
+            { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
             { text: 'Nuxt', link: '/notes/frameworks/nuxt' },
             { text: 'React', link: '/notes/frameworks/react' },
             { text: 'Next.js', link: '/notes/frameworks/nextjs' },
@@ -148,29 +151,30 @@ export default defineConfig({
           text: '构建与工程化',
           collapsed: true,
           items: [
+            { text: '包管理器', link: '/notes/engineering/package-manager' },
+            { text: 'Git 工作流', link: '/notes/engineering/git-workflow' },
+            { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' },
+            { text: 'CSS 工程化方案', link: '/notes/engineering/css-engineering' },
+            { text: 'Webpack vs Vite', link: '/notes/engineering/webpack-vs-vite' },
             { text: 'Webpack 性能优化', link: '/notes/engineering/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/engineering/vite-optimization' },
-            { text: 'Webpack vs Vite', link: '/notes/engineering/webpack-vs-vite' },
-            { text: '包管理器', link: '/notes/engineering/package-manager' },
             { text: 'Monorepo', link: '/notes/engineering/monorepo' },
-            { text: 'Git 工作流', link: '/notes/engineering/git-workflow' },
             { text: '组件库开发', link: '/notes/engineering/component-library' },
             { text: '微前端', link: '/notes/engineering/micro-frontend' },
-            { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
-            { text: 'CSS 工程化方案', link: '/notes/engineering/css-engineering' },
-            { text: '代码规范与工程约束', link: '/notes/engineering/code-standard' }
+            { text: 'YApi 接口平台', link: '/notes/engineering/yapi' }
           ]
         },
         {
           text: '性能与质量',
           collapsed: true,
           items: [
+            { text: 'Web Vitals 性能指标', link: '/notes/performance/web-vitals' },
+            { text: 'Chrome DevTools', link: '/notes/performance/debug-devtools' },
             { text: '前端性能优化', link: '/notes/performance/performance-optimization' },
+            { text: '性能分析案例', link: '/notes/performance/performance-case' },
             { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
             { text: '前端测试', link: '/notes/performance/frontend-testing' },
-            { text: '前端安全', link: '/notes/performance/frontend-security' },
-            { text: 'Chrome DevTools', link: '/notes/performance/debug-devtools' },
-            { text: 'Web Vitals 性能指标', link: '/notes/performance/web-vitals' }
+            { text: '前端安全', link: '/notes/performance/frontend-security' }
           ]
         },
         {
@@ -183,9 +187,9 @@ export default defineConfig({
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
             { text: 'ECharts', link: '/notes/practice/echarts' },
             { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
+            { text: 'OAuth2 入门', link: '/notes/practice/oauth2' },
             { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
-            { text: 'Web Workers 实战', link: '/notes/practice/web-workers' },
-            { text: 'YApi 接口平台', link: '/notes/ops/yapi' }
+            { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
           ]
         },
         {
@@ -195,6 +199,50 @@ export default defineConfig({
             { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
             { text: 'React Native', link: '/notes/cross-platform/react-native' },
             { text: 'Electron', link: '/notes/cross-platform/electron' }
+          ]
+        },
+        {
+          text: '数据库与大数据',
+          collapsed: true,
+          items: [
+            { text: 'SQL 基础', link: '/notes/database/sql-basics' },
+            { text: '数据库设计', link: '/notes/database/db-design' },
+            { text: 'MySQL 深入', link: '/notes/database/mysql-deep' },
+            { text: '数据库迁移（Flyway）', link: '/notes/database/db-migration' },
+            { text: 'Redis 基础', link: '/notes/database/redis-basics' },
+            { text: 'Redis 与 Java', link: '/notes/database/redis-java' },
+            { text: '数仓与大数据基础', link: '/notes/database/data-warehouse' }
+          ]
+        },
+        {
+          text: 'Node 后端',
+          collapsed: true,
+          items: [
+            { text: 'Node.js', link: '/notes/node/node' },
+            { text: 'NestJS', link: '/notes/node/nestjs' },
+            { text: 'Node 数据访问', link: '/notes/node/node-data' },
+            { text: 'Node 鉴权', link: '/notes/node/node-auth' },
+            { text: 'Node 测试', link: '/notes/node/node-testing' }
+          ]
+        },
+        {
+          text: 'Java 后端',
+          collapsed: true,
+          items: [
+            { text: 'Java 基础', link: '/notes/java/java-basics' },
+            { text: 'Java 生态与工具链', link: '/notes/java/java-ecosystem' },
+            { text: 'JVM 基础', link: '/notes/java/jvm-basics' },
+            { text: 'Java 并发', link: '/notes/java/java-concurrency' },
+            { text: 'Spring Boot', link: '/notes/java/spring-boot' },
+            { text: 'Spring Web 实用', link: '/notes/java/spring-web' },
+            { text: 'Spring 事务', link: '/notes/java/spring-transactions' },
+            { text: 'MyBatis', link: '/notes/java/mybatis' },
+            { text: 'JPA 与 Spring Data JPA', link: '/notes/java/jpa' },
+            { text: 'Spring Security 鉴权', link: '/notes/java/spring-security' },
+            { text: 'Spring Cloud 与微服务', link: '/notes/java/spring-cloud' },
+            { text: '消息队列基础', link: '/notes/java/message-queue' },
+            { text: '消息队列与 Java', link: '/notes/java/message-queue-java' },
+            { text: 'Java 测试（JUnit + Mockito）', link: '/notes/java/java-testing' }
           ]
         },
         {
@@ -208,69 +256,26 @@ export default defineConfig({
             { text: 'Nginx 生产配置', link: '/notes/ops/nginx' },
             { text: 'CDN 内容分发', link: '/notes/ops/cdn' },
             { text: 'CI/CD', link: '/notes/ops/ci-cd' },
-            { text: 'GitHub Actions', link: '/notes/engineering/github-actions' },
+            { text: 'GitHub Actions', link: '/notes/ops/github-actions' },
             { text: '前端部署', link: '/notes/ops/frontend-deployment' },
-            { text: '监控栈（Prometheus/Grafana/ELK）', link: '/notes/ops/monitoring' }
-          ]
-        },
-        {
-          text: 'Node 后端',
-          collapsed: true,
-          items: [
-            { text: 'Node.js', link: '/notes/backend/node' },
-            { text: 'NestJS', link: '/notes/backend/nestjs' },
-            { text: 'Node 数据访问', link: '/notes/backend/node-data' },
-            { text: 'Node 鉴权', link: '/notes/backend/node-auth' }
-          ]
-        },
-        {
-          text: 'Java 后端',
-          collapsed: true,
-          items: [
-            { text: 'Java 基础', link: '/notes/backend/java-basics' },
-            { text: 'Java 生态与工具链', link: '/notes/backend/java-ecosystem' },
-            { text: 'Java 并发', link: '/notes/backend/java-concurrency' },
-            { text: 'JVM 基础', link: '/notes/backend/jvm-basics' },
-            { text: 'Spring Boot', link: '/notes/backend/spring-boot' },
-            { text: 'Spring Web 实用', link: '/notes/backend/spring-web' },
-            { text: 'Spring Security 鉴权', link: '/notes/backend/spring-security' },
-            { text: 'MyBatis', link: '/notes/backend/mybatis' },
-            { text: 'JPA 与 Spring Data JPA', link: '/notes/backend/jpa' },
-            { text: 'Spring 事务', link: '/notes/backend/spring-transactions' },
-            { text: 'Spring Cloud 与微服务', link: '/notes/backend/spring-cloud' },
-            { text: '消息队列识字', link: '/notes/backend/message-queue' },
-            { text: '消息队列与 Java', link: '/notes/backend/message-queue-java' },
-            { text: '后端可观测', link: '/notes/ops/observability' },
-            { text: 'Java 测试（JUnit + Mockito）', link: '/notes/backend/java-testing' }
-          ]
-        },
-        {
-          text: '数据库与大数据',
-          collapsed: true,
-          items: [
-            { text: 'SQL 基础', link: '/notes/backend/sql-basics' },
-            { text: 'MySQL 深入', link: '/notes/backend/mysql-deep' },
-            { text: '数据库设计', link: '/notes/backend/db-design' },
-            { text: '数据库迁移（Flyway）', link: '/notes/backend/db-migration' },
-            { text: 'Redis 基础', link: '/notes/backend/redis-basics' },
-            { text: 'Redis 与 Java', link: '/notes/backend/redis-java' },
-            { text: '数仓与大数据基础', link: '/notes/backend/data-warehouse' }
+            { text: '监控栈（Prometheus/Grafana/ELK）', link: '/notes/ops/monitoring' },
+            { text: '后端可观测', link: '/notes/ops/observability' }
           ]
         },
         {
           text: 'AI 工程',
           collapsed: true,
           items: [
-            { text: 'LLM 基础概念', link: '/notes/frontier/llm-fundamentals' },
-            { text: '前端对接 AI', link: '/notes/frontier/ai-frontend-integration' },
-            { text: 'AI 流式输出', link: '/notes/frontier/ai-streaming' },
-            { text: 'RAG 检索增强生成', link: '/notes/frontier/rag' },
-            { text: 'MCP 与工具调用', link: '/notes/frontier/mcp-tools' },
-            { text: 'Agent Skill', link: '/notes/frontier/agent-skills' },
-            { text: 'Agent Harness', link: '/notes/frontier/agent-harness' },
-            { text: '本地大模型', link: '/notes/frontier/local-llm' },
-            { text: 'Web AI', link: '/notes/frontier/web-ai' },
-            { text: 'AI 评测与可观测', link: '/notes/frontier/ai-eval-observability' }
+            { text: 'LLM 基础概念', link: '/notes/ai/llm-fundamentals' },
+            { text: '本地大模型', link: '/notes/ai/local-llm' },
+            { text: '前端对接 AI', link: '/notes/ai/ai-frontend-integration' },
+            { text: 'AI 流式输出', link: '/notes/ai/ai-streaming' },
+            { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
+            { text: 'Agent Harness', link: '/notes/ai/agent-harness' },
+            { text: 'MCP 与工具调用', link: '/notes/ai/mcp-tools' },
+            { text: 'Agent Skill', link: '/notes/ai/agent-skills' },
+            { text: 'Web AI', link: '/notes/ai/web-ai' },
+            { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
         },
         {
