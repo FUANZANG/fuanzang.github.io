@@ -41,24 +41,45 @@ function countNavCategories() {
 function countAlgorithm() {
   const dir = path.join(ROOT, 'docs/algorithm')
   if (!fs.existsSync(dir)) return 0
-  return fs.readdirSync(dir).filter(f => f.endsWith('.md') && f !== 'index.md').length
+  // fundamentals.md 是识字篇，不是题目
+  const skip = new Set(['index.md', 'fundamentals.md'])
+  return fs.readdirSync(dir).filter(f => f.endsWith('.md') && !skip.has(f)).length
 }
 
-// ── 统计 ──
-const notesDir = path.join(ROOT, 'docs/notes')
+// 顺序与侧边栏一致。新增笔记目录时，这里和 README 的目录树要一起加。
 const subdirs = [
   { key: 'foundations', label: '前端基础' },
   { key: 'frameworks', label: '前端框架' },
   { key: 'engineering', label: '构建与工程化' },
   { key: 'performance', label: '性能与质量' },
-  { key: 'ops', label: '运维与部署' },
-  { key: 'backend', label: '后端' },
-  { key: 'cross-platform', label: '跨端' },
   { key: 'practice', label: '场景实战' },
-  // 目录仍为 frontier/；侧边栏拆为「AI 工程」+「前沿技术」
-  // backend/ 同理：侧栏拆为「Node 后端」+「Java 后端」+「数据库与大数据」
-  { key: 'frontier', label: 'AI 工程与前沿' }
+  { key: 'cross-platform', label: '跨端' },
+  { key: 'database', label: '数据库与大数据' },
+  { key: 'node', label: 'Node 后端' },
+  { key: 'java', label: 'Java 后端' },
+  { key: 'ops', label: '运维与部署' },
+  { key: 'ai', label: 'AI 工程' },
+  { key: 'frontier', label: '前沿技术' }
 ]
+
+function assertNoteDirs(notesDir, expected) {
+  const actual = fs.readdirSync(notesDir).filter(name =>
+    fs.statSync(path.join(notesDir, name)).isDirectory()
+  )
+  const want = new Set(expected)
+  const have = new Set(actual)
+  const missing = expected.filter(key => !have.has(key))
+  const extra = actual.filter(key => !want.has(key))
+  if (missing.length === 0 && extra.length === 0) return
+  console.error('docs/notes 的子目录和脚本名单不一致，已停止，避免写错 README')
+  if (missing.length) console.error('  名单里有、磁盘上没有: ' + missing.join(', '))
+  if (extra.length) console.error('  磁盘上有、名单里没有: ' + extra.join(', '))
+  process.exit(1)
+}
+
+// ── 统计 ──
+const notesDir = path.join(ROOT, 'docs/notes')
+assertNoteDirs(notesDir, subdirs.map(item => item.key))
 
 const stats = {
   totalNotes: 0,
