@@ -149,6 +149,61 @@ function debounce(fn, delay) {
 - 避免在循环中创建大量闭包
 - DOM 引用导致的循环引用（老版本 IE）
 
+## 执行上下文与变量提升
+
+### 执行上下文栈（EC Stack）
+
+```
+[ 全局执行上下文 ]          ← 栈底
+[ foo() 执行上下文 ]
+[ bar() 执行上下文 ]        ← 栈顶（当前执行）
+```
+
+每次函数调用创建新的执行上下文压栈，执行完毕出栈。
+
+### 变量提升：var vs let/const
+
+```js
+console.log(a) // undefined（var 提升声明，但不提升赋值）
+var a = 1
+
+console.log(b) // ReferenceError: Cannot access 'b' before initialization
+let b = 2      // TDZ（暂时性死区）
+
+console.log(c) // ReferenceError（const 同样有 TDZ）
+const c = 3
+```
+
+### 函数声明 vs 函数表达式
+
+```js
+// 函数声明：整体提升（声明+定义）
+hoisted() // ✅ 可以调用
+function hoisted() { return 'ok' }
+
+// 函数表达式：仅 var 提升变量名，值为 undefined
+notHoisted() // ❌ TypeError: notHoisted is not a function
+var notHoisted = function() { return 'ok' }
+```
+
+### 经典题目
+
+```js
+var a = 1
+function foo() {
+  console.log(a) // undefined（局部 var a 提升，遮蔽外层）
+  var a = 2
+}
+foo()
+
+// 等价于：
+function foo() {
+  var a       // 提升
+  console.log(a) // undefined
+  a = 2
+}
+```
+
 ## this 指向
 
 ### 4 种绑定规则
@@ -285,61 +340,6 @@ obj.hasOwnProperty('a')        // true（仅检查自身）
 obj.hasOwnProperty('toString') // false
 'a' in obj                     // true（自身+原型链）
 'toString' in obj              // true（原型链上有）
-```
-
-## 执行上下文与变量提升
-
-### 执行上下文栈（EC Stack）
-
-```
-[ 全局执行上下文 ]          ← 栈底
-[ foo() 执行上下文 ]
-[ bar() 执行上下文 ]        ← 栈顶（当前执行）
-```
-
-每次函数调用创建新的执行上下文压栈，执行完毕出栈。
-
-### 变量提升：var vs let/const
-
-```js
-console.log(a) // undefined（var 提升声明，但不提升赋值）
-var a = 1
-
-console.log(b) // ReferenceError: Cannot access 'b' before initialization
-let b = 2      // TDZ（暂时性死区）
-
-console.log(c) // ReferenceError（const 同样有 TDZ）
-const c = 3
-```
-
-### 函数声明 vs 函数表达式
-
-```js
-// 函数声明：整体提升（声明+定义）
-hoisted() // ✅ 可以调用
-function hoisted() { return 'ok' }
-
-// 函数表达式：仅 var 提升变量名，值为 undefined
-notHoisted() // ❌ TypeError: notHoisted is not a function
-var notHoisted = function() { return 'ok' }
-```
-
-### 经典题目
-
-```js
-var a = 1
-function foo() {
-  console.log(a) // undefined（局部 var a 提升，遮蔽外层）
-  var a = 2
-}
-foo()
-
-// 等价于：
-function foo() {
-  var a       // 提升
-  console.log(a) // undefined
-  a = 2
-}
 ```
 
 ## Promise 深入
@@ -1167,24 +1167,6 @@ function createFetchWithTimeout(timeout = 1000){
 }
 ```
 
-## Service Worker
-
-+ `Service Workers` 是一种运行在浏览器背后的脚本，可以用来拦截和处理网络请求，缓存或提供离线内容，以及推送通知等功能
-
-  + 主要特点：
-    + 离线工作：Service Worker 可以缓存网站资源，使得应用可以在离线状态下使用。
-    + 网络代理：可以拦截和处理网络请求，允许开发者控制如何处理这些请求。
-    + 后台同步：即使在用户关闭浏览器标签页或应用后，Service Worker 仍然可以在后台执行任务。
-    + 推送通知：即使应用没有打开，也可以向用户发送通知。
-    + 高效更新：Service Worker 的更新过程可以由开发者控制，确保用户总是使用最新版本的应用。
-
-  + 生命周期：
-    + Service Worker 的生命周期独立于网页。它们包括以下阶段：
-    + 注册：通过在网页上调用serviceWorker.register()来注册Service Worker。
-    + 安装：注册后，Service Worker 将开始安装。在此阶段，通常会缓存必要的文件。
-    + 激活：安装成功后，Service Worker 将被激活。在此阶段，可以清理旧版本缓存。
-    + 监听：激活后，Service Worker 可以监听和拦截页面上的网络请求。
-
 ## JS多线程开启方案和解决思路
 
 + `Web Workers` 是浏览器提供的API，允许在后台线程中运行JavaScript代码，从而不阻塞主线程
@@ -1290,45 +1272,7 @@ function createFetchWithTimeout(timeout = 1000){
 
 ## 复杂数组去重
 
-```javascript
-
-// 使用 Map 对象
-const objects = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'Bob' },
-  { id: 1, name: 'Charlie' }, // 重复的 id
-  { id: 3, name: 'Diana' }
-];
-
-const uniqueObjects = objects.reduce((acc, current) => {
-  if (!acc.has(current.id)) {
-    acc.set(current.id, current);
-  }
-  return acc;
-}, new Map()).values();
-
-console.log([...uniqueObjects]); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Diana' }]
-
-
-
-// 使用 reduce 方法也可以实现这个功能，通过构建一个新数组，其中每个 id 只出现一次。
-const objects2 = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'Bob' },
-  { id: 1, name: 'Charlie' }, // 重复的 id
-  { id: 3, name: 'Diana' }
-];
-
-const uniqueObjects2 = objects2.reduce((acc, current) => {
-  const exists = acc.some(obj => obj.id === current.id);
-  if (!exists) {
-    acc.push(current);
-  }
-  return acc;
-}, []);
-
-console.log(uniqueObjects2); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Diana' }]
-```
+相同 `id` 只保留第一次出现的对象，见 [JS 实用片段](/notes/foundations/javascript-snippets#按-id-去重)。
 
 ## Object.defineProperty()
 
@@ -1632,13 +1576,7 @@ console.log(looseJsonParse(
 
 ## 过滤对象中的空值
 
-```javascript
-
-const filteredObject = Object.fromEntries(
-  Object.entries(params).filter(([key, value]) => value !== "")
-);
-
-```  
+去掉 `null`、`undefined` 和空字符串，`0` 和 `false` 会保留。见 [JS 实用片段](/notes/foundations/javascript-snippets#过滤空值)。
 
 ## 对象方法
 
@@ -1923,48 +1861,6 @@ let url = `${location.protocol}//${host}/xxx.html?params=${params}`
 
 ```
 
-## HTML转PDF (html2canvas + jsPDF)
-
-```js
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-
-async function exportToPDF(elementId, filename = 'document.pdf') {
-  const element = document.getElementById(elementId)
-  
-  // html2canvas 将 DOM 转为 canvas
-  const canvas = await html2canvas(element, {
-    scale: 2,          // 提高清晰度
-    useCORS: true,     // 允许跨域图片
-    logging: false
-  })
-  
-  const imgData = canvas.toDataURL('image/jpeg', 1.0)
-  const pdf = new jsPDF('p', 'mm', 'a4')
-  
-  const pageWidth = pdf.internal.pageSize.getWidth()
-  const pageHeight = pdf.internal.pageSize.getHeight()
-  const imgWidth = pageWidth
-  const imgHeight = (canvas.height * imgWidth) / canvas.width
-  
-  // 多页处理
-  let heightLeft = imgHeight
-  let position = 0
-  
-  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
-  heightLeft -= pageHeight
-  
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight
-    pdf.addPage()
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
-  }
-  
-  pdf.save(filename)
-}
-```
-
 ## 当前时间
 
 ```javascript
@@ -2200,26 +2096,6 @@ getTimeInfo() {
   setInterval(throttle(fn,1000),10)
   ```
 
-## 禁止/允许滚动
-
-```javascript
-
-stopScroll() {
-  let move = function (e) {
-    e.preventDefault();
-  };
-  document.body.style.overflow = "hidden";
-  document.addEventListener("touchmove", move, false);
-},
-canScroll() {
-  let move = function (e) {
-    e.preventDefault();
-  };
-  document.body.style.overflow = "";
-  document.removeEventListener("touchmove", move, false);
-},
-```
-
 ## forEach 重组对象
 
 ```javascript
@@ -2275,38 +2151,7 @@ let str = 'hello'
 str.charAt(str.length - 1) // o
 ```
 
-## excel 导出功能
+## 已挪走的片段
 
-```js
-// 通用 blob 下载（适用于 axios 返回二进制流）
-async function downloadFile(url, filename) {
-  const response = await fetch(url)
-  const blob = await response.blob()
-  const blobUrl = URL.createObjectURL(blob)
-  
-  const a = document.createElement('a')
-  a.href = blobUrl
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(blobUrl)
-}
-
-// axios 版本
-async function downloadWithAxios(url, filename, params) {
-  const res = await axios.get(url, {
-    params,
-    responseType: 'blob'
-  })
-  const blob = new Blob([res.data])
-  const blobUrl = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = blobUrl
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(blobUrl)
-}
-```
-
+Service Worker 见 [PWA](/notes/foundations/pwa)。导出 PDF、下载文件、滚动锁、剪贴板、查询参数等见 [JS 实用片段](/notes/foundations/javascript-snippets)。
 

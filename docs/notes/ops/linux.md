@@ -104,6 +104,37 @@ systemctl enable nginx      # 开机自启
 journalctl -u nginx -f      # 查看服务日志
 ```
 
+## 进程与端口
+
+服务起没起来，先看谁占着端口，再看进程还在不在：
+
+```bash
+ss -lntp                    # 谁在监听哪个端口（比 netstat 常用）
+ps aux | grep nginx         # 进程还在不在
+kill <pid>                  # 停掉；先确认不是别人的进程
+```
+
+`ss` 里没有你的端口，说明进程没监听：要么没启动，要么配置里的 `listen` 不是你以为的那个。
+
+## 日志
+
+```bash
+journalctl -u nginx -n 100 --no-pager    # 最近 100 行
+journalctl -u nginx --since "10 min ago"
+tail -f /var/log/nginx/error.log         # 文件日志，跟到最新
+```
+
+systemd 管理的服务优先看 `journalctl`。应用自己写到文件里的，再用 `tail`。
+
+## 磁盘
+
+```bash
+df -h          # 分区还剩多少
+du -sh /var/*  # 哪个目录占空间
+```
+
+磁盘满了，数据库和日志会先失败。清之前先看是日志、镜像还是构建产物，不要直接删正在被进程打开的文件。
+
 ## Shell 脚本基础
 
 脚本首行指定解释器（shebang）：

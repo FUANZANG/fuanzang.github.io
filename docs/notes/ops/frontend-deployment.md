@@ -174,42 +174,7 @@ const version = location.search.includes('v=2') ? '2' : '1';
 
 ## CDN 部署
 
-### 架构
-
-```
-用户 → CDN（缓存静态资源） → 回源 → Nginx/构建产物
-```
-
-CDN 缓存层把请求挡在离用户最近的地方，静态资源命中率通常 90%+。
-
-### 资源上 CDN
-
-**HTML 留在源站**（控制不缓存），JS/CSS/图片走 CDN：
-
-```nginx
-# 源站 Nginx — 只 serving HTML + API
-location / {
-    try_files $uri $uri/ /index.html;
-}
-
-# 静态资源代理到 CDN 回源
-# 如果用 Cloudflare，可以在 Cloudflare 面板配置 cache rules：
-# Cache Rule: /assets/* → Cache Level: Cache Everything → TTL: 1 year
-```
-
-### CDN 缓存失效
-
-文件名带 hash 的情况下，**改了文件名自然失效**。但偶尔需要主动清除：
-
-```bash
-# Cloudflare API 清除特定 URL
-curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
-  -H "Authorization: Bearer $CF_TOKEN" \
-  -H "Content-Type: application/json" \
-  --data '{"files":["https://cdn.example.com/assets/index.e5f6g7h8.js"]}'
-```
-
-**Vercel/Netlify 等**自带 CDN 和部署即失效，不需要手动处理。
+带哈希的 JS / CSS / 图片走 CDN，HTML 留在源站并且不缓存。域名、回源、刷新和计费见 [CDN](/notes/ops/cdn)。
 
 ## 边缘部署
 

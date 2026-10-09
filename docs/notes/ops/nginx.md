@@ -69,6 +69,8 @@ server {
 
 ## 静态资源缓存
 
+策略（HTML 不缓存、带哈希的资源长缓存）见 [前端部署](/notes/ops/frontend-deployment)。这里只留 Nginx 写法：
+
 ```nginx
 location /assets/ {
     expires 1y;                  # 缓存一年
