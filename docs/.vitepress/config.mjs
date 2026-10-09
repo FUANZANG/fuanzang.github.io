@@ -42,7 +42,7 @@ function getAlgorithmSidebar() {
   }
   const items = [
     { text: '算法题库（目录）', link: '/algorithm/' },
-    { text: '数据结构与算法基础', link: '/algorithm/fundamentals' },
+    { text: '数据结构与算法识字', link: '/algorithm/fundamentals' },
     ...Object.values(groups).filter((g) => g.items.length > 0),
   ]
   return [{ text: '算法题库', items }]
@@ -187,7 +187,7 @@ export default defineConfig({
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
             { text: 'ECharts', link: '/notes/practice/echarts' },
             { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
-            { text: 'OAuth2 入门', link: '/notes/practice/oauth2' },
+            { text: 'OAuth2 识字', link: '/notes/practice/oauth2' },
             { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
             { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
           ]
@@ -240,7 +240,7 @@ export default defineConfig({
             { text: 'JPA 与 Spring Data JPA', link: '/notes/java/jpa' },
             { text: 'Spring Security 鉴权', link: '/notes/java/spring-security' },
             { text: 'Spring Cloud 与微服务', link: '/notes/java/spring-cloud' },
-            { text: '消息队列基础', link: '/notes/java/message-queue' },
+            { text: '消息队列识字', link: '/notes/java/message-queue' },
             { text: '消息队列与 Java', link: '/notes/java/message-queue-java' },
             { text: 'Java 测试（JUnit + Mockito）', link: '/notes/java/java-testing' }
           ]

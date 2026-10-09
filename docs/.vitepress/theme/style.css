@@ -116,3 +116,41 @@ body.cool-home-page .VPNav.scrolled {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(128, 128, 128, 0.5);
 }
+
+/* 站名盖在侧边栏上，这块原是透明的，滚上来的分组标题会叠住 FUANZANG */
+@media (min-width: 960px) {
+  .VPNavBar.has-sidebar .title {
+    background-color: var(--vp-sidebar-bg-color) !important;
+  }
+}
+
+/* 分组原来的 padding-top: 10px 在吸顶标题外面，标题会先滚过这 10px 才停 */
+.VPSidebar .nav .group,
+.VPSidebar .nav .group + .group {
+  padding-top: 0;
+}
+
+/* 侧边栏分组标题吸顶，下一组滚到时把上一组顶走 */
+.VPSidebar .VPSidebarItem.level-0 > .item,
+.VPSidebar .VPSidebarItem.level-1:has(> .items) > .item {
+  position: sticky;
+  z-index: 2;
+  background-color: var(--vp-sidebar-bg-color);
+}
+
+.VPSidebar .VPSidebarItem.level-0 > .item {
+  top: 0;
+  z-index: 3;
+  padding-top: 10px;
+}
+
+.VPSidebar .VPSidebarItem.level-1:has(> .items) > .item {
+  top: 42px;
+  margin-left: -12px;
+  padding-left: 12px;
+}
+
+/* 子项相对分组标题缩进，分组标题仍与站名对齐 */
+.VPSidebar .VPSidebarItem.level-0 > .items {
+  padding-left: 12px;
+}
