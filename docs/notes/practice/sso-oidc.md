@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点的 Web SSO 主流形态（OIDC 授权码 + PKCE）。定位：多个系统共用登录态时，前端与 BFF/资源服务器各自干什么。
 
-> 前置：[前端鉴权实战](/notes/practice/frontend-auth)（方案选型与会话落点）、[Spring Security](/notes/backend/spring-security)（过滤器链 / JWT）。安全细节（CSRF、开放重定向）见 [前端安全](/notes/performance/frontend-security)——本篇不重写。
+> 前置：[OAuth2 识字](/notes/practice/oauth2)（四个角色和授权码）、[前端鉴权实战](/notes/practice/frontend-auth)（方案选型与会话落点）、[Spring Security](/notes/java/spring-security)（过滤器链 / JWT）。安全细节（CSRF、开放重定向）见 [前端安全](/notes/performance/frontend-security)——本篇不重写。
 
 ## SSO vs 第三方登录
 
@@ -100,7 +100,7 @@ docs.example.com
 | 主题 | 所在篇 |
 |---|---|
 | Session / Bearer / 多页签 / 清单 | [前端鉴权实战](/notes/practice/frontend-auth) |
-| 过滤器链、JWT 自建登录 | [Spring Security](/notes/backend/spring-security) |
+| 过滤器链、JWT 自建登录 | [Spring Security](/notes/java/spring-security) |
 | SSO 跳转、OIDC、SLO、多子系统 | 本篇 |
 | CSRF / 开放重定向 / XSS | [前端安全](/notes/performance/frontend-security) |
 
@@ -125,4 +125,4 @@ docs.example.com
 + [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html)
 + [OAuth 2.0 for Browser-Based Apps](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps)
 + [Keycloak 文档](https://www.keycloak.org/documentation)
-+ 本站：[前端鉴权实战](/notes/practice/frontend-auth) · [Spring Security](/notes/backend/spring-security)
++ 本站：[前端鉴权实战](/notes/practice/frontend-auth) · [Spring Security](/notes/java/spring-security)

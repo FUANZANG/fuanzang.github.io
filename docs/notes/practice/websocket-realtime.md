@@ -126,7 +126,7 @@ function notifyClients(message) {
 
 SSE 是 HTML5 标准，服务器通过 HTTP 连接**单向推送**数据到客户端，基于普通 HTTP、自带重连，适合"只需服务器→客户端推"的场景（通知、行情、日志流）。
 
-协议格式、客户端 `EventSource` API、Node.js SSE 服务端实现、Vue/React 用法等完整内容见专篇：[AI 流式输出](/notes/frontier/ai-streaming)（该篇同时覆盖 SSE 与 fetch + ReadableStream 消费 LLM 流）。
+协议格式、客户端 `EventSource` API、Node.js SSE 服务端实现、Vue/React 用法等完整内容见专篇：[AI 流式输出](/notes/ai/ai-streaming)（该篇同时覆盖 SSE 与 fetch + ReadableStream 消费 LLM 流）。
 
 选型速记：
 

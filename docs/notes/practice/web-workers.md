@@ -169,7 +169,7 @@ async function hashFile(file, pool) {
 }
 ```
 
-秒传 / 并发上传窗口仍看 [大文件上传](/notes/practice/large-file-upload)；本篇只负责「算」这一段。浏览器端本地推理卸载见 [Web AI](/notes/frontier/web-ai)。
+秒传 / 并发上传窗口仍看 [大文件上传](/notes/practice/large-file-upload)；本篇只负责「算」这一段。浏览器端本地推理卸载见 [Web AI](/notes/ai/web-ai)。
 
 ---
 
@@ -197,7 +197,7 @@ async function hashFile(file, pool) {
 
 Worker 只解决 **本地算力别堵主线程**；麦克风怎么采、音频怎么送到服务器，是另一条链路。
 
-流式文字见 [AI 流式输出](/notes/frontier/ai-streaming)；通道总览见 [WebSocket 与实时通信](/notes/practice/websocket-realtime)。
+流式文字见 [AI 流式输出](/notes/ai/ai-streaming)；通道总览见 [WebSocket 与实时通信](/notes/practice/websocket-realtime)。
 
 ---
 
@@ -205,4 +205,4 @@ Worker 只解决 **本地算力别堵主线程**；麦克风怎么采、音频�
 
 + API 基础：[浏览器原理 · Web Worker](/notes/foundations/browser#web-worker--sharedworker)
 + [MDN Using Web Workers](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API/Using_web_workers)
-+ 本站：[大文件上传](/notes/practice/large-file-upload) · [Web AI](/notes/frontier/web-ai) · [PWA](/notes/foundations/pwa)
++ 本站：[大文件上传](/notes/practice/large-file-upload) · [Web AI](/notes/ai/web-ai) · [PWA](/notes/foundations/pwa)

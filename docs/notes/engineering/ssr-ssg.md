@@ -295,339 +295,18 @@ function AddToCartButton({ productId }) {
 
 ---
 
-## 4. Next.js（React SSR 框架）
+## 4. 框架里怎么落地
 
-### 路由系统
+渲染模式和取数差异：
 
-```
-// App Router（Next.js 13+，推荐）
-// 基于文件系统，app/ 目录
++ React 侧见 [Next.js](/notes/frameworks/nextjs)：App Router、服务端组件、缓存边界。
++ Vue 侧见 [Nuxt](/notes/frameworks/nuxt)：`useAsyncData` / `useFetch`、路由规则。
 
-app/
-├── layout.tsx          # 根布局（不会重新渲染，保留状态）
-├── page.tsx            # 首页 (/)
-├── loading.tsx         # 全局 loading UI（配合 Suspense）
-├── error.tsx           # 全局错误边界
-├── not-found.tsx       # 404 页面
-├── blog/
-│   ├── page.tsx        # 博客列表 (/blog)
-│   ├── [slug]/
-│   │   └── page.tsx    # 博客详情 (/blog/hello-world)
-│   └── layout.tsx      # 博客布局
-└── (marketing)/        # 路由组（不影响 URL）
-    ├── about/page.tsx  # /about
-    └── contact/page.tsx # /contact
-```
-
-### 渲染策略
-
-```jsx
-// Server Component（默认）— 服务端渲染，不发送 JS
-async function Page() {
-  const data = await fetch('https://api.example.com/data')
-  const json = await data.json()
-  return <div>{json.title}</div>
-}
-
-// Static Generation — 构建时生成（无动态数据）
-async function Page() {
-  const data = await fetch('https://api.example.com/data', {
-    next: { revalidate: 3600 }, // ISR: 每小时重新验证
-  })
-  return <div>{data.title}</div>
-}
-
-// Dynamic Rendering — 每次请求都服务端渲染
-async function Page() {
-  const data = await fetch('https://api.example.com/data', {
-    cache: 'no-store', // 不缓存，每次请求
-  })
-  return <div>{data.title}</div>
-}
-
-// Client Component — 客户端渲染（需要交互时）
-'use client'
-function Counter() {
-  const [count, setCount] = useState(0)
-  return <button onClick={() => setCount(c => c + 1)}>{count}</button>
-}
-```
-
-### Server Actions（服务端操作）
-
-```jsx
-// 直接在组件中定义服务端操作（无需单独 API）
-async function createPost(formData: FormData) {
-  'use server'  // 标记为服务端函数
-
-  const title = formData.get('title')
-  const content = formData.get('content')
-
-  // 直接操作数据库（仅服务端执行）
-  await db.post.create({ data: { title, content } })
-  revalidatePath('/posts') // 重新验证页面数据
-}
-
-function NewPostForm() {
-  return (
-    <form action={createPost}>
-      <input name="title" />
-      <textarea name="content" />
-      <button type="submit">发布</button>
-    </form>
-  )
-}
-```
-
-### 数据获取
-
-```jsx
-// 服务端组件中直接获取（推荐）
-async function PostList() {
-  const posts = await fetch('https://api.example.com/posts', {
-    next: { revalidate: 60 }, // ISR
-  }).then(r => r.json())
-
-  return (
-    <ul>
-      {posts.map(post => (
-        <li key={post.id}><a href={`/posts/${post.id}`}>{post.title}</a></li>
-      ))}
-    </ul>
-  )
-}
-
-// 静态参数生成（SSG 动态路由）
-async function generateStaticParams() {
-  const posts = await fetch('https://api.example.com/posts').then(r => r.json())
-  return posts.map(post => ({ slug: post.slug }))
-}
-
-// app/posts/[slug]/page.tsx
-export { generateStaticParams }
-export default async function PostPage({ params }) {
-  const post = await fetch(`https://api.example.com/posts/${params.slug}`)
-    .then(r => r.json())
-  return <article><h1>{post.title}</h1><p>{post.content}</p></article>
-}
-```
-
-### 中间件
-
-```typescript
-// middleware.ts — 在请求到达页面前执行
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-export function middleware(request: NextRequest) {
-  // 认证检查
-  const token = request.cookies.get('token')
-  if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // A/B 测试
-  const bucket = Math.random() < 0.5 ? 'a' : 'b'
-  const response = NextResponse.next()
-  response.cookies.set('bucket', bucket)
-
-  return response
-}
-
-export const config = {
-  matcher: ['/dashboard/:path*', '/api/:path*'],
-}
-```
+本篇不再重复这两套框架的目录结构和 API。选型见文末。
 
 ---
 
-## 5. Nuxt.js（Vue SSR 框架）
-
-### 路由系统
-
-```
-// Nuxt 3 — 基于文件系统，pages/ 目录自动生成路由
-
-pages/
-├── index.vue           # 首页 (/)
-├── about.vue           # 关于 (/about)
-├── blog/
-│   ├── index.vue       # 博客列表 (/blog)
-│   └── [slug].vue      # 博客详情 (/blog/hello-world)
-├── users/
-│   └── [id].vue        # 用户详情 (/users/123)
-└── [...catchAll].vue   # 404 兜底
-```
-
-### 渲染模式配置
-
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  // 全局渲染模式
-  ssr: true,         // true: SSR（默认）| false: SPA
-
-  // 路由规则级别控制
-  routeRules: {
-    // 静态生成（构建时）
-    '/': { prerender: true },
-    '/about': { prerender: true },
-
-    // ISR — 每小时重新生成
-    '/blog/**': { swr: 3600 },
-
-    // CSR — 纯客户端渲染（不需要 SEO 的页面）
-    '/dashboard/**': { ssr: false },
-
-    // 重定向
-    '/old-page': { redirect: '/new-page' },
-
-    // CORS 头
-    '/api/**': {
-      corsHeaders: { 'Access-Control-Allow-Origin': '*' },
-    },
-  },
-})
-```
-
-### 数据获取
-
-```vue
-<!-- 页面组件 -->
-<script setup>
-// useAsyncData — SSR 友好的数据获取（推荐）
-const { data: posts, pending, error, refresh } = await useAsyncData(
-  'posts',  // 唯一 key（用于 SSR 数据传递 + 缓存）
-  () => $fetch('/api/posts'),
-  {
-    server: true,     // 是否在服务端获取（默认 true）
-    lazy: false,      // true: 不阻塞渲染（先显示 loading）
-    transform: (raw) => raw.data,  // 数据转换
-    watch: [page],    // 响应式依赖变化时重新获取
-    default: () => [], // 默认值
-  }
-)
-
-// useFetch — useAsyncData + $fetch 的快捷方式
-const { data } = await useFetch('/api/posts', {
-  query: { page: 1 },
-  baseURL: 'https://api.example.com',
-})
-
-// 服务端专用数据（不在客户端执行）
-const secret = useRequestHeaders(['cookie'])
-const userData = await useFetch('/api/user', {
-  headers: useRequestHeaders(['cookie']),
-})
-</script>
-
-<template>
-  <div>
-    <div v-if="pending">加载中...</div>
-    <div v-else-if="error">出错了: {{ error.message }}</div>
-    <ul v-else>
-      <li v-for="post in posts" :key="post.id">{{ post.title }}</li>
-    </ul>
-    <button @click="refresh">刷新</button>
-  </div>
-</template>
-```
-
-### 服务端 API（Server Routes）
-
-```typescript
-// server/api/posts.get.ts — 定义 API 端点
-export default defineEventHandler(async (event) => {
-  const query = getQuery(event)  // 查询参数
-  const page = Number(query.page) || 1
-
-  // 使用数据库或外部 API
-  const posts = await db.post.findMany({
-    skip: (page - 1) * 10,
-    take: 10,
-  })
-
-  return { data: posts, total: posts.length }
-})
-
-// server/api/posts/[id].get.ts — 动态路由
-export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  const post = await db.post.findUnique({ where: { id: Number(id) } })
-
-  if (!post) {
-    throw createError({ statusCode: 404, message: '文章不存在' })
-  }
-  return post
-})
-
-// server/api/posts.post.ts — POST 请求
-export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const post = await db.post.create({ data: body })
-  return post
-})
-```
-
-### 中间件
-
-```typescript
-// middleware/auth.ts — 路由守卫
-export default defineNuxtRouteMiddleware((to, from) => {
-  const user = useUser()  // 自定义 composable
-
-  if (!user.value && to.path !== '/login') {
-    return navigateTo('/login')
-  }
-})
-
-// server/middleware/logger.ts — 服务端中间件
-export default defineEventHandler((event) => {
-  console.log(`${event.method} ${event.path}`)
-  // 可修改请求/响应
-  event.context.requestTime = Date.now()
-})
-```
-
-### 插件与布局
-
-```typescript
-// plugins/analytics.ts — 客户端插件
-export default defineNuxtPlugin(() => {
-  // 仅在客户端执行
-  if (import.meta.client) {
-    // 初始化分析 SDK
-    analytics.init('UA-XXXXX')
-  }
-})
-```
-
-```vue
-<!-- layouts/default.vue -->
-<template>
-  <div>
-    <AppHeader />
-    <main>
-      <slot />
-    </main>
-    <AppFooter />
-  </div>
-</template>
-
-<!-- layouts/blank.vue — 无布局（登录页等） -->
-<template>
-  <slot />
-</template>
-
-<!-- pages/login.vue — 使用指定布局 -->
-<script setup>
-definePageMeta({ layout: 'blank' })
-</script>
-```
-
----
-
-## 6. SSR 性能优化
+## 5. SSR 性能优化
 
 ### 数据预取策略
 
@@ -736,7 +415,7 @@ export default defineNuxtConfig({
 
 ---
 
-## 7. SEO 优化
+## 6. SEO 优化
 
 ### Meta 标签
 
@@ -846,7 +525,7 @@ export default function robots(): MetadataRoute.Robots {
 
 ---
 
-## 8. SSR 的挑战与解决方案
+## 7. SSR 的挑战与解决方案
 
 ### 服务端与客户端环境差异
 
@@ -934,7 +613,7 @@ export default defineNuxtConfig({
 
 ---
 
-## 9. 部署方案
+## 8. 部署方案
 
 ### Vercel（推荐 Next.js）
 
@@ -1002,7 +681,7 @@ CMD ["node", "server.js"]
 
 ---
 
-## 10. 选型建议
+## 9. 选型建议
 
 ### Next.js vs Nuxt.js
 

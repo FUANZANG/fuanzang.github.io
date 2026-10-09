@@ -13,7 +13,7 @@
 
 ## GitHub Actions
 
-GitHub 原生的 CI/CD 服务，配置写在仓库 `.github/workflows/*.yml`。完整用法见专篇：[GitHub Actions](/notes/engineering/github-actions)。
+GitHub 原生的 CI/CD 服务，配置写在仓库 `.github/workflows/*.yml`。完整用法见专篇：[GitHub Actions](/notes/ops/github-actions)。
 
 要点速记：
 
@@ -308,6 +308,8 @@ node {
 | **适用场景** | 复杂流程、老项目 | 企业自建 GitLab | 开源/GitHub 项目 |
 
 ## 部署方案
+
+流水线负责把产物送出去。缓存、回滚、源站 Nginx 怎么配，见 [前端部署](/notes/ops/frontend-deployment)。
 
 ### GitHub Pages
 

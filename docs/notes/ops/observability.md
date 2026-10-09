@@ -2,7 +2,7 @@
 
 > 本文基于 Micrometer + OpenTelemetry（2026-09 时点；Spring Boot 3 起 Sleuth 已并入 Micrometer Tracing）。定位与 [前端监控](/notes/performance/frontend-monitoring) 对称：**Metrics / Tracing / Logging 怎么串**，听懂排障黑话；不覆盖自建可观测平台运维。
 
-> 前置：[Spring Boot](/notes/backend/spring-boot)、[Spring Cloud](/notes/backend/spring-cloud)（地图里的链路追踪）。AI 侧见 [AI 评测与可观测](/notes/frontier/ai-eval-observability)。
+> 前置：[Spring Boot](/notes/java/spring-boot)、[Spring Cloud](/notes/java/spring-cloud)（地图里的链路追踪）。AI 侧见 [AI 评测与可观测](/notes/ai/ai-eval-observability)。
 
 ## 三大支柱
 
@@ -133,4 +133,4 @@ MDC 里的 `traceId`/`spanId` 由 tracing 桥接自动注入（上表 `logging.p
 + [Micrometer Tracing](https://docs.micrometer.io/tracing/reference/)
 + [Spring Boot Actuator](https://docs.spring.io/spring-boot/reference/actuator/index.html)
 + [OpenTelemetry](https://opentelemetry.io/)
-+ 本站：[前端监控](/notes/performance/frontend-monitoring) · [Spring Cloud](/notes/backend/spring-cloud)
++ 本站：[前端监控](/notes/performance/frontend-monitoring) · [Spring Cloud](/notes/java/spring-cloud)

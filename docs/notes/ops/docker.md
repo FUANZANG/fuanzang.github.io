@@ -203,4 +203,4 @@ class UserRepoIT {
 }
 ```
 
-要点：CI 机器要有 Docker；容器镜像首次拉取较慢，可缓存。用法细节与测试分层见 [Java 测试](/notes/backend/java-testing)。
+要点：CI 机器要有 Docker；容器镜像首次拉取较慢，可缓存。用法细节与测试分层见 [Java 测试](/notes/java/java-testing)。

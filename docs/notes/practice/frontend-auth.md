@@ -9,7 +9,7 @@
 > - Axios 拦截器与 **Token 无感刷新实现** → [HTTP 请求与数据层 · Token 无感刷新](/notes/frameworks/http-request#5-token-无感刷新)
 > - `beforeEach` / ProtectedRoute **完整鉴权流程** → [前端路由](/notes/frameworks/frontend-routing)
 >
-> 📅 实践向（SPA + BFF 常见形态）。Java 服务端见 [Spring Security 鉴权](/notes/backend/spring-security)；Node 服务端见 [Node 鉴权](/notes/backend/node-auth)。
+> 📅 实践向（SPA + BFF 常见形态）。Java 服务端见 [Spring Security 鉴权](/notes/java/spring-security)；Node 服务端见 [Node 鉴权](/notes/node/node-auth)。
 
 ---
 
@@ -75,6 +75,8 @@ const me = await fetch('/api/me', { credentials: 'include' }).then((r) => r.json
 ---
 
 ## 5. 第三方登录与 SSO
+
+角色、授权码和为什么浏览器端要加 PKCE，见 [OAuth2 识字](/notes/practice/oauth2)。多个系统共用登录态见 [SSO 与 OIDC](/notes/practice/sso-oidc)。
 
 ### 5.1 OAuth 授权码 + PKCE（前端视角）
 
