@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 94 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 95 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -103,3 +103,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 二叉树的最近公共祖先（Lowest Common Ancestor of a Binary Tree） | Medium | [lowest-common-ancestor-of-a-binary-tree](./lowest-common-ancestor-of-a-binary-tree.md) |
 | 二叉树的右视图（Binary Tree Right Side View） | Medium | [binary-tree-right-side-view](./binary-tree-right-side-view.md) |
 | 分割等和子集（Partition Equal Subset Sum） | Medium | [partition-equal-subset-sum](./partition-equal-subset-sum.md) |
+| 腐烂的橘子（Rotting Oranges） | Medium | [rotting-oranges](./rotting-oranges.md) |
