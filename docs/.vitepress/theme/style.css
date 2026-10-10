@@ -150,6 +150,21 @@ body.cool-home-page .VPNav.scrolled {
   padding-left: 12px;
 }
 
+/* 手机抽屉的 32px 上内边距放进第一个标题里，列表不贴顶，滚动也不会先空走一段 */
+@media (max-width: 959px) {
+  .VPSidebar {
+    padding-top: 0 !important;
+  }
+
+  .VPSidebar .nav > .group:first-of-type > .VPSidebarItem.level-0 > .item {
+    padding-top: 32px;
+  }
+
+  .VPSidebar .nav > .group:first-of-type .VPSidebarItem.level-1:has(> .items) > .item {
+    top: 64px;
+  }
+}
+
 /* 子项相对分组标题缩进，分组标题仍与站名对齐 */
 .VPSidebar .VPSidebarItem.level-0 > .items {
   padding-left: 12px;
