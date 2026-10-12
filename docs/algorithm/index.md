@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 96 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 97 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -105,3 +105,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 分割等和子集（Partition Equal Subset Sum） | Medium | [partition-equal-subset-sum](./partition-equal-subset-sum.md) |
 | 腐烂的橘子（Rotting Oranges） | Medium | [rotting-oranges](./rotting-oranges.md) |
 | 在排序数组中查找元素的第一个和最后一个位置（Find First and Last Position of Element in Sorted Array） | Medium | [find-first-and-last-position-of-element-in-sorted-array](./find-first-and-last-position-of-element-in-sorted-array.md) |
+| 合并两个有序链表（Merge Two Sorted Lists） | Easy | [merge-two-sorted-lists](./merge-two-sorted-lists.md) |
