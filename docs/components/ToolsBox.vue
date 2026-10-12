@@ -210,7 +210,6 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
 }
 .tab:hover {
   color: var(--vp-c-text-1);
