@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { withPwa } from '@vite-pwa/vitepress'
 import { getExploreNavItems } from '../data/siteSections.js'
 import fs from 'fs'
 import path from 'path'
@@ -48,11 +49,39 @@ function getAlgorithmSidebar() {
   return [{ text: '算法题库', items }]
 }
 
-export default defineConfig({
+export default withPwa(defineConfig({
   title: 'FUANZANG',
   description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
   lang: 'zh-CN',
   base: '/',
+
+  pwa: {
+    registerType: 'autoUpdate',
+    includeAssets: ['favicon.svg', 'favicon.png', 'og-default.svg'],
+    workbox: {
+      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024
+    },
+    manifest: {
+      name: 'FUANZANG 知识库',
+      short_name: 'FUANZANG',
+      description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
+      theme_color: '#1a1a2e',
+      background_color: '#ffffff',
+      display: 'standalone',
+      lang: 'zh-CN',
+      icons: [
+        { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+        { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+        {
+          src: 'maskable-icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
+        }
+      ]
+    }
+  },
 
   vite: {
     build: {
@@ -63,6 +92,15 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }],
+    [
+      'meta',
+      { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' }
+    ],
+    [
+      'meta',
+      { name: 'theme-color', content: '#1a1a2e', media: '(prefers-color-scheme: dark)' }
+    ],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'FUANZANG' }],
     [
@@ -320,4 +358,4 @@ export default defineConfig({
     lightModeSwitchTitle: '切换到浅色模式',
     darkModeSwitchTitle: '切换到深色模式'
   }
-})
+}))
