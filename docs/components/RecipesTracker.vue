@@ -584,7 +584,6 @@ const formatTime = s => {
   cursor: pointer;
   white-space: nowrap;
   transition: transform 0.15s, box-shadow 0.15s;
-  -webkit-tap-highlight-color: transparent;
 }
 .random-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(99,102,241,0.5); }
 .random-btn:active { transform: translateY(0); }
@@ -719,7 +718,6 @@ const formatTime = s => {
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.15s;
-  -webkit-tap-highlight-color: transparent;
 }
 .tag-chip:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
 .tag-chip.selected {
@@ -736,7 +734,6 @@ const formatTime = s => {
   color: var(--vp-c-text-3);
   font-size: 0.75rem;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Recipe List ── */

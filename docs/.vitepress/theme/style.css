@@ -98,6 +98,25 @@ body.cool-home-page .VPNav.scrolled {
   }
 }
 
+/* ═══ 移动端：去掉浏览器默认的蓝色点击高亮 ═══ */
+/* Chrome Android / iOS Safari 在按住可点元素时会画一层半透明高亮
+   （Chrome Android 默认是 rgba(51,181,229,.4) 的蓝），
+   全宽的侧边栏 / 导航行被盖住就是一整块蓝块 */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 关掉默认高亮后补一个轻量按压反馈，避免"点了没反应" */
+@media (hover: none) {
+  .VPSidebarItem .link:active,
+  .VPNavScreenMenuLink:active,
+  .VPNavScreenMenuGroupLink:active,
+  .VPLocalNavOutlineDropdown .outline-link:active,
+  .note-card:active {
+    opacity: 0.6;
+  }
+}
+
 /* 滚动条美化 */
 ::-webkit-scrollbar {
   width: 8px;

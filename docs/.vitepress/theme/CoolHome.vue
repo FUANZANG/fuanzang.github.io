@@ -845,8 +845,6 @@ onUnmounted(() => {
   box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  /* 避免点击时系统蓝闪（tap highlight / focus ring） */
-  -webkit-tap-highlight-color: transparent;
 }
 
 :root.dark .code-window {
@@ -885,7 +883,6 @@ onUnmounted(() => {
   text-decoration: none;
   transition: color 0.2s;
   border-radius: 2px;
-  -webkit-tap-highlight-color: transparent;
 }
 .code-file:hover {
   color: #e2e8f0;
@@ -918,7 +915,6 @@ onUnmounted(() => {
   font: inherit;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
 }
 /* 盖住 VitePress button:focus 的系统蓝环，避免整窗闪蓝 */
 .code-body-btn:focus {
