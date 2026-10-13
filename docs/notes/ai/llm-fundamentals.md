@@ -1,6 +1,6 @@
 # LLM 基础概念
 
-> 本文基于 2026-09 时点（主流旗舰模型上下文窗口已进入 1M token 时代）。这是 AI 系列的地基篇：token、上下文窗口、采样参数、幻觉这些词贯穿 [前端对接 AI](/notes/ai/ai-frontend-integration)、[RAG](/notes/ai/rag)、[Agent Harness](/notes/ai/agent-harness) 各篇，此处一次性讲透。
+> 本文基于 2026-10 时点（主流旗舰模型上下文窗口已进入 1M token 时代）。这是 AI 系列的地基篇：token、上下文窗口、采样参数、幻觉这些词贯穿 [前端对接 AI](/notes/ai/ai-frontend-integration)、[RAG](/notes/ai/rag)、[Agent Harness](/notes/ai/agent-harness) 各篇，此处一次性讲透。
 
 ## Token：LLM 的计量单位
 
@@ -90,7 +90,7 @@ system prompt 决定模型的"人设与规则"，写法有章法：
 4. 权限侧：给模型的工具/数据权限按最小化原则——被注入了也偷不走什么（harness 的 G 层）
 ```
 
-**前端责任**：用户输入发往 AI 接口前做基础过滤/长度限制；AI 输出渲染时防 XSS（`v-html` 前转义）——你笔记里已有这节，它和注入防护是一体两面。
+**前端责任**：用户输入发往 AI 接口前做基础过滤/长度限制；AI 输出渲染时防 XSS（`v-html` 前先净化）——前端侧的完整防线见 [AI 应用工程化](/notes/ai/ai-app-engineering)，它和注入防护是一体两面。
 
 ## 幻觉（Hallucination）
 

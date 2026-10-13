@@ -1,140 +1,76 @@
 # 前端对接 AI
 
-> 前端应用中集成 AI 能力的完整指南，涵盖 API 调用、流式响应、交互模式与工程化实践。
+> 本文基于 2026-10 时点（Vercel AI SDK `ai@7` / OpenAI Node SDK `openai@7`）。本篇是 AI 系列的**接入层**：模型 API 怎么调、SDK 怎么选、Key 怎么不泄露。
 
-## AI API 调用模式
+> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（token / 消息结构 / 结构化输出）、[AI 流式输出](/notes/ai/ai-streaming)（SSE 怎么消费）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（聊天界面等 UI 形态）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本 / 错误 / 安全）。
 
-### 主流模型 API 对比
+## 三条接入路线
+
+前端要接 AI，第一个决策不是"用哪家模型"，而是**请求从哪出去**：
+
+```
+① 前端直连模型 API            ❌ Key 暴露在浏览器，只能本地 demo
+② 前端 → 自有后端代理 → 模型   ✅ 生产默认：Key 在服务端，可加鉴权/限流/审计/缓存
+③ 前端 → 平台 BaaS API        ✅ 不想自己搭后端时（见 LLM 应用平台篇）
+```
+
+**API Key 绝不放前端**——前端代码、构建产物、网络面板全都对用户可见。所谓"环境变量注入"只解决构建期问题：Vite 里带 `VITE_` 前缀的变量**照样会被打进 bundle**，任何人 View Source 都能读到。
+
+| 放法 | 安全 |
+|---|---|
+| 前端硬编码 / `.env` + `VITE_` 前缀 | ❌ 进产物，人人可读 |
+| Serverless Function（Vercel / Cloudflare Workers） | ✅ Key 在平台侧，前端只调自家路径 |
+| 自有后端代理（Node / Nginx 反代） | ✅ 生产首选，还能顺手做限流与日志 |
+
+前端类比：这跟你**不会把数据库密码写进 axios 的 baseURL** 是同一件事。模型 Key 就是新的数据库密码。
+
+## 主流模型 API 对比
 
 | 特性 | OpenAI | Claude | 通义千问 | DeepSeek |
-|------|--------|--------|----------|----------|
+|---|---|---|---|---|
 | 接口风格 | REST / SSE | REST / SSE | REST / SSE | REST / SSE |
-| 兼容 OpenAI 格式 | ✅ 原生 | ❌ 自有格式 | ✅ 兼容 | ✅ 兼容 |
+| 兼容 OpenAI 消息格式 | ✅ 原生 | ❌ 自有格式 | ✅ 兼容模式 | ✅ 兼容 |
 | 流式输出 | SSE | SSE | SSE | SSE |
-| 多模态 | 图片/音频 | 图片/文档 | 图片/音频 | 图片 |
-| 函数调用 | ✅ | ✅ | ✅ | ✅ |
+| 多模态 | 图片 / 音频 | 图片 / 文档 | 图片 / 音频 | 图片 |
+| 工具调用 | ✅ | ✅ | ✅ | ✅ |
 
-### 基础调用示例
+**"OpenAI 兼容"是行业事实标准**（消息结构见 [LLM 基础概念](/notes/ai/llm-fundamentals)）。它带来的工程红利：换模型只改 `baseURL` + `model` 两个字段，请求体结构不动——所以业务代码里**别把某家的特有字段写死**。
 
-```typescript
-// 统一封装：兼容 OpenAI 格式的 API 调用
+## 基础调用：统一封装
+
+走自有代理路径（`/api/chat`），前端只认自家路径：
+
+```ts
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
 }
 
-interface ChatOptions {
-  model?: string
-  temperature?: number
-  maxTokens?: number
-  stream?: boolean
-}
-
 async function chatCompletion(
   messages: ChatMessage[],
-  options: ChatOptions = {}
+  options: { model?: string; temperature?: number; maxTokens?: number } = {}
 ) {
-  const { model = 'gpt-4o', temperature = 0.7, maxTokens = 2048 } = options
-
-  const response = await fetch('/api/chat', {
+  const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model,
+      model: options.model ?? 'gpt-5',
       messages,
-      temperature,
-      max_tokens: maxTokens,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 2048,
     }),
   })
 
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`)
-  }
-
-  return response.json()
+  if (!res.ok) throw new Error(`API Error: ${res.status}`)
+  return res.json()
 }
 ```
 
-### API Key 安全策略
+> 注意区分**请求体字段名**（`max_tokens`）和 **SDK 参数名**（AI SDK v5 起叫 `maxOutputTokens`），两者不一致，见下文。
 
-```
-❌ 前端直存 API Key（泄露风险）
-✅ 后端代理转发（推荐）
-✅ Serverless Functions（Vercel / Cloudflare Workers）
-✅ 环境变量注入（仅构建时可用，运行时无暴露）
-```
-
-### 结构化输出（JSON）
-
-让模型输出严格合法的 JSON——表单填充、数据提取、分类打标等场景的刚需。三档实现，优先级从高到低：
+### 后端代理最小实现
 
 ```ts
-// ① JSON Schema 约束（服务端强制解码，100% 合法，首选）
-const response = await fetch('/api/chat', {
-  method: 'POST',
-  body: JSON.stringify({
-    messages: [{ role: 'user', content: '把这段简历提取成结构化数据：...' }],
-    response_format: {
-      type: 'json_schema',
-      json_schema: {
-        name: 'resume',
-        schema: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-            skills: { type: 'array', items: { type: 'string' } },
-            years: { type: 'number' }
-          },
-          required: ['name', 'skills'],
-          additionalProperties: false
-        }
-      }
-    }
-  })
-})
-// 各家参数名略异：OpenAI response_format、Claude tool 强制调用、DeepSeek json_object
-
-// ② JSON mode：只保证是合法 JSON，不保证字段结构（需 prompt 里给示例）
-
-// ③ 纯 prompt 约定 + 前端兜底校验（Zod parse 失败就走重试/降级）
-```
-
-原理：把"生成任意文本"约束成"只在合法 JSON 的语法空间里采样"——类似表单校验下沉到了生成过程。概念详见 [LLM 基础概念](/notes/ai/llm-fundamentals)。
-
-### 多模态：图片输入（Vision）
-
-截图提问、OCR、扫题识别——前端高频场景。图片以 `image_url` 消息传入（base64 或 URL 二选一）：
-
-```ts
-const body = {
-  model: 'gpt-4o',
-  messages: [{
-    role: 'user',
-    content: [
-      { type: 'text', text: '这张报错截图里的问题是什么？' },
-      { type: 'image_url', image_url: {
-        url: `data:image/png;base64,${base64Str}`   // 本地图片：base64；公网图：https URL
-      } }
-    ]
-  }]
-}
-```
-
-工程要点：
-
-+ **成本**：图片按分辨率折算 token 计费（一张高清图 ≈ 数百到上千 token，细节图比文字贵得多）——前端压缩/降采样再上传是省钱第一步
-+ **多图**：一次请求可传多张（数组里多个 `image_url`），上限各家不同（几十到几百张）
-+ **格式**：PNG/JPEG/WebP/GIF 通用；PDF 部分模型支持（按页折算）
-+ **前端链路**：`<input type="file">` → FileReader/`canvas.toDataURL` 压缩 → base64 上传；大图走 URL 更省请求体
-+ **局限**：精确文字识别（密集小字表格）不如专用 OCR，先试再选型
-
-### Batch API：异步批处理半价
-
-不要求实时的任务（离线打标、批量翻译、日志分析）走 Batch 接口：提交任务队列，24 小时内返回结果，**价格约五折**。前端无感知，纯后端成本优化——量大的离线任务必用。
-
-**后端代理模式（Node.js）：**
-
-```typescript
 // server/proxy.ts
 import express from 'express'
 
@@ -144,400 +80,218 @@ app.use(express.json())
 app.post('/api/chat', async (req, res) => {
   const { messages, model } = req.body
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const upstream = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, // Key 只存服务端
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,   // Key 只存服务端
     },
-    body: JSON.stringify({ model, messages }),
+    body: JSON.stringify({ model, input: messages }),
   })
 
-  const data = await response.json()
-  res.json(data)
+  res.status(upstream.status).json(await upstream.json())
 })
 ```
 
-## 流式响应处理
+要流式就在代理里**透传上游响应体**（别 `await json()` 再吐出来），前端消费方式见 [AI 流式输出](/notes/ai/ai-streaming)。
 
-逐 token 上屏的协议、`fetch` + `ReadableStream` 和中止生成，见 [AI 流式输出](/notes/ai/ai-streaming)。本节不重复 SSE 解析。
+## 多模态：图片输入（Vision）
 
-## 前端 AI SDK
+截图提问、OCR、扫题识别——前端高频场景。图片以 `image_url` 消息传入（base64 或公网 URL 二选一）：
 
-### Vercel AI SDK
-
-最成熟的前端 AI 集成方案，内置流式处理、工具调用、多模型支持。
-
-```typescript
-// 安装: npm install ai @ai-sdk/openai
-
-import { generateText, streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
-
-// 简单调用
-const { text } = await generateText({
-  model: openai('gpt-4o'),
-  prompt: '解释什么是闭包',
-})
-
-// 流式调用
-const { textStream } = await streamText({
-  model: openai('gpt-4o'),
-  messages: [
-    { role: 'system', content: '你是一个前端专家' },
-    { role: 'user', content: 'Vue 3 的响应式原理' },
-  ],
-})
-
-for await (const chunk of textStream) {
-  console.log(chunk) // 逐 token 输出
+```ts
+const body = {
+  model: 'gpt-5',
+  messages: [{
+    role: 'user',
+    content: [
+      { type: 'text', text: '这张报错截图里的问题是什么？' },
+      { type: 'image_url', image_url: {
+        url: `data:image/png;base64,${base64Str}`   // 本地图走 base64；公网图直接给 https URL
+      } }
+    ]
+  }]
 }
 ```
 
-**Vue 集成（useChat）：**
+工程要点：
+
++ **成本**：图片按分辨率折算 token（一张高清图 ≈ 数百到上千 token，比同尺寸文字贵得多）——前端先压缩/降采样再上传是省钱第一步
++ **多图**：一次请求可传多张（数组里多个 `image_url`），上限各家不同（几十到几百张）
++ **格式**：PNG / JPEG / WebP / GIF 通用；PDF 部分模型支持（按页折算）
++ **前端链路**：`<input type="file">` → `FileReader` / `canvas.toDataURL` 压缩 → base64 上传；大图走 URL 更省请求体
++ **局限**：密集小字表格的精确识别不如专用 OCR，先试再选型
+
+## Batch API：异步批处理半价
+
+不要求实时的任务（离线打标、批量翻译、日志分析）走 Batch 接口：提交任务队列，24 小时内返回结果，**价格约五折**。前端无感知，纯后端成本优化——量大的离线任务必用。
+
+## 结构化输出
+
+让模型输出严格合法的 JSON（表单填充、数据提取、分类打标的刚需），三档实现按可靠性从高到低：
+
+```ts
+// ① JSON Schema 约束——服务端强制解码，100% 合法，首选
+response_format: {
+  type: 'json_schema',
+  json_schema: {
+    name: 'resume',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        skills: { type: 'array', items: { type: 'string' } },
+        years: { type: 'number' }
+      },
+      required: ['name', 'skills'],
+      additionalProperties: false
+    }
+  }
+}
+// ② JSON mode：只保证是合法 JSON，不保证字段结构（需 prompt 里给示例）
+// ③ 纯 prompt 约定 + 前端兜底校验（Zod parse 失败就重试/降级）
+```
+
+各家参数名不同（OpenAI `response_format`、Claude 走 tool 强制调用、DeepSeek `json_object`）——**原理与选型详见 [LLM 基础概念](/notes/ai/llm-fundamentals)**，本篇只留调用形态。
+
+## 前端 AI SDK
+
+### Vercel AI SDK（`ai@7`）
+
+定位：**把"各家模型差异"抽象掉的 TypeScript 工具箱**——统一 provider 接口 + 流式 + 工具调用 + 现成 UI hooks。分三层：
+
+| 层 | 包 | 干什么 |
+|---|---|---|
+| AI SDK Core | `ai` | `generateText` / `streamText` / `Output.object` / 工具与 agent |
+| AI SDK UI | `@ai-sdk/vue`（或 react / svelte…） | `useChat` 等框架 hook：管消息状态 + 流式渲染 |
+| Provider | `@ai-sdk/openai` 等 | 各家模型的适配器 |
+
+> ⚠️ **AI SDK 5→6→7 连续三版大改，网上大量旧版教程已失效**。读资料先看版本号：
+
+| 变化点 | v4（旧） | v5+（当前） |
+|---|---|---|
+| `useChat` 管输入状态 | `input` / `handleInputChange` / `handleSubmit` 由 hook 提供 | **不再管**，自己 `ref` + `sendMessage({ text })` |
+| 发消息 | `append()` | `sendMessage()` |
+| 消息内容 | `message.content`（字符串） | `message.parts`（有序数组，含 text / tool-call / reasoning） |
+| 最大输出 | `maxTokens` | `maxOutputTokens` |
+| 消息转换 | `convertToCoreMessages` | `convertToModelMessages` |
+| 工具定义 | `parameters` | `inputSchema` |
+| 流协议 | 私有协议 | **SSE** |
+| 服务端返回 | `toDataStreamResponse()` | `createUIMessageStreamResponse({ stream: toUIMessageStream(...) })` |
+
+**Vue 端 `useChat`**——注意 Vue 版返回的是 **ref**，`<script setup>` 里要 `.value`，模板里自动解包：
 
 ```vue
 <script setup lang="ts">
 import { useChat } from '@ai-sdk/vue'
+import { DefaultChatTransport } from 'ai'
+import { ref } from 'vue'
 
-const { messages, input, handleSubmit, isLoading, stop } = useChat({
-  api: '/api/chat',
+const input = ref('')
+const { messages, sendMessage, status, stop, error, regenerate } = useChat({
+  transport: new DefaultChatTransport({ api: '/api/chat' })
 })
+
+function submit(e: Event) {
+  e.preventDefault()
+  if (!input.value.trim()) return
+  sendMessage({ text: input.value })
+  input.value = ''
+}
 </script>
 
 <template>
-  <div>
-    <div v-for="msg in messages" :key="msg.id">
-      <span>{{ msg.role === 'user' ? '我' : 'AI' }}:</span>
-      <p>{{ msg.content }}</p>
-    </div>
-    <form @submit="handleSubmit">
-      <input v-model="input" placeholder="输入消息..." />
-      <button type="submit" :disabled="isLoading">发送</button>
-      <button v-if="isLoading" @click="stop">停止</button>
-    </form>
+  <!-- v5 起没有 .content，必须遍历 parts -->
+  <div v-for="m in messages" :key="m.id">
+    <b>{{ m.role === 'user' ? '我' : 'AI' }}：</b>
+    <template v-for="(part, i) in m.parts" :key="i">
+      <span v-if="part.type === 'text'">{{ part.text }}</span>
+    </template>
   </div>
+
+  <p v-if="error">出错了 <button @click="regenerate()">重试</button></p>
+
+  <form @submit="submit">
+    <input v-model="input" :disabled="status !== 'ready'" />
+    <button type="submit" :disabled="status !== 'ready'">发送</button>
+    <button
+      v-if="status === 'submitted' || status === 'streaming'"
+      type="button"
+      @click="stop()"
+    >停止</button>
+  </form>
 </template>
 ```
 
-### OpenAI Node SDK
+`status` 只有四个取值：`submitted`（已发出、等首包）→ `streaming`（正在收）→ `ready`（可再发）／`error`。界面的禁用、loading、停止按钮全挂在这一个状态机上——这也是 [AI 交互模式](/notes/ai/ai-interaction-patterns)里那张状态机的现成实现。
 
-```typescript
+**服务端路由**（`streamText` + UI 消息流）：
+
+```ts
+import {
+  convertToModelMessages, createUIMessageStreamResponse,
+  streamText, toUIMessageStream, type UIMessage
+} from 'ai'
+
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json()
+
+  const result = streamText({
+    model: 'openai/gpt-5',   // AI Gateway 字符串；也可用 provider 实例 openai('gpt-5')
+    instructions: '你是简洁的技术助手。',
+    messages: await convertToModelMessages(messages),   // UIMessage → 模型消息
+  })
+
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  })
+}
+```
+
+**为什么用 SDK 而不是手写 fetch**：多轮消息的 `parts` 结构、流式分片解析、工具调用的多步循环、错误与重连——这些在 [AI 流式输出](/notes/ai/ai-streaming)里都得自己写，SDK 替你实现了。代价是版本升级频繁（v4→v5→v6→v7 连续大改），**锁定风险**要自己权衡。
+
+### OpenAI Node SDK（`openai@7`）
+
+⚠️ **新项目请用 Responses API**（`/v1/responses`）。Chat Completions 虽仍受支持，但已是"兼容层"：
+
+| | Chat Completions | Responses（推荐） |
+|---|---|---|
+| 端点 | `/v1/chat/completions` | `/v1/responses` |
+| 状态 | 仍支持，无下线日期 | 新项目推荐 |
+| 工具调用 | **GPT-5.4 起仅 `reasoning_effort: 'none'` 时可用；GPT-6 Astra 完全不可用** | 完整支持，含内置工具（web search / file search / code interpreter / 远程 MCP） |
+| 多轮状态 | 每次全量重发（无状态） | `store: true` 或 `previous_response_id` 续接 |
+| 输出结构 | `choices[]` 消息数组 | 带类型的 `output` 数组 |
+
+```ts
 import OpenAI from 'openai'
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: 'https://api.openai.com/v1', // 可替换为兼容端点
-})
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-// 流式调用
-const stream = await client.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello' }],
+// 流式（Responses API）
+const stream = await client.responses.create({
+  model: 'gpt-5',
+  input: [{ role: 'user', content: '你好' }],
   stream: true,
 })
 
-for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content || '')
+for await (const event of stream) {
+  if (event.type === 'response.output_text.delta') process.stdout.write(event.delta)
 }
 ```
 
-## 常见交互模式
+> Assistants API 已宣布弃用（目标下线 2026 年中），迁移目标是 Responses API——读到 Assistants 教程时注意这点。
 
-### 聊天界面
+## 学习路径建议
 
-核心设计要点：
-- **消息气泡**：区分用户/AI 角色，支持 Markdown 渲染
-- **加载状态**：骨架屏 + 流式光标动画
-- **历史记录**：本地存储 + 服务端持久化
-- **多轮对话**：维护 messages 数组，注意上下文窗口限制
+1. 用 20 行 fetch 直连一次模型 API（**只在本地**，Key 写 `.env` 且别提交）
+2. 加上自有后端代理，把 Key 挪到服务端，前端改调 `/api/chat`——体会"Key 出前端"这一步
+3. 换一次模型（OpenAI → DeepSeek），确认只改了 `baseURL` + `model`——验证"OpenAI 兼容"的价值
+4. 装 `ai` + `@ai-sdk/vue`，用 `useChat` 重写步骤 2 的聊天，对比手写流式解析的代码量
+5. 接着读 [AI 流式输出](/notes/ai/ai-streaming)（协议层）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（UI 层）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本/错误/安全）
 
-```typescript
-// 消息数据结构
-interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  timestamp: number
-  status: 'pending' | 'streaming' | 'done' | 'error'
-}
-```
+## 参考
 
-### 智能表单补全
-
-```typescript
-// 表单字段智能填充
-async function smartFill(form: Record<string, string>) {
-  const prompt = `根据以下表单数据，补全缺失的字段：
-    ${JSON.stringify(form)}
-    返回 JSON 格式。`
-
-  const { text } = await generateText({
-    model: openai('gpt-4o-mini'), // 简单任务用小模型，省钱
-    prompt,
-  })
-
-  return JSON.parse(text)
-}
-```
-
-### AI 辅助编辑器
-
-```typescript
-// 选中文本 → AI 改写/翻译/解释
-async function aiAssist(selectedText: string, action: string) {
-  const prompts: Record<string, string> = {
-    rewrite: `改写以下文本，使其更专业：\n${selectedText}`,
-    translate: `将以下文本翻译为英文：\n${selectedText}`,
-    explain: `用通俗的语言解释以下概念：\n${selectedText}`,
-  }
-
-  const { textStream } = await streamText({
-    model: openai('gpt-4o'),
-    prompt: prompts[action],
-  })
-
-  return textStream
-}
-```
-
-## 性能与成本优化
-
-### Token 计数与预算控制
-
-```typescript
-import { encode } from 'gpt-tokenizer'
-
-function countTokens(text: string): number {
-  return encode(text).length
-}
-
-function truncateMessages(
-  messages: ChatMessage[],
-  maxTokens: number
-): ChatMessage[] {
-  let totalTokens = 0
-  const result: ChatMessage[] = []
-
-  // 从最新消息开始，保留 system prompt
-  const systemMsg = messages[0]?.role === 'system' ? messages[0] : null
-  if (systemMsg) {
-    totalTokens += countTokens(systemMsg.content)
-  }
-
-  for (let i = messages.length - 1; i >= (systemMsg ? 1 : 0); i--) {
-    const tokens = countTokens(messages[i].content)
-    if (totalTokens + tokens > maxTokens) break
-    result.unshift(messages[i])
-    totalTokens += tokens
-  }
-
-  if (systemMsg) result.unshift(systemMsg)
-  return result
-}
-```
-
-### 请求防抖与限流
-
-```typescript
-// 输入防抖：用户停止输入后才发送请求
-function useDebouncedChat(delay = 500) {
-  let timer: ReturnType<typeof setTimeout>
-
-  function send(messages: ChatMessage[]) {
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      chatCompletion(messages)
-    }, delay)
-  }
-
-  return { send }
-}
-
-// 并发限流
-function createRateLimiter(maxConcurrent = 3) {
-  let active = 0
-  const queue: (() => void)[] = []
-
-  return async function limit<T>(fn: () => Promise<T>): Promise<T> {
-    if (active >= maxConcurrent) {
-      await new Promise<void>(resolve => queue.push(resolve))
-    }
-    active++
-    try {
-      return await fn()
-    } finally {
-      active--
-      queue.shift()?.()
-    }
-  }
-}
-```
-
-### 响应缓存
-
-```typescript
-// 简单 LRU 缓存
-class ResponseCache {
-  private cache = new Map<string, string>()
-  private maxSize: number
-
-  constructor(maxSize = 50) {
-    this.maxSize = maxSize
-  }
-
-  get(key: string): string | undefined {
-    const value = this.cache.get(key)
-    if (value) {
-      // LRU：访问时移到末尾
-      this.cache.delete(key)
-      this.cache.set(key, value)
-    }
-    return value
-  }
-
-  set(key: string, value: string) {
-    if (this.cache.size >= this.maxSize) {
-      // 删除最久未使用的
-      const oldest = this.cache.keys().next().value!
-      this.cache.delete(oldest)
-    }
-    this.cache.set(key, value)
-  }
-
-  // 用消息内容生成缓存 key
-  static makeKey(messages: ChatMessage[]): string {
-    return JSON.stringify(messages.map(m => `${m.role}:${m.content}`))
-  }
-}
-```
-
-## 错误处理与重试
-
-### 重试策略
-
-```typescript
-interface RetryOptions {
-  maxAttempts?: number
-  baseDelay?: number
-  retryableStatuses?: number[]
-}
-
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  retryOpts: RetryOptions = {}
-): Promise<Response> {
-  const {
-    maxAttempts = 3,
-    baseDelay = 1000,
-    retryableStatuses = [429, 500, 502, 503],
-  } = retryOpts
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, options)
-
-      if (response.ok) return response
-
-      if (retryableStatuses.includes(response.status)) {
-        // 429 用服务端返回的 Retry-After
-        const retryAfter = response.headers.get('Retry-After')
-        const delay = retryAfter
-          ? parseInt(retryAfter) * 1000
-          : baseDelay * Math.pow(2, attempt - 1) // 指数退避
-        await new Promise(r => setTimeout(r, delay))
-        continue
-      }
-
-      throw new Error(`HTTP ${response.status}`)
-    } catch (error) {
-      if (attempt === maxAttempts) throw error
-      await new Promise(r => setTimeout(r, baseDelay * attempt))
-    }
-  }
-
-  throw new Error('Max retry attempts reached')
-}
-```
-
-### 降级方案
-
-```typescript
-// 多模型 fallback
-const MODEL_CHAIN = [
-  { model: 'gpt-4o', name: '主力模型' },
-  { model: 'gpt-4o-mini', name: '备用模型' },
-  { model: 'deepseek-chat', name: '第三方兜底' },
-]
-
-async function chatWithFallback(messages: ChatMessage[]) {
-  for (const { model, name } of MODEL_CHAIN) {
-    try {
-      const result = await chatCompletion(messages, { model })
-      return result
-    } catch (error) {
-      console.warn(`${name} (${model}) 失败，尝试下一个...`, error)
-    }
-  }
-  throw new Error('所有模型均不可用')
-}
-```
-
-## 安全考虑
-
-### 敏感信息过滤
-
-```typescript
-// 发送前过滤用户输入中的敏感信息
-function sanitizeInput(input: string): string {
-  const patterns = [
-    /(\d{17}[\dXx])/, // 身份证号
-    /(\d{16,19})/,     // 银行卡号
-    /(1[3-9]\d{9})/,   // 手机号（可选）
-  ]
-
-  return patterns.reduce(
-    (text, pattern) => text.replace(pattern, '[已过滤]'),
-    input
-  )
-}
-```
-
-### AI 生成内容的 XSS 防护
-
-```typescript
-import DOMPurify from 'dompurify'
-import { marked } from 'marked'
-
-function renderAIContent(markdown: string): string {
-  // 1. Markdown 转 HTML
-  const html = marked(markdown)
-  // 2. 过滤 XSS（AI 可能生成恶意 HTML/JS）
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'code', 'pre', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'br'],
-    ALLOWED_ATTR: ['href', 'class'],
-  })
-}
-```
-
-### 输出内容审核
-
-```typescript
-// 客户端侧内容审核（敏感词过滤）
-function contentFilter(text: string): { safe: boolean; reason?: string } {
-  // 可根据业务需求自定义敏感词库
-  const blockedPatterns = [
-    /注入系统提示|ignore previous instructions/i,
-    // ... 业务相关规则
-  ]
-
-  for (const pattern of blockedPatterns) {
-    if (pattern.test(text)) {
-      return { safe: false, reason: '内容包含不当请求' }
-    }
-  }
-
-  return { safe: true }
-}
-```
++ [AI SDK 官方文档](https://ai-sdk.dev/docs/introduction)（含 [useChat API](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) 与 [4→5 迁移指南](https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0)）
++ [OpenAI · Responses API 迁移指南](https://developers.openai.com/api/docs/guides/migrate-to-responses)
++ [OpenAI · Function Calling](https://platform.openai.com/docs/guides/function-calling)
++ 本站：[LLM 基础概念](/notes/ai/llm-fundamentals) · [AI 流式输出](/notes/ai/ai-streaming) · [AI 应用工程化](/notes/ai/ai-app-engineering)
