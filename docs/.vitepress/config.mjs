@@ -57,7 +57,7 @@ export default withPwa(defineConfig({
 
   pwa: {
     registerType: 'autoUpdate',
-    includeAssets: ['favicon.svg', 'favicon.png', 'og-default.svg'],
+    includeAssets: ['favicon.svg', 'favicon-32.png', 'og-default.svg'],
     workbox: {
       maximumFileSizeToCacheInBytes: 4 * 1024 * 1024
     },
@@ -91,7 +91,7 @@ export default withPwa(defineConfig({
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
     ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }],
     [
       'meta',
