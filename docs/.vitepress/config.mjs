@@ -308,10 +308,13 @@ export default withPwa(defineConfig({
             { text: '本地大模型', link: '/notes/ai/local-llm' },
             { text: '前端对接 AI', link: '/notes/ai/ai-frontend-integration' },
             { text: 'AI 流式输出', link: '/notes/ai/ai-streaming' },
+            { text: 'AI 交互模式', link: '/notes/ai/ai-interaction-patterns' },
+            { text: 'AI 应用工程化', link: '/notes/ai/ai-app-engineering' },
             { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
             { text: 'Agent Harness', link: '/notes/ai/agent-harness' },
             { text: 'MCP 与工具调用', link: '/notes/ai/mcp-tools' },
             { text: 'Agent Skill', link: '/notes/ai/agent-skills' },
+            { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
             { text: 'Web AI', link: '/notes/ai/web-ai' },
             { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
