@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点（LM Studio 0.4.x / Ollama 0.21+）。前提环境：Apple Silicon（M 系列）+ 24GB 统一内存的 Mac。本地跑模型不是"穷人版云端"——它是隐私、离线、零边际成本、无限制实验的独立价值。
 
-> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（量化要懂参数与显存）、[RAG](/notes/ai/rag)（本地 embedding 落地）、[前端对接 AI](/notes/ai/ai-frontend-integration)（OpenAI 兼容封装）。
+> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（量化要懂参数与显存）、[推理模型](/notes/ai/reasoning-models)（r1 蒸馏版为什么"顿一下才答"）、[RAG](/notes/ai/rag)（本地 embedding 落地）、[前端对接 AI](/notes/ai/ai-frontend-integration)（OpenAI 兼容封装）、[模型微调与定制](/notes/ai/fine-tuning)（在本地训 LoRA）。
 
 ## 两大工具：都在用，各干什么
 
@@ -36,6 +36,8 @@ Apple Silicon 的统一内存 = 显存，核心公式：
 | 70B | 40+ GB | ❌ 跑不动 | 云端或量化到极限也不值 |
 
 经验：**24GB 机器的日用甜点是 8B~27B 的 Q4_K_M**——正好覆盖 deepseek-r1-8b、gemma-3-12b、gpt-oss-20b、qwen3.6-27b 这一档。
+
+**为什么 gpt-oss-20b 跑起来比同尺寸稠密模型快：MoE。** 它是 **MoE（Mixture of Experts，专家混合）**——每层有多组"专家"，每个 token 只路由到其中几个（gpt-oss-20b 是 32 个专家、Top-4 路由）。所以**总参数**（20.9B，决定内存占用）和**激活参数**（约 3.6B，决定速度）是两回事：每次真正参与计算的只有约 17% 的参数。对照你装的 `mistral-small-3.2`——它是**稠密**模型，24B 全部激活，体积和速度都按 24B 算。**看到"参数量"先问一句：稠密还是 MoE。**
 
 ## 量化（Quantization）：Q4、Q8 是什么
 
@@ -126,10 +128,11 @@ LM Studio / Ollama（引擎：量化加载、推理、暴露 :1234 / :11434）
 
 开源权重这两年追得很凶（GLM-5.2 已登顶开源榜），本地能跑的值得认的：
 
-+ **gpt-oss 系列**（OpenAI 开源）：20B 档工具调用能力强，agent 场景本地首选之一
++ **gpt-oss 系列**（OpenAI 开源）：**MoE**（20B 档总参 / 约 3.6B 激活），工具调用能力强，agent 场景本地首选之一
 + **Qwen 系列**（阿里）：中文最强开源系，qwen3.x 各尺寸覆盖全
-+ **DeepSeek 系列**：r1 蒸馏版（如 r1-0528-qwen3-8b）把推理能力塞进 8B
++ **DeepSeek 系列**：r1 蒸馏版（如 r1-0528-qwen3-8b）把推理能力塞进 8B——**蒸馏** = 拿强模型的输出当训练数据去教小模型，详见 [模型微调与定制](/notes/ai/fine-tuning)
 + **Gemma**（Google）：轻量多模态
++ **Mistral Small**（Mistral AI）：24B **稠密** + 视觉 + 128K 上下文，**Apache 2.0 全开放**——可自由微调/蒸馏/商用，同尺寸里授权最干净的一个
 + **GLM 系列**（智谱）：多模态 flash 版本轻量好用
 + embedding：nomic-embed / bge 系列本地 RAG 标配
 
