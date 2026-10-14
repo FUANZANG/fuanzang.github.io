@@ -306,6 +306,7 @@ export default withPwa(defineConfig({
           items: [
             { text: 'LLM 基础概念', link: '/notes/ai/llm-fundamentals' },
             { text: '本地大模型', link: '/notes/ai/local-llm' },
+            { text: '推理模型（Reasoning）', link: '/notes/ai/reasoning-models' },
             { text: '前端对接 AI', link: '/notes/ai/ai-frontend-integration' },
             { text: 'AI 流式输出', link: '/notes/ai/ai-streaming' },
             { text: 'AI 交互模式', link: '/notes/ai/ai-interaction-patterns' },
@@ -315,6 +316,7 @@ export default withPwa(defineConfig({
             { text: 'MCP 与工具调用', link: '/notes/ai/mcp-tools' },
             { text: 'Agent Skill', link: '/notes/ai/agent-skills' },
             { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
+            { text: '模型微调与定制', link: '/notes/ai/fine-tuning' },
             { text: 'Web AI', link: '/notes/ai/web-ai' },
             { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
