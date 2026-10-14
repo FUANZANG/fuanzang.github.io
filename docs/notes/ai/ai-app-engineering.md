@@ -155,7 +155,7 @@ function renderAIContent(markdown: string): string {
 
 ### 3. Prompt 注入
 
-用户输入里夹带指令劫持模型行为（"忽略以上所有指令…"）。防护层次与它和 SQL 注入的同源性见 [LLM 基础概念](/notes/ai/llm-fundamentals) 的 Prompt 注入一节。
+用户输入里夹带指令劫持模型行为（"忽略以上所有指令…"）。防护层次与它和 SQL 注入的同源性见 [LLM 基础概念](/notes/ai/llm-fundamentals#prompt-注入-ai-应用的头号安全威胁)。
 
 **前端侧的职责**：用户输入发往 AI 接口前做基础过滤与长度限制；**敏感操作（删数据/转账/发邮件）必须走代码层审批，绝不信任模型的"判断"**——模型说"用户已确认"不算确认。
 
