@@ -28,6 +28,41 @@ const lineOpts = reactive({
 })
 const preview = ref('')
 
+// 下拉选项统一抽成数据数组，用 v-for 渲染成独立 <option> 节点。
+// 若直接写静态 <option>，Vue 生产构建会把同组 option 静态提升为 innerHTML 字符串 vnode，
+// 而 <select> 运行时不会把克隆出来的 option 挂进下拉框，导致下拉框「空白、无选项」。
+const caseOptions = [
+  { value: 'camel', label: 'camelCase' },
+  { value: 'pascal', label: 'PascalCase' },
+  { value: 'snake', label: 'snake_case' },
+  { value: 'kebab', label: 'kebab-case' },
+  { value: 'constant', label: 'CONSTANT_CASE' }
+]
+const hashOptions = [
+  { value: 'SHA-1', label: 'SHA-1' },
+  { value: 'SHA-256', label: 'SHA-256' },
+  { value: 'SHA-384', label: 'SHA-384' },
+  { value: 'SHA-512', label: 'SHA-512' }
+]
+const baseOptions = [
+  { value: 2, label: '2 进制' },
+  { value: 8, label: '8 进制' },
+  { value: 10, label: '10 进制' },
+  { value: 16, label: '16 进制' }
+]
+const urlparseOptions = [
+  { value: 'parse', label: '解析完整 URL' },
+  { value: 'q2j', label: 'Query → JSON' },
+  { value: 'j2q', label: 'JSON → Query' }
+]
+const newlineOptions = [
+  { value: 'lf', label: 'LF（\\n，Unix / Linux）' },
+  { value: 'crlf', label: 'CRLF（\\r\\n，Windows）' },
+  { value: 'cr', label: 'CR（\\r，老 Mac）' },
+  { value: 'unescape', label: '去转义（\\n → 换行，便于阅读）' },
+  { value: 'escape', label: '转义（换行 → \\n，便于粘贴进代码）' }
+]
+
 const meta = computed(() => simpleMeta[props.id] || {})
 const hasMode = computed(() => !!meta.value.mode)
 const modeLabels = computed(() => meta.value.modeLabels || ['编码', '解码'])
@@ -150,35 +185,30 @@ watch(
         v-model="caseStyle"
         class="style-select"
       >
-        <option value="camel">camelCase</option>
-        <option value="pascal">PascalCase</option>
-        <option value="snake">snake_case</option>
-        <option value="kebab">kebab-case</option>
-        <option value="constant">CONSTANT_CASE</option>
+        <option v-for="o in caseOptions" :key="o.value" :value="o.value">{{
+          o.label
+        }}</option>
       </select>
       <select
         v-else-if="meta.control === 'hash'"
         v-model="hashAlgo"
         class="style-select"
       >
-        <option value="SHA-1">SHA-1</option>
-        <option value="SHA-256">SHA-256</option>
-        <option value="SHA-384">SHA-384</option>
-        <option value="SHA-512">SHA-512</option>
+        <option v-for="o in hashOptions" :key="o.value" :value="o.value">{{
+          o.label
+        }}</option>
       </select>
       <div v-else-if="meta.control === 'base'" class="base-selects">
         <select v-model.number="fromBase" class="style-select">
-          <option :value="2">2 进制</option>
-          <option :value="8">8 进制</option>
-          <option :value="10">10 进制</option>
-          <option :value="16">16 进制</option>
+          <option v-for="o in baseOptions" :key="o.value" :value="o.value">{{
+            o.label
+          }}</option>
         </select>
         <span class="arrow">→</span>
         <select v-model.number="toBase" class="style-select">
-          <option :value="2">2 进制</option>
-          <option :value="8">8 进制</option>
-          <option :value="10">10 进制</option>
-          <option :value="16">16 进制</option>
+          <option v-for="o in baseOptions" :key="o.value" :value="o.value">{{
+            o.label
+          }}</option>
         </select>
       </div>
       <select
@@ -186,20 +216,18 @@ watch(
         v-model="urlMode"
         class="style-select"
       >
-        <option value="parse">解析完整 URL</option>
-        <option value="q2j">Query → JSON</option>
-        <option value="j2q">JSON → Query</option>
+        <option v-for="o in urlparseOptions" :key="o.value" :value="o.value">{{
+          o.label
+        }}</option>
       </select>
       <select
         v-else-if="meta.control === 'newline'"
         v-model="newlineTarget"
         class="style-select"
       >
-        <option value="lf">LF（\n，Unix / Linux）</option>
-        <option value="crlf">CRLF（\r\n，Windows）</option>
-        <option value="cr">CR（\r，老 Mac）</option>
-        <option value="unescape">去转义（\n → 换行，便于阅读）</option>
-        <option value="escape">转义（换行 → \n，便于粘贴进代码）</option>
+        <option v-for="o in newlineOptions" :key="o.value" :value="o.value">{{
+          o.label
+        }}</option>
       </select>
       <div v-else-if="meta.control === 'lines'" class="line-opts">
         <label><input type="checkbox" v-model="lineOpts.dedupe" /> 去重</label>
