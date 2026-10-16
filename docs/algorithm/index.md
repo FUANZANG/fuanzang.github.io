@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 100 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 101 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -109,3 +109,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 验证二叉搜索树（Validate Binary Search Tree） | Medium | [validate-binary-search-tree](./validate-binary-search-tree.md) |
 | 字符串解码（Decode String） | Medium | [decode-string](./decode-string.md) |
 | 排序链表（Sort List） | Medium | [sort-list](./sort-list.md) |
+| 最长公共子序列（Longest Common Subsequence） | Medium | [longest-common-subsequence](./longest-common-subsequence.md) |
