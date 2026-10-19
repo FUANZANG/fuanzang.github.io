@@ -62,6 +62,14 @@ const subdirs = [
   { key: 'frontier', label: '前沿技术' }
 ]
 
+// 硬件杂谈子目录
+const hwSubdirs = [
+  { key: 'chips', label: '芯片' },
+  { key: 'wired', label: '有线接口' },
+  { key: 'wireless', label: '无线标准' },
+  { key: 'power', label: '电源与充电' }
+]
+
 function assertNoteDirs(notesDir, expected) {
   const actual = fs.readdirSync(notesDir).filter(name =>
     fs.statSync(path.join(notesDir, name)).isDirectory()
@@ -77,18 +85,38 @@ function assertNoteDirs(notesDir, expected) {
   process.exit(1)
 }
 
+function assertHwDirs(hwDir, expected) {
+  const actual = fs.readdirSync(hwDir).filter(name =>
+    fs.statSync(path.join(hwDir, name)).isDirectory()
+  )
+  const want = new Set(expected)
+  const have = new Set(actual)
+  const missing = expected.filter(key => !have.has(key))
+  const extra = actual.filter(key => !want.has(key))
+  if (missing.length === 0 && extra.length === 0) return
+  console.error('docs/hardware 的子目录和脚本名单不一致，已停止，避免写错 README')
+  if (missing.length) console.error('  名单里有、磁盘上没有: ' + missing.join(', '))
+  if (extra.length) console.error('  磁盘上有、名单里没有: ' + extra.join(', '))
+  process.exit(1)
+}
+
 // ── 统计 ──
 const notesDir = path.join(ROOT, 'docs/notes')
 assertNoteDirs(notesDir, subdirs.map(item => item.key))
 
+const hwDir = path.join(ROOT, 'docs/hardware')
+assertHwDirs(hwDir, hwSubdirs.map(item => item.key))
+
 const stats = {
   totalNotes: 0,
+  totalHw: 0,
   recipes: countRecipes(),
   tools: countTools(),
   navLinks: countNavLinks(),
   navCategories: countNavCategories(),
   algorithm: countAlgorithm(),
-  sub: {}
+  sub: {},
+  hwSub: {}
 }
 
 for (const { key } of subdirs) {
@@ -96,13 +124,25 @@ for (const { key } of subdirs) {
   stats.totalNotes += stats.sub[key]
 }
 
+for (const { key } of hwSubdirs) {
+  stats.hwSub[key] = countMd(path.join(hwDir, key))
+  stats.totalHw += stats.hwSub[key]
+}
+
 // ── 更新 README ──
 let readme = fs.readFileSync(README, 'utf8')
 
 // 更新子目录行：替换 "标签（N 篇）" 中的数字
 for (const { key, label } of subdirs) {
-  const regex = new RegExp(label + '\\uFF08' + '\\d+' + ' \\u7BC7\\uFF09', 'g')
-  const replacement = label + '\uFF08' + stats.sub[key] + ' \u7BC7\uFF09'
+  const regex = new RegExp(label + '（' + '\\d+' + ' 篇）', 'g')
+  const replacement = label + '（' + stats.sub[key] + ' 篇）'
+  readme = readme.replace(regex, replacement)
+}
+
+// 更新硬件杂谈子目录行
+for (const { key, label } of hwSubdirs) {
+  const regex = new RegExp(label + '（\\d+ 篇）', 'g')
+  const replacement = label + '（' + stats.hwSub[key] + ' 篇）'
   readme = readme.replace(regex, replacement)
 }
 
@@ -134,3 +174,4 @@ console.log(`  Notes: ${stats.totalNotes} (${subdirs.map(s => `${s.label} ${stat
 console.log(`  Tools: ${stats.tools}`)
 console.log(`  Recipes: ${stats.recipes}`)
 console.log(`  Nav: ${stats.navCategories} categories, ${stats.navLinks} links`)
+console.log(`  Hardware: ${stats.totalHw} (${hwSubdirs.map(s => `${s.label} ${stats.hwSub[s.key]}`).join(', ')})`)
