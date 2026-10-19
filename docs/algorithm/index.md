@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 102 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 103 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -111,3 +111,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 排序链表（Sort List） | Medium | [sort-list](./sort-list.md) |
 | 最长公共子序列（Longest Common Subsequence） | Medium | [longest-common-subsequence](./longest-common-subsequence.md) |
 | 买卖股票的最佳时机含冷冻期（Best Time to Buy and Sell Stock with Cooldown） | Medium | [best-time-to-buy-and-sell-stock-with-cooldown](./best-time-to-buy-and-sell-stock-with-cooldown.md) |
+| 柱状图中最大的矩形（Largest Rectangle in Histogram） | Hard | [largest-rectangle-in-histogram](./largest-rectangle-in-histogram.md) |
