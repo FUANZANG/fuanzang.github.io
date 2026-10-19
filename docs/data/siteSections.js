@@ -58,6 +58,17 @@ export const siteSections = [
     homeVariant: 'card'
   },
   {
+    id: 'hardware',
+    title: '硬件杂谈',
+    navText: '杂谈',
+    description: '芯片、接口、无线、充电——零散但实用的硬件知识',
+    link: '/hardware/',
+    icon: 'cpu',
+    showOnHome: true,
+    showInExplore: true,
+    homeVariant: 'card'
+  },
+  {
     id: 'about',
     title: '关于我',
     navText: '关于',

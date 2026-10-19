@@ -141,6 +141,39 @@ export default withPwa(defineConfig({
           items: [{ text: 'Hello World', link: '/blog/hello-world' }]
         }
       ],
+      '/hardware/': [
+        {
+          text: '芯片',
+          items: [
+            { text: 'CPU 架构对比', link: '/hardware/chips/cpu-architectures' },
+            { text: '制程工艺与摩尔定律', link: '/hardware/chips/chip-process' },
+            { text: '各厂商芯片历代对比', link: '/hardware/chips/chip-generations' },
+            { text: 'DDR 内存标准', link: '/hardware/chips/ddr-standards' }
+          ]
+        },
+        {
+          text: '有线接口',
+          items: [
+            { text: 'USB 标准演进', link: '/hardware/wired/usb-standards' },
+            { text: 'USB-C 与 Thunderbolt', link: '/hardware/wired/usb-c-thunderbolt' },
+            { text: '显示接口', link: '/hardware/wired/display-interfaces' },
+            { text: '存储接口', link: '/hardware/wired/storage-interfaces' }
+          ]
+        },
+        {
+          text: '无线标准',
+          items: [
+            { text: 'Wi-Fi / Bluetooth', link: '/hardware/wireless/wireless-standards' }
+          ]
+        },
+        {
+          text: '电源与充电',
+          items: [
+            { text: 'USB PD 快充协议', link: '/hardware/power/usb-pd' },
+            { text: '其他快充协议', link: '/hardware/power/charging-protocols' }
+          ]
+        }
+      ],
       '/notes/': [
         {
           text: '前端基础',
