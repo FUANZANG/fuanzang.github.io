@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 106 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 107 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -115,3 +115,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 单词接龙（Word Ladder） | Hard | [word-ladder](./word-ladder.md) |
 | 打家劫舍 II（House Robber II） | Medium | [house-robber-ii](./house-robber-ii.md) |
 | 反转字符串中的单词（Reverse Words in a String） | Medium | [reverse-words-in-a-string](./reverse-words-in-a-string.md) |
+| 二叉树的锯齿形层序遍历（Binary Tree Zigzag Level Order Traversal） | Medium | [binary-tree-zigzag-level-order-traversal](./binary-tree-zigzag-level-order-traversal.md) |
