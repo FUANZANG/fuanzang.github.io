@@ -103,16 +103,6 @@ USB-C 的 24 个引脚可以被重新定义，实现"一线通"：
 
 ---
 
-## 6. 前端开发者为什么要关心
-
-### 6.1 设备调试
-
-```javascript
-// iOS 真机调试需要 Lightning/USB-C 连接
-// Android 调试需要 USB 连接
-// WebUSB API 可以直接与 USB 设备通信（如 Arduino、传感器）
-```
-
 ---
 
 ## 参考

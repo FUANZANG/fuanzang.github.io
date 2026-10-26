@@ -76,52 +76,9 @@ UFS（Universal Flash Storage）是手机/平板的存储标准：
 
 ---
 
-## 6. 前端开发者为什么要关心
-
-### 6.1 文件上传性能
-
-```javascript
-// 大文件上传时，用户设备的存储读取速度影响整体体验
-// UFS 4.1 手机 vs UFS 3.1 手机，读取速度差 3 倍
-// 在上传大文件时，低速度设备会成为瓶颈
-
-// 可以通过性能 API 检测
-const nav = navigator.connection;
-if (nav) {
-  // 但注意：API 无法直接获取存储速度
-  // 只能通过实际上传测试来估算
-}
-```
-
-### 6.2 Web Storage 与 IndexedDB
-
-```javascript
-// 浏览器存储的底层是文件系统
-// 设备存储速度影响 IndexedDB 写入性能
-// UFS 5.0 的 10.8 GB/s 意味着本地数据库操作更快
-
-// 大量数据写入时，存储速度成为瓶颈
-const db = await indexedDB.open('myDB', 1);
-// 在低性能存储设备上，大事务提交可能很慢
-```
-
-### 6.3 Service Worker 缓存
-
-```javascript
-// Service Worker 缓存大量资源时
-// 存储速度影响缓存写入和读取
-// 高性能设备可以缓存更多资源，提升离线体验
-
-// 缓存策略应考虑设备性能
-if ('storage' in navigator && navigator.storage.estimate) {
-  const estimate = await navigator.storage.estimate();
-  // 根据可用空间调整缓存策略
-}
-```
-
 ---
 
-## 7. 参考
+## 6. 参考
 
 - [JEDEC UFS 标准](https://www.jedec.org/)
 - [NVM Express 官方](https://nvmexpress.org/)

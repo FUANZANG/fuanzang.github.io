@@ -50,47 +50,9 @@
 
 ---
 
-## 5. 前端开发者为什么要关心
-
-### 5.1 WebGPU 与显示输出
-
-```javascript
-// WebGPU 可以检测显示设备的色彩空间和 HDR 能力
-const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter.requestDevice();
-
-// 根据显示器能力选择色彩格式
-// HDR 显示器 → 'rgba16float' 或 'bgra8unorm-srgb'
-// SDR 显示器 → 'bgra8unorm'
-```
-
-### 5.2 多显示器开发环境
-
-```javascript
-// 前端开发者常见多显示器设置
-// 需要 DisplayPort 菊花链或 Thunderbolt 扩展坞
-// HDMI 在多显示器场景下需要分配器，不如 DP 方便
-
-// 检测显示器信息（通过 Screen API）
-const screens = window.screen;
-// 注意：浏览器 API 无法直接获取 HDMI/DP 版本信息
-// 但可以通过分辨率和刷新率推断
-```
-
-### 5.3 响应式设计的刷新率适配
-
-```javascript
-// 高刷新率显示器（120Hz+）下，动画更流畅
-// 可以通过媒体查询适配
-const mediaQuery = window.matchMedia('(update-frequency: 120hz)');
-if (mediaQuery.matches) {
-  // 高刷屏优化：减少不必要的重绘
-}
-```
-
 ---
 
-## 6. 参考
+## 5. 参考
 
 - [HDMI 官方规范](https://www.hdmi.org/)
 - [VESA DisplayPort 规范](https://www.vesa.org/technical-resources/)

@@ -14,6 +14,7 @@
 | QC 5 | 高通 | 100W+ | 半开放 | 需骁龙芯片 |
 | SuperVOOC | OPPO/一加/realme | 240W | 私有 | 需原装配件 |
 | SCP/FCP | 华为/荣耀 | 100W | 私有 | 需原装配件 |
+| FlashCharge | vivo | 120W | 私有 | 需原装配件 |
 | PPS | 多种 | 100W | 半开放 | 需兼容充电器 |
 
 ---
@@ -59,7 +60,21 @@
 
 ---
 
-## 5. 私有协议 vs 开放标准
+## 5. vivo FlashCharge
+
+| 版本 | 最大功率 | 电压/电流 | 特点 |
+|------|----------|-----------|------|
+| FlashCharge 1.0 | 18W | 9V/2A | 早期高压方案 |
+| FlashCharge 2.0 | 33W | 11V/3A | 中端机型 |
+| FlashCharge 3.0 | 44W | 11V/4A | 中端机型 |
+| FlashCharge 4.0 | 66W | 11V/6A | 双电芯方案 |
+| FlashCharge 5.0 | 120W | 20V/6A | 双电芯 + 高压 |
+
+**特点**：高压大电流方案，需原装充电器和数据线，第三方充电器通常回退到 5V/2A（10W）。
+
+---
+
+## 6. 私有协议 vs 开放标准
 
 | 维度 | 私有协议（VOOC/SCP） | 开放标准（USB PD） |
 |------|---------------------|-------------------|
@@ -70,39 +85,6 @@
 | 趋势 | 逐步兼容 PD | 成为通用标准 |
 
 ---
-
-## 6. 前端开发者为什么要关心
-
-### 6.1 设备充电检测
-
-```javascript
-// 检测用户设备的充电状态
-navigator.getBattery().then(battery => {
-  console.log('充电中:', battery.charging);
-  console.log('电量:', battery.level);
-  console.log('充满时间:', battery.chargingTime);
-});
-
-// 根据充电状态优化应用行为
-// 充电时：预加载资源、同步数据
-// 电池供电时：减少动画、降低帧率
-```
-
-### 6.2 PWA 与网络状况适配
-
-```javascript
-// 根据网络状况调整资源加载策略
-const connection = navigator.connection;
-if (connection) {
-  const { effectiveType, downlink, rtt } = connection;
-  
-  if (effectiveType === '4g' && downlink > 5) {
-    // 快速网络：加载高清资源
-  } else if (effectiveType === '2g' || downlink < 0.5) {
-    // 慢速网络：加载低分辨率图片、延迟加载非关键资源
-  }
-}
-```
 
 ---
 

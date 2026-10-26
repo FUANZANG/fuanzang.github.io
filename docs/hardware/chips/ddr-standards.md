@@ -62,35 +62,9 @@
 
 ---
 
-## 6. 前端开发者为什么要关心
-
-### 6.1 内存大小限制
-
-```javascript
-// 浏览器标签页内存限制
-// Chrome: 每个标签页最多 2GB（64 位系统）
-// 在 8GB RAM 的设备上，开 10 个标签页就可能卡顿
-
-// 内存敏感场景：大文件处理、WebAssembly 应用
-// 用户设备内存不足时，应用性能会显著下降
-```
-
-### 6.2 WebAssembly 与内存
-
-```javascript
-// Wasm 内存是线性内存，受设备内存限制
-const memory = new WebAssembly.Memory({
-  initial: 256,  // 256 页 = 16MB
-  maximum: 4096  // 4096 页 = 256MB
-});
-
-// 在低内存设备上，需要设置更小的 maximum
-// 避免内存分配失败
-```
-
 ---
 
-## 7. 参考
+## 6. 参考
 
 - [JEDEC DDR5 标准](https://www.jedec.org/)
 - [AnandTech DDR5 评测](https://www.anandtag.com/)

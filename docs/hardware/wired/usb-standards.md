@@ -106,25 +106,6 @@ USB4 v2 和 Thunderbolt 5 在技术层面几乎相同，区别在于认证要求
 
 ---
 
-## 6. 前端开发者为什么要关心
-
-### 6.1 调试设备
-
-```javascript
-// Chrome DevTools 可以通过 USB 调试 Android 设备
-// chrome://inspect → 需要 USB 3.0+ 才能流畅传输调试数据
-// 如果 USB 速度不够，调试延迟会很明显
-```
-
-### 6.2 外设带宽
-
-```javascript
-// WebUSB API 可以直接与 USB 设备通信
-// 速度取决于 USB 版本：
-// USB 2.0: 适合键盘、鼠标（低带宽）
-// USB 3.0+: 适合摄像头、数据采集卡（高带宽）
-```
-
 ---
 
 ## 参考
