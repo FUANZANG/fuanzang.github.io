@@ -19,8 +19,6 @@
 | 2024 | Zen 5 | 4nm | Ryzen 9000 | AI 加速 + 3D V-Cache |
 | 2026 | Zen 6 | 2nm (N2X) | Ryzen 10000（预计） | IPC 提升 25-30%，DDR5-6400+ |
 
-**前端视角**：AMD 的 Chiplet 设计类似微前端——把一个大芯片拆成多个小芯片（CCD + IOD），各自独立制造再封装在一起。
-
 ### 1.2 Intel（x86）
 
 | 代际 | 架构 | 制程 | 代表产品 | 亮点 |
@@ -30,8 +28,6 @@
 | 2023 | Raptor Lake | Intel 7 | Core 14代 | 频率突破 6GHz |
 | 2024 | Lion Cove | Intel 4 | Core Ultra 200 | 集成 NPU，AI PC |
 | 2026 | Panther Lake | 18A | Core Ultra 300 | RibbonFET + PowerVia，50 TOPS NPU |
-
-**前端视角**：Intel 的混合架构（P核 + E核）类似前端的"关键渲染路径"优化——重要任务用大核（P核），后台任务用小核（E核）。
 
 ### 1.3 Apple（ARM）
 
@@ -44,8 +40,6 @@
 | 2026 | TBA | 3nm | M5 | 每个 CPU 核心集成 Neural Accelerator |
 | 2026 | TBA | 2nm | M6 | 苹果首款 2nm 芯片，12 核 CPU + 12 核 GPU |
 
-**前端视角**：Apple 的统一内存架构（UMA）类似前端的"单例模式"——CPU 和 GPU 共享同一块内存，不用拷贝数据。
-
 ### 1.4 高通（ARM）
 
 | 代际 | 架构 | 制程 | 代表产品 | 亮点 |
@@ -56,8 +50,6 @@
 | 2024 | Oryon | 4nm | 骁龙 X Elite | 自研核心，Windows PC |
 | 2026 | Oryon 2 | 4nm | 骁龙 X2 Elite | 18 核 5.0GHz，80 TOPS NPU |
 
-**前端视角**：高通从公版 ARM 核心转向自研 Oryon 核心，类似前端从用 jQuery 框架转向自研框架——为了更深度的性能优化。
-
 ### 1.5 联发科（ARM）
 
 | 代际 | 架构 | 制程 | 代表产品 | 亮点 |
@@ -67,8 +59,6 @@
 | 2023 | Armv9 | 4nm | Dimensity 9300 | 硬件生成式 AI |
 | 2024 | Armv9 | 3nm | Dimensity 9400 | 全大核 + AI |
 | 2026 | Armv9 | 3nm (N3P) | Dimensity 9500 | 全大核自研（Travis/Alto/Gelas）+ NPU |
-
-**前端视角**：联发科的"全大核"设计类似前端性能优化中的"关键路径优先"——所有核心都是大核，优先保证响应速度。
 
 ---
 
