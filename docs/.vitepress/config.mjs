@@ -148,7 +148,9 @@ export default withPwa(defineConfig({
             { text: 'CPU 架构对比', link: '/hardware/chips/cpu-architectures' },
             { text: '制程工艺与摩尔定律', link: '/hardware/chips/chip-process' },
             { text: '各厂商芯片历代对比', link: '/hardware/chips/chip-generations' },
-            { text: 'DDR 内存标准', link: '/hardware/chips/ddr-standards' }
+            { text: 'DDR 内存标准', link: '/hardware/chips/ddr-standards' },
+            { text: 'GPU 架构与显存', link: '/hardware/chips/gpu-architectures' },
+            { text: '移动 SoC 横评', link: '/hardware/chips/mobile-soc' }
           ]
         },
         {
@@ -157,7 +159,8 @@ export default withPwa(defineConfig({
             { text: 'USB 标准演进', link: '/hardware/wired/usb-standards' },
             { text: 'USB-C 与 Thunderbolt', link: '/hardware/wired/usb-c-thunderbolt' },
             { text: '显示接口', link: '/hardware/wired/display-interfaces' },
-            { text: '存储接口', link: '/hardware/wired/storage-interfaces' }
+            { text: '存储接口', link: '/hardware/wired/storage-interfaces' },
+            { text: '存储介质（HDD/SSD）', link: '/hardware/wired/storage-media' }
           ]
         },
         {

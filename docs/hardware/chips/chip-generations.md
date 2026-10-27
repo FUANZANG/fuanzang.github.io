@@ -66,7 +66,7 @@
 | 2022 | Armv9 | 4nm | Dimensity 9200 | 全大核设计 |
 | 2023 | Armv9 | 4nm | Dimensity 9300 | 硬件生成式 AI |
 | 2024 | Armv9 | 3nm | Dimensity 9400 | 全大核 + AI |
-| 2026 | Armv9 | 3nm (N3E) | Dimensity 9500 | NPU 990 + Gen AI Engine 2.0 |
+| 2026 | Armv9 | 3nm (N3P) | Dimensity 9500 | 全大核自研（Travis/Alto/Gelas）+ NPU |
 
 **前端视角**：联发科的"全大核"设计类似前端性能优化中的"关键路径优先"——所有核心都是大核，优先保证响应速度。
 
