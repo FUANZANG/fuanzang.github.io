@@ -13,14 +13,17 @@ import PageShell from '../components/PageShell.vue'
       <tr><th>分类</th><th>主题</th><th>链接</th></tr>
     </thead>
     <tbody>
-      <tr><td rowspan="4">芯片</td><td>CPU 架构对比</td><td><a href="./chips/cpu-architectures">查看</a></td></tr>
+      <tr><td rowspan="6">芯片</td><td>CPU 架构对比</td><td><a href="./chips/cpu-architectures">查看</a></td></tr>
       <tr><td>各厂商芯片历代对比</td><td><a href="./chips/chip-generations">查看</a></td></tr>
       <tr><td>制程工艺与摩尔定律</td><td><a href="./chips/chip-process">查看</a></td></tr>
       <tr><td>DDR 内存标准</td><td><a href="./chips/ddr-standards">查看</a></td></tr>
-      <tr><td rowspan="4">有线接口</td><td>USB 标准演进</td><td><a href="./wired/usb-standards">查看</a></td></tr>
+      <tr><td>GPU 架构与显存</td><td><a href="./chips/gpu-architectures">查看</a></td></tr>
+      <tr><td>移动 SoC 横评</td><td><a href="./chips/mobile-soc">查看</a></td></tr>
+      <tr><td rowspan="5">有线接口</td><td>USB 标准演进</td><td><a href="./wired/usb-standards">查看</a></td></tr>
       <tr><td>USB-C 与 Thunderbolt</td><td><a href="./wired/usb-c-thunderbolt">查看</a></td></tr>
       <tr><td>显示接口</td><td><a href="./wired/display-interfaces">查看</a></td></tr>
       <tr><td>存储接口</td><td><a href="./wired/storage-interfaces">查看</a></td></tr>
+      <tr><td>存储介质（HDD/SSD）</td><td><a href="./wired/storage-media">查看</a></td></tr>
       <tr><td>无线标准</td><td>Wi-Fi / Bluetooth</td><td><a href="./wireless/wireless-standards">查看</a></td></tr>
       <tr><td rowspan="2">电源与充电</td><td>USB PD 快充协议</td><td><a href="./power/usb-pd">查看</a></td></tr>
       <tr><td>其他快充协议</td><td><a href="./power/charging-protocols">查看</a></td></tr>
