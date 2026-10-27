@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 110 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 111 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -119,3 +119,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 二叉树展开为链表（Flatten Binary Tree to Linked List） | Medium | [flatten-binary-tree-to-linked-list](./flatten-binary-tree-to-linked-list.md) |
 | 数据流的中位数（Find Median from Data Stream） | Hard | [find-median-from-data-stream](./find-median-from-data-stream.md) |
 | 对称二叉树（Symmetric Tree） | Easy | [symmetric-tree](./symmetric-tree.md) |
+| 合并 K 个升序链表（Merge k Sorted Lists） | Hard | [merge-k-sorted-lists](./merge-k-sorted-lists.md) |
