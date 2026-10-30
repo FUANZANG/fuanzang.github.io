@@ -235,7 +235,8 @@ export default withPwa(defineConfig({
             { text: 'Monorepo', link: '/notes/engineering/monorepo' },
             { text: '组件库开发', link: '/notes/engineering/component-library' },
             { text: '微前端', link: '/notes/engineering/micro-frontend' },
-            { text: 'YApi 接口平台', link: '/notes/engineering/yapi' }
+            { text: 'YApi 接口平台', link: '/notes/engineering/yapi' },
+            { text: 'mise 多语言版本管理', link: '/notes/engineering/mise' }
           ]
         },
         {
