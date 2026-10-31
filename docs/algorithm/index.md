@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 114 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 115 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -123,3 +123,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最大正方形（Maximal Square） | Medium | [maximal-square](./maximal-square.md) |
 | 编辑距离（Edit Distance） | Medium | [edit-distance](./edit-distance.md) |
 | 最大矩形（Maximal Rectangle） | Medium | [maximal-rectangle](./maximal-rectangle.md) |
+| 质数计数（Count Primes） | Medium | [count-primes](./count-primes.md) |
