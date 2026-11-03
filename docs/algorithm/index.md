@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 116 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 117 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -125,3 +125,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最大矩形（Maximal Rectangle） | Medium | [maximal-rectangle](./maximal-rectangle.md) |
 | 质数计数（Count Primes） | Medium | [count-primes](./count-primes.md) |
 | 最低加油次数（Minimum Number of Refueling Stops） | Hard | [minimum-number-of-refueling-stops](./minimum-number-of-refueling-stops.md) |
+| 正则表达式匹配（Regular Expression Matching） | Medium | [regular-expression-matching](./regular-expression-matching.md) |
