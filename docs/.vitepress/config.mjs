@@ -321,6 +321,16 @@ export default withPwa(defineConfig({
           ]
         },
         {
+          text: 'Python 后端',
+          collapsed: true,
+          items: [
+            { text: 'Python 基础', link: '/notes/python/python-basics' },
+            { text: 'Python 生态与工具链', link: '/notes/python/python-ecosystem' },
+            { text: 'FastAPI', link: '/notes/python/fastapi' },
+            { text: 'Python 测试（pytest）', link: '/notes/python/python-testing' }
+          ]
+        },
+        {
           text: '运维与部署',
           collapsed: true,
           items: [
