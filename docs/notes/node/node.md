@@ -1,5 +1,6 @@
 # Node.js
 
+> 本文时点：2026-11（Node 26 活跃 LTS / 24 维护 LTS；Express 示例按 5.x 编写，4.x 差异与 Koa / Fastify 对照见 [Express / Koa / Fastify](/notes/node/express-koa)）。
 > 运行时、模块、Express 基础与进程模型。结构化 API 见 [NestJS](/notes/node/nestjs)；连库见 [Node 数据访问](/notes/node/node-data)；登录鉴权见 [Node 鉴权](/notes/node/node-auth)。
 
 ## Node.js 基础
@@ -487,7 +488,7 @@ ac.abort()
 
 ## Web 开发
 
-> 中大型 API 优先 [NestJS](/notes/node/nestjs)。下面 Express 示例用来建立中间件与路由直觉。
+> 中大型 API 优先 [NestJS](/notes/node/nestjs)。下面 Express 示例用来建立中间件与路由直觉（示例按 5.x 写，Koa / Fastify 对照与 4→5 迁移点见 [Express / Koa / Fastify](/notes/node/express-koa)）。
 
 ### Express 基础
 
@@ -534,7 +535,7 @@ app.listen(3000, () => console.log('Server running on port 3000'))
 
 ### 中间件机制
 
-+ Express 中间件是**线性模型**（不同于 Koa 的洋葱模型）
++ Express 中间件是**线性模型**（不同于 Koa 的洋葱模型，对照与选型见 [Express / Koa / Fastify](/notes/node/express-koa)）
 + 每个中间件可以：修改 req/res、终止响应、调用 `next()` 传递控制权
 
 ```js

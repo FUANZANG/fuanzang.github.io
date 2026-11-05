@@ -283,6 +283,7 @@ export default withPwa(defineConfig({
             { text: 'SQL 基础', link: '/notes/database/sql-basics' },
             { text: '数据库设计', link: '/notes/database/db-design' },
             { text: 'MySQL 深入', link: '/notes/database/mysql-deep' },
+            { text: 'PostgreSQL', link: '/notes/database/postgres' },
             { text: '数据库迁移（Flyway）', link: '/notes/database/db-migration' },
             { text: 'Redis 基础', link: '/notes/database/redis-basics' },
             { text: 'Redis 与 Java', link: '/notes/database/redis-java' },
@@ -295,6 +296,7 @@ export default withPwa(defineConfig({
           items: [
             { text: 'Node.js', link: '/notes/node/node' },
             { text: 'NestJS', link: '/notes/node/nestjs' },
+            { text: 'Express / Koa / Fastify', link: '/notes/node/express-koa' },
             { text: 'Node 数据访问', link: '/notes/node/node-data' },
             { text: 'Node 鉴权', link: '/notes/node/node-auth' },
             { text: 'Node 测试', link: '/notes/node/node-testing' }
@@ -327,6 +329,7 @@ export default withPwa(defineConfig({
             { text: 'Python 基础', link: '/notes/python/python-basics' },
             { text: 'Python 生态与工具链', link: '/notes/python/python-ecosystem' },
             { text: 'FastAPI', link: '/notes/python/fastapi' },
+            { text: 'Django', link: '/notes/python/django' },
             { text: 'Python 测试（pytest）', link: '/notes/python/python-testing' }
           ]
         },
