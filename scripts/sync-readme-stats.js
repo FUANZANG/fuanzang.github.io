@@ -57,6 +57,7 @@ const subdirs = [
   { key: 'database', label: '数据库与大数据' },
   { key: 'node', label: 'Node 后端' },
   { key: 'java', label: 'Java 后端' },
+  { key: 'python', label: 'Python 后端' },
   { key: 'ops', label: '运维与部署' },
   { key: 'ai', label: 'AI 工程' },
   { key: 'frontier', label: '前沿技术' }
