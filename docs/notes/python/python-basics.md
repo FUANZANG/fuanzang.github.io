@@ -91,7 +91,7 @@ JS 是单线程 + 事件循环，CPU 阻塞卡死整页（[浏览器原理](/not
 - 替代方案：`multiprocessing`（多进程，各进程独立 GIL ≈ Node cluster）、`asyncio`（协程 ≈ 事件循环，海量 IO）、**free-threaded 构建**（PEP 703，无 GIL 的 CPython；3.13 起实验性可用，3.15 的 macOS 官方包已默认带上，且 3.15 给了它稳定的 C API ABI）。
 - 3.14 还加了 `concurrent.interpreters`（子解释器，PEP 734）：一个进程里跑多套隔离解释器 ≈ "一个浏览器里开多个独立 JS 引擎"，各自有独立 GIL。
 
-实际选型：web 服务用 async（FastAPI 默认），重计算交给底层 C/Rust 扩展（NumPy、PyTorch 都是）或多进程，**不要指望 `threading` 做 CPU 并行**。
+实际选型：web 服务用 async（FastAPI 默认），重计算交给底层 C/Rust 扩展（[NumPy 与 Python 数据基础](/notes/ai/python-data-stack)：NumPy、PyTorch 都是）或多进程，**不要指望 `threading` 做 CPU 并行**。
 
 ## 版本现状与新特性（2026-11）
 
