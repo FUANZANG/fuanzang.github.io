@@ -116,6 +116,7 @@ PyPI 上的分发形态有两种：
 | 类型检查 | **pyright** | 微软出品，VS Code Pylance 同源，≈ 前端查 TS 的体验 |
 | 测试 | **pytest** | 事实标准（详见 [Python 测试](/notes/python/python-testing)） |
 | Python 版本 | **mise**（已用）或 `uv python` | 二选一，别混 |
+| AI 数据栈 | 同 **uv**（`uv add torch numpy` 即装） | NumPy/PyTorch/Jupyter 等 AI 栈全走这套，用法见 [NumPy 与 Python 数据基础](/notes/ai/python-data-stack) |
 
 ## 参考
 

@@ -2,7 +2,7 @@
 
 > 本文基于 2026-10 时点（OpenAI 自托管微调 2026-05 起关停中；mlx-lm v0.31.x；后训练主流栈为 SFT → DPO → GRPO）。本篇补的是 AI 系列缺的那一轴：**模型是怎么来的、怎么改的**。
 
-> 关联：[RAG](/notes/ai/rag)（RAG vs 微调的取舍）、[本地大模型](/notes/ai/local-llm)（本地跑模型的硬件预算）、[LLM 应用平台](/notes/ai/llm-app-platforms)（平台侧微调）、[AI 评测与可观测](/notes/ai/ai-eval-observability)（微调后怎么验证）。
+> 关联：[RAG](/notes/ai/rag)（RAG vs 微调的取舍）、[本地大模型](/notes/ai/local-llm)（本地跑模型的硬件预算）、[LLM 应用平台](/notes/ai/llm-app-platforms)（平台侧微调）、[AI 评测与可观测](/notes/ai/ai-eval-observability)（微调后怎么验证）、[PyTorch 基础](/notes/ai/pytorch-basics)（模型代码与训练循环的原理层）、[Hugging Face 生态](/notes/ai/huggingface)（PEFT/adapter 的落盘格式）。
 
 ## 三段式：模型是分三步"长"出来的
 

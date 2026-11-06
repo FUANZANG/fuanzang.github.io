@@ -2,7 +2,7 @@
 
 > 本文基于 2026-10 时点（Vercel AI SDK `ai@7` / OpenAI Node SDK `openai@7`）。本篇是 AI 系列的**接入层**：模型 API 怎么调、SDK 怎么选、Key 怎么不泄露。
 
-> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（token / 消息结构 / 结构化输出）、[AI 流式输出](/notes/ai/ai-streaming)（SSE 怎么消费）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（聊天界面等 UI 形态）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本 / 错误 / 安全）。
+> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（token / 消息结构 / 结构化输出）、[AI 流式输出](/notes/ai/ai-streaming)（SSE 怎么消费）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（聊天界面等 UI 形态）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本 / 错误 / 安全）、[Python LLM 开发](/notes/ai/python-llm-apps)（服务端 Python 侧的镜像：OpenAI Python SDK / Pydantic AI / litellm）。
 
 ## 三条接入路线
 

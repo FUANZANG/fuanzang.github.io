@@ -21,7 +21,7 @@
 | **Microsoft Agent Framework**（1.0，2026-04 GA） | .NET / Python | agents + 图工作流 + 中间件 | 开源 | AutoGen 与 Semantic Kernel 的**合并继任者**（两者 2025-10 起维护模式）；.NET / Azure 企业的路线 |
 | **AG2**（1.2.x py） | Python | 多 agent 会话 | Apache-2.0 | AutoGen 原作者的社区 fork，接手 `autogen` 包名；活跃，但新项目慎作起点 |
 
-认脸即可：**Pydantic AI**（2.66.0，Python 类型安全、结构化输出取向）——不选框架、只想要"类型安全的 LLM 调用 + 工具"时用它。
+认脸即可：**Pydantic AI**（2.66.0，Python 类型安全、结构化输出取向）——不选框架、只想要"类型安全的 LLM 调用 + 工具"时用它（落地写法见 [Python LLM 开发](/notes/ai/python-llm-apps)）。
 
 几个名词：
 

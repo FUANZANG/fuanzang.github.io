@@ -42,7 +42,7 @@ LLM 的三个先天缺陷，RAG 各治一个：
 
 前端类比：把每段文本变成 N 维空间里的一个点，检索就是"找这个问题点旁边的点"。
 
-**选型**：embedding 决定检索质量上限（差的 embedding 补不回来）。常见：OpenAI `text-embedding-3` 系列（API）、BGE 系列（开源可自部署，国内主流）、Voyage。换 embedding 模型 = 全量重建索引。
+**选型**：embedding 决定检索质量上限（差的 embedding 补不回来）。常见：OpenAI `text-embedding-3` 系列（API）、BGE 系列（开源可自部署，国内主流，模型下载与 `sentence-transformers` 库见 [Hugging Face 生态](/notes/ai/huggingface)）、Voyage。换 embedding 模型 = 全量重建索引。
 
 ### 切块（Chunking）：最被低估的环节
 
