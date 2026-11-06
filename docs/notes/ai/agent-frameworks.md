@@ -55,6 +55,8 @@ agent 的真实特征是**长任务 + 副作用**：跑一半进程挂了，"那
 + "agent = 编码助手"形态（要内置文件 / shell / 浏览器工具 + 权限体系）→ **Claude Agent SDK** 是成品 harness，别自己搭
 + 锁定的不只是框架本身，是 **"durable execution + 部署"组合**（LangSmith 部署 / Vertex / Azure AI Foundry）——选型前把这一层也看清楚
 
+选完之后的下一步——挂到现有系统、事件驱动触发、会话状态与上线——见 [Agent 接入与部署](/notes/ai/agent-deployment)。
+
 ## 语言选型（判据的补充）
 
 + **生态引力**：agent 工具是 Python 先行——版图里 CrewAI / AG2 / Pydantic AI 只有 Python，LangGraph / ADK / OpenAI Agents SDK 的 Python SDK 是参考实现；记忆层（Mem0 / Letta / Graphiti）同样。TS 是原生第二梯队：Mastra、Vercel AI SDK、@langchain/langgraph-js、Claude Agent SDK TS、E2B JS SDK。Python 选项多，TS 选项少但全是一等公民
