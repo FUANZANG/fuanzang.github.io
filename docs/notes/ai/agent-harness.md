@@ -68,6 +68,14 @@ Simon Willison 的一句话定义流传最广：**"models using tools in a loop"
 
 前四层（E/T/C/L）是**结构支柱**——让 agent 跑起来；后三层（O/V/G）是**控制面**——让它可观测、可验证、可治理。综述的发现：开源生态在 E/T/C/L 很密，O/V/G 是普遍短板（89% 团队有可观测，只有 52% 跑离线评测——看得见做了什么，不判断做得对不对）。O/V 落地见 [AI 评测与可观测](/notes/ai/ai-eval-observability)。
 
+## 三个子题（深挖入口）
+
+单 agent 的循环与执行环境、实现工具链、跨会话记忆，各有专篇：
+
++ **L 层控制流**（ReAct / Plan-Execute / Reflexion + 执行沙箱）：[Agent 设计模式](/notes/ai/agent-patterns)
++ **循环的工程实现**（框架生态与选型）：[Agent 框架生态](/notes/ai/agent-frameworks)
++ **状态与记忆**（跨会话长期记忆系统）：[Agent 记忆系统](/notes/ai/agent-memory)
+
 ## Harness 工程三阶段
 
 综述把 AI 应用工程化划成三个演进阶段，每层包含前一层：
