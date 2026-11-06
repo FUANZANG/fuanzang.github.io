@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 119 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 120 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -128,3 +128,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 正则表达式匹配（Regular Expression Matching） | Medium | [regular-expression-matching](./regular-expression-matching.md) |
 | 最长递增子序列的个数（Number of Longest Increasing Subsequence） | Medium | [number-of-longest-increasing-subsequence](./number-of-longest-increasing-subsequence.md) |
 | 二叉树中的最大路径和（Binary Tree Maximum Path Sum） | Hard | [binary-tree-maximum-path-sum](./binary-tree-maximum-path-sum.md) |
+| 加油站（Gas Station） | Medium | [gas-station](./gas-station.md) |
