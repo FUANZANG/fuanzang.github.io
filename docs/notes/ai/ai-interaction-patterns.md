@@ -106,6 +106,23 @@ async function assist(selected: string, action: string) {
 + **撤销栈**：AI 的修改要和用户的手动编辑进同一个 undo 栈
 + **长文档分块**：超长文本要分段处理再拼接，注意段间衔接（见 [RAG](/notes/ai/rag) 的切块思路）
 
+## Agentic：Agent 执行 UI
+
+前三种形态展示的是"结果"（文本 / 补全 / 内联建议）；**agent 形态展示的是过程**——多步、有副作用，UI 要回答三个问题：正在做什么、做完了什么、卡在哪等我。
+
+| 要素 | 展示什么 | 前端等价物 |
+|---|---|---|
+| **步骤流** | 工具调用事件：调用、参数、结果、耗时（可折叠） | Webpack 构建日志 / CI 流水线时间线 |
+| **任务状态** | pending / running / needs-approval / failed / done | 任务列表 + 状态徽章 |
+| **审批按钮** | 高危动作停下来等确认，点了才继续 | 确认弹窗（既有心智模型） |
+
+流式传输 2026 年在向 UI 消息协议收敛：Vercel AI SDK 7 的 UI Message Stream（工具调用 / 结果作为流的一部分，走 SSE）与 TanStack AI 的 AG-UI 事件是两条主流；客户端 `useChat` 直接消费，步骤流只是其中一类 part。
+
+两个实操要点：
+
++ **默认收起、可展开**：步骤流很长，默认显示"正在做 X"，点开展示完整日志——用户时间比过程值钱
++ **审批是 UI，不是提示词**："停下来等人"由框架 interrupt 驱动（见 [Agent 框架生态](/notes/ai/agent-frameworks) 的审批原语），前端只负责渲染确认按钮——别靠模型"自觉停"；服务端 defer/resume 细节见 [Agent 接入与部署](/notes/ai/agent-deployment)
+
 ## 前端视角：为什么这些是前端活
 
 AI 交互模式几乎是纯前端工程，且用的全是既有技能：
