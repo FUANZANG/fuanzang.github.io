@@ -70,11 +70,12 @@ Simon Willison 的一句话定义流传最广：**"models using tools in a loop"
 
 ## 三个子题（深挖入口）
 
-单 agent 的循环与执行环境、实现工具链、跨会话记忆，各有专篇：
+单 agent 的循环与执行环境、实现工具链、跨会话记忆、接入上线，各有专篇：
 
 + **L 层控制流**（ReAct / Plan-Execute / Reflexion + 执行沙箱）：[Agent 设计模式](/notes/ai/agent-patterns)
 + **循环的工程实现**（框架生态与选型）：[Agent 框架生态](/notes/ai/agent-frameworks)
 + **状态与记忆**（跨会话长期记忆系统）：[Agent 记忆系统](/notes/ai/agent-memory)
++ **接入与上线**（三形态 / 事件驱动 / 生产化要点）：[Agent 接入与部署](/notes/ai/agent-deployment)
 
 ## Harness 工程三阶段
 
