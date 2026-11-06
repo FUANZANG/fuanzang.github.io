@@ -368,6 +368,7 @@ export default withPwa(defineConfig({
             { text: 'Agent 记忆系统', link: '/notes/ai/agent-memory' },
             { text: 'MCP 与工具调用', link: '/notes/ai/mcp-tools' },
             { text: 'Agent Skill', link: '/notes/ai/agent-skills' },
+            { text: 'Web Agent', link: '/notes/ai/web-agent' },
             { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
             { text: 'Agent 接入与部署', link: '/notes/ai/agent-deployment' },
             { text: '模型微调与定制', link: '/notes/ai/fine-tuning' },
