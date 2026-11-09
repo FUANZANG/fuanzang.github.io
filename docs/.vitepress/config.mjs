@@ -347,7 +347,7 @@ export default withPwa(defineConfig({
             { text: 'CI/CD', link: '/notes/ops/ci-cd' },
             { text: 'GitHub Actions', link: '/notes/ops/github-actions' },
             { text: '前端部署', link: '/notes/ops/frontend-deployment' },
-            { text: '监控栈（Prometheus/Grafana/ELK）', link: '/notes/ops/monitoring' },
+            { text: '监控栈', link: '/notes/ops/monitoring' },
             { text: '后端可观测', link: '/notes/ops/observability' }
           ]
         },
