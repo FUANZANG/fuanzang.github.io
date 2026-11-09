@@ -352,7 +352,7 @@ export default withPwa(defineConfig({
           ]
         },
         {
-          text: 'AI 工程',
+          text: 'AI 基础与模型',
           collapsed: true,
           items: [
             { text: 'LLM 基础概念', link: '/notes/ai/llm-fundamentals' },
@@ -362,12 +362,25 @@ export default withPwa(defineConfig({
             { text: 'PyTorch 基础', link: '/notes/ai/pytorch-basics' },
             { text: 'Hugging Face 生态', link: '/notes/ai/huggingface' },
             { text: 'Python LLM 开发', link: '/notes/ai/python-llm-apps' },
-            { text: 'vLLM 推理服务', link: '/notes/ai/vllm-serving' },
+            { text: 'vLLM 推理服务', link: '/notes/ai/vllm-serving' }
+          ]
+        },
+        {
+          text: 'AI 应用开发',
+          collapsed: true,
+          items: [
             { text: '前端对接 AI', link: '/notes/ai/ai-frontend-integration' },
             { text: 'AI 流式输出', link: '/notes/ai/ai-streaming' },
             { text: 'AI 交互模式', link: '/notes/ai/ai-interaction-patterns' },
             { text: 'AI 应用工程化', link: '/notes/ai/ai-app-engineering' },
             { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
+            { text: 'Web AI', link: '/notes/ai/web-ai' }
+          ]
+        },
+        {
+          text: 'Agent 与工具链',
+          collapsed: true,
+          items: [
             { text: 'Agent Harness', link: '/notes/ai/agent-harness' },
             { text: 'Agent 设计模式', link: '/notes/ai/agent-patterns' },
             { text: 'Agent 框架生态', link: '/notes/ai/agent-frameworks' },
@@ -378,7 +391,6 @@ export default withPwa(defineConfig({
             { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
             { text: 'Agent 接入与部署', link: '/notes/ai/agent-deployment' },
             { text: '模型微调与定制', link: '/notes/ai/fine-tuning' },
-            { text: 'Web AI', link: '/notes/ai/web-ai' },
             { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
         },
