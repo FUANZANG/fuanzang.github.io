@@ -16,13 +16,15 @@
 
 | 形态 | 循环住哪 | 怎么连 | 状态谁管 | 适合 |
 |---|---|---|---|---|
-| **进程内 SDK** | 你自己服务的进程里（库） | 直接函数调用 | 你（DB 在你手里） | 定制深、单团队；TS：Mastra / Vercel AI SDK，Python：LangGraph / Pydantic AI |
+| **进程内 SDK** | 你自己服务的进程里（库） | 直接函数调用 | 你（DB 在你手里） | 定制深、单团队；TS：Mastra / Vercel AI SDK，Python：LangGraph / Pydantic AI，Java：Spring AI / LangChain4j |
 | **agent-as-service** | 独立服务 | REST + SSE | 那个服务 | 多团队复用、前后端分离；LangGraph 自托管 / 厂商托管 agent / 自建服务 |
 | **BaaS 平台** | 厂商云 | REST + SSE | 平台 | Dify / Coze"搭完即接口"，见 [平台篇](/notes/ai/llm-app-platforms) |
 
 判据就一条：**谁拥有循环、谁拥有会话状态**——拥有 = 能定制但要自己运维；对方拥有 = 开箱即用但被锁定。
 
 前端类比：进程内 ≈ 写 composable；agent-as-service ≈ 写 axios 客户端；BaaS ≈ 接地图 / 支付 SDK。
+
+**跨语言变体**：循环语言 ≠ 宿主服务语言（典型：Java / Go 服务驱动 Python LangGraph 循环）时，宿主只做客户端，循环按三种边界隔离、由轻到重：**子进程**（Java 侧用 `ProcessBuilder` 起 Python 子进程、stdio（标准输入输出）通信，崩了自己管重连，适合本地 / 单机形态）→ **sidecar**（与宿主同机部署的独立服务进程 / 容器，gRPC（基于 Protocol Buffers 的 RPC 机制，≈ 二进制版的 REST）/ REST + SSE 通信，生产主流，循环可独立扩缩）→ **容器 / microVM 沙箱**（执行不可信代码时用，[模式篇](/notes/ai/agent-patterns) 的隔离阶梯）。判据同三形态：谁拥有循环、谁拥有会话状态。
 
 ## 触发形态：交互不是全部
 

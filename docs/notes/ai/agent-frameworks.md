@@ -47,7 +47,7 @@ agent 的真实特征是**长任务 + 副作用**：跑一半进程挂了，"那
 按"从便宜到贵"问三个问题：
 
 1. **真的要框架吗？** 教学用途 / 需要绝对控制 / 极致省 token → 手写 `fetch + while` 循环（百行以内）；平台篇的 Dify / Coze 能覆盖"节点 + 连线"就先用平台
-2. **语言？** TS → **Vercel AI SDK**（轻，只做调用层）或 **Mastra**（全家桶）；Python → **Pydantic AI**（简单任务）或 **LangGraph**（要图化工作流 + 检查点）
+2. **语言？** TS → **Vercel AI SDK**（轻，只做调用层）或 **Mastra**（全家桶）；Python → **Pydantic AI**（简单任务）或 **LangGraph**（要图化工作流 + 检查点）；Java → **Spring AI**（Spring 官方）或 **LangChain4j**（社区，统一 API）
 3. **是否已押注某模型厂商？** 押了 → 用厂商 SDK（OpenAI Agents SDK / Claude Agent SDK / ADK 对 Gemini）；.NET / Azure 栈 → Microsoft Agent Framework
 
 两个特殊判据：
@@ -60,6 +60,7 @@ agent 的真实特征是**长任务 + 副作用**：跑一半进程挂了，"那
 ## 语言选型（判据的补充）
 
 + **生态引力**：agent 工具是 Python 先行——版图里 CrewAI / AG2 / Pydantic AI 只有 Python，LangGraph / ADK / OpenAI Agents SDK 的 Python SDK 是参考实现；记忆层（Mem0 / Letta / Graphiti）同样。TS 是原生第二梯队：Mastra、Vercel AI SDK、@langchain/langgraph-js、Claude Agent SDK TS、E2B JS SDK。Python 选项多，TS 选项少但全是一等公民
++ **Java（第三梯队）**：Spring AI（Spring 官方，Spring Boot 生态原生）与 LangChain4j（社区 1.x，统一 API + MCP + 向量库）是 JVM 上两条主路，Google ADK 也带官方 Java / Kotlin 版；工具与记忆生态落后 Python / TS，强项是 Spring 全家桶等存量企业集成——宿主服务已是 Java 时直接进程内接，别为 agent 重写服务
 + **跑在哪决定语言**：agent 循环活在持有会话的那个进程里——那个服务用什么语言，agent 就用什么；agent 在浏览器（WebContainer 形态）或边缘（Workers）里跑时，JS/TS 是唯一选项。所以先定"跑在哪"，再回表选框架，而不是先挑语言再想怎么接
 + **前端主场**：用 Node / Vite 写 agent 循环，和你写流式 UI 同构——工具 schema ≈ API 类型，类型贯穿全链路；Python 选项留给数据密集场景
 
