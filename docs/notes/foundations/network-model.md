@@ -1,6 +1,6 @@
 # 网络模型笔记
 
-> 本文基于 ISO/IEC 7498-1（OSI 参考模型）、RFC 791/793/768（IP/TCP/UDP）、RFC 9000/9001（QUIC）（2026-11 时点：TCP/UDP 仍是传输层事实标准，QUIC 已随 HTTP/3 大规模部署）。
+> 本文基于 ISO/IEC 7498-1（OSI 参考模型）、RFC 791/793/768（IP/TCP/UDP）、RFC 8200/1918/8305（IPv6/NAT 私有段/Happy Eyeballs）、RFC 9000/9001（QUIC）（2026-11 时点：TCP/UDP 仍是传输层事实标准，QUIC 已随 HTTP/3 大规模部署）。
 > 关联：[网络协议](/notes/foundations/network-protocol)（HTTP 缓存/HTTPS/TCP 握手/CORS 等协议细节）· [WebSocket 与实时通信](/notes/practice/websocket-realtime)（实时方案对比）
 
 ## 1. 为什么要分层
@@ -95,7 +95,62 @@ MTU（Maximum Transmission Unit，最大传输单元）：一条链路单跳能�
 
 ---
 
-## 5. 传输层：TCP vs UDP
+## 5. IPv4 vs IPv6（与 NAT）
+
+> IPv4（RFC 791）/ IPv6（RFC 8200）。今天的互联网跑**双栈**（dual-stack）：一台机器同时持有两种地址，内核按目标选一种。
+
+| | IPv4 | IPv6 |
+|---|------|------|
+| 地址长度 | 32 bit（4 字节），共 43 亿 | 128 bit（16 字节），约 3.4×10³⁸ |
+| 写法 | 192.168.1.1 | 2001:db8::1（连续零段可压缩为 `::`） |
+| IP 头 | 20 字节（含选项最大 60） | 固定 40 字节（无选项字段，路由转发更简单） |
+| 最小链路 MTU | 68 字节 | 1280 字节（RFC 8200 保证） |
+| 地址分配 | DHCP / 静态 | SLAAC（Stateless 自动配置，RFC 4862：路由器下发前缀 + 本端接口 ID 自拼） |
+| NAT | 普遍需要 | 理论上不需要（地址管够） |
+| 环回 | 127.0.0.0/8 | ::1 |
+| 链路本地地址 | — | fe80::/10（不经路由器、同局域网通信用） |
+
+**CIDR**（无类别域间路由，斜杠记法）：`/24` = 前 24 位是网络前缀，192.168.1.0/24 即 192.168.1.0 ~ 192.168.1.255。A/B/C 有类别划分是历史产物（RFC 4632/4633 于 2006 年正式废止）。
+
+### 为什么 NAT 存在
+
+```
+公共 IPv4 地址耗尽（IANA 全球池 2011 年分完）
+  → ISP / 家用路由器把整个内网藏在 NAT 后面（RFC 1918 私有地址段）：
+      10.0.0.0/8、172.16.0.0/12、192.168.0.0/16
+  → NAT（Network Address Translation，网络地址转换）：
+      内网多台机器共用 1 个公网 IP，路由器维护「内网IP+端口 ↔ 公网IP+端口」映射表
+  → 代价：端到端直连被打破
+    - 外部无法主动连进内网（需要端口映射/公网 IP）
+    - UDP NAT 状态复杂 → WebRTC P2P 要 STUN/ICE「打洞」
+    - 运营商级 NAT（CGN/444）再叠一层，雪上加霜
+
+前端视角：浏览器 → 公网服务器 的方向完全透明（是服务器侧在做映射）；
+「家里/公司内网服务外网访问不了」几乎一定是 NAT 问题，不是代码问题。
+```
+
+### 前端实际会碰到的三件事
+
+```js
+// 1. IPv6 字面量必须加方括号，否则第一个冒号会被解析成端口
+new URL('http://[::1]:3000')   // ✓
+new URL('http://::1:3000')     // ✗ TypeError: Invalid URL
+
+// 2. localhost 其实是一对：127.0.0.1 + ::1
+//    浏览器用 Happy Eyeballs 算法（RFC 8305，取代 RFC 6555）建连：
+//    并行查 A + AAAA 记录，优先 IPv6、间隔 ~250ms 竞赛尝试，谁先通用谁
+//    → Vite dev server 监听 ::1 与 127.0.0.1 不是同一件事；
+//      IPv6 网络坏了的主机连接会先卡几秒（等 IPv6 超时再 race 到 IPv4）
+
+// 3. Anycast（任播）：全球多台服务器共享「同一个 IP 地址」——
+//    8.8.8.8（Google DNS）、1.1.1.1（Cloudflare）、Cloudflare 104.x 段，
+//    BGP 把流量路由到地理最近的节点 → CDN / 公共 DNS「全球都快」的原理之一
+//    对照单播（unicast）：一个地址唯一投递到一台主机
+```
+
+---
+
+## 6. 传输层：TCP vs UDP
 
 > 这是"网络模型"里前端最常撞到的选择题。两者跑在同一个 IP 层之上，靠 IP 头的 protocol 字段（TCP=6 / UDP=17）区分，**端口号各自独立**（同一台机器上 TCP 80 和 UDP 80 可以是两个完全不同的服务）。
 
@@ -160,7 +215,7 @@ socket.bind(4000)
 
 ---
 
-## 6. QUIC：跑在 UDP 上的"新 TCP"
+## 7. QUIC：跑在 UDP 上的"新 TCP"
 
 ```
 RFC 9000（2021）/ RFC 9001（TLS 集成），Chrome/Cloudflare 大规模部署：
@@ -181,7 +236,7 @@ HTTP/3 = HTTP 语义 + QUIC 传输；协议细节（帧/流/优先级）见
 
 ---
 
-## 7. 前端排障：按层定位
+## 8. 前端排障：按层定位
 
 ```
 请求失败的报错文本基本就是"在第几层断的"：
@@ -212,6 +267,7 @@ DevTools Network 面板按请求（应用层视角）组织，但每个请求的
 
 - [ISO/IEC 7498-1:1994（OSI 参考模型）](https://www.iso.org/standard/12320.html)
 - [RFC 791 (IPv4) / RFC 793 (TCP) / RFC 768 (UDP)](https://www.rfc-editor.org/)
+- [RFC 8200 (IPv6) / RFC 1918 (私有地址段) / RFC 8305 (Happy Eyeballs v2)](https://www.rfc-editor.org/rfc/rfc8200.html)
 - [RFC 9000 (QUIC) / RFC 9001 (QUIC over TLS)](https://www.rfc-editor.org/rfc/rfc9000.html)
 - [MDN：传输层](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebSocket)
 - [Computer Networking: A Top-Down Approach (Kurose & Ross) 第 1 章](https://gaia.cs.umass.edu/kurose/website/index.html)
