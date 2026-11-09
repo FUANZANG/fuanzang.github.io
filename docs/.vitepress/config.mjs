@@ -356,13 +356,14 @@ export default withPwa(defineConfig({
           collapsed: true,
           items: [
             { text: 'LLM 基础概念', link: '/notes/ai/llm-fundamentals' },
-            { text: '本地大模型', link: '/notes/ai/local-llm' },
             { text: '推理模型（Reasoning）', link: '/notes/ai/reasoning-models' },
             { text: 'NumPy 与 Python 数据基础', link: '/notes/ai/python-data-stack' },
             { text: 'PyTorch 基础', link: '/notes/ai/pytorch-basics' },
             { text: 'Hugging Face 生态', link: '/notes/ai/huggingface' },
+            { text: '本地大模型', link: '/notes/ai/local-llm' },
+            { text: 'vLLM 推理服务', link: '/notes/ai/vllm-serving' },
             { text: 'Python LLM 开发', link: '/notes/ai/python-llm-apps' },
-            { text: 'vLLM 推理服务', link: '/notes/ai/vllm-serving' }
+            { text: '模型微调与定制', link: '/notes/ai/fine-tuning' }
           ]
         },
         {
@@ -390,7 +391,6 @@ export default withPwa(defineConfig({
             { text: 'Web Agent', link: '/notes/ai/web-agent' },
             { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
             { text: 'Agent 接入与部署', link: '/notes/ai/agent-deployment' },
-            { text: '模型微调与定制', link: '/notes/ai/fine-tuning' },
             { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
         },
