@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 121 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 122 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -130,3 +130,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 二叉树中的最大路径和（Binary Tree Maximum Path Sum） | Hard | [binary-tree-maximum-path-sum](./binary-tree-maximum-path-sum.md) |
 | 加油站（Gas Station） | Medium | [gas-station](./gas-station.md) |
 | 用最少数量的箭引爆气球（Minimum Number of Arrows to Burst Balloons） | Medium | [minimum-number-of-arrows-to-burst-balloons](./minimum-number-of-arrows-to-burst-balloons.md) |
+| 分糖果（Candy） | Hard | [candy](./candy.md) |
