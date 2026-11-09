@@ -193,6 +193,7 @@ export default withPwa(defineConfig({
             { text: 'TypeScript', link: '/notes/foundations/typescript' },
             { text: '前端设计模式', link: '/notes/foundations/frontend-design-patterns' },
             { text: '浏览器原理', link: '/notes/foundations/browser' },
+            { text: '网络模型', link: '/notes/foundations/network-model' },
             { text: '网络协议', link: '/notes/foundations/network-protocol' },
             { text: 'Web 存储', link: '/notes/foundations/web-storage' },
             { text: 'Web Components', link: '/notes/foundations/web-components' },

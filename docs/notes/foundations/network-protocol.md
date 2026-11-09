@@ -1,6 +1,7 @@
 # 网络协议笔记
 
 > 本文件记录前端必须掌握的网络协议知识：HTTP 演进、HTTPS、TCP、WebSocket、缓存、跨域等。
+> 分层模型（OSI / TCP-IP）与 TCP vs UDP 对照见 [网络模型](/notes/foundations/network-model)
 
 ## 1. HTTP 基础
 
