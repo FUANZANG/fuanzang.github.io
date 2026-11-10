@@ -300,6 +300,7 @@ export default withPwa(defineConfig({
             { text: 'PostgreSQL', link: '/notes/database/postgres' },
             { text: '数据库迁移（Flyway）', link: '/notes/database/db-migration' },
             { text: 'Redis 基础', link: '/notes/database/redis-basics' },
+            { text: 'Redis 缓存模式', link: '/notes/database/redis-cache-patterns' },
             { text: 'Redis 与 Java', link: '/notes/database/redis-java' },
             { text: '数仓与大数据基础', link: '/notes/database/data-warehouse' }
           ]

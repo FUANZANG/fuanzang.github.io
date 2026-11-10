@@ -2,7 +2,7 @@
 
 Redis 是一个**基于内存的键值（key-value）数据库**，以高吞吐、低延迟著称。它不只是缓存——还支持多种数据结构、持久化、发布订阅等。本篇聚焦前端/全栈最常接触的用途。
 
-> 关系型数据见 [SQL 基础](/notes/database/sql-basics)；本篇讲 Redis 的定位与核心用法。Java 接入与分布式锁见 [Redis 与 Java](/notes/database/redis-java)；可靠异步解耦见 [消息队列识字](/notes/java/message-queue)。
+> 关系型数据见 [SQL 基础](/notes/database/sql-basics)；本篇讲 Redis 的定位与核心用法。穿透 / 击穿 / 雪崩与互斥重建见 [Redis 缓存模式](/notes/database/redis-cache-patterns)。Java 接入与分布式锁见 [Redis 与 Java](/notes/database/redis-java)；可靠异步解耦见 [消息队列识字](/notes/java/message-queue)。
 
 ## 为什么用 Redis
 
