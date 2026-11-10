@@ -3,7 +3,8 @@
  * sync-readme-stats.js
  * 扫描项目文件，自动更新 README.md 中的数量统计。
  *
- * 用法：node scripts/sync-readme-stats.js
+ * 用法：npm run sync:readme
+ * 或：node scripts/sync-readme-stats.js
  */
 
 const fs = require('fs')
@@ -12,14 +13,20 @@ const path = require('path')
 const ROOT = path.resolve(__dirname, '..')
 const README = path.join(ROOT, 'README.md')
 
-// ── 扫描函数 ──
-function countMd(dir) {
+/** 统计目录下 md 篇数（默认排除 index.md） */
+function countMd(dir, { skipIndex = true } = {}) {
   if (!fs.existsSync(dir)) return 0
-  return fs.readdirSync(dir).filter(f => f.endsWith('.md')).length
+  return fs.readdirSync(dir).filter((f) => {
+    if (!f.endsWith('.md')) return false
+    if (skipIndex && f === 'index.md') return false
+    return true
+  }).length
 }
 
 function countRecipes() {
-  const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/data/recipes.json'), 'utf8'))
+  const data = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'docs/data/recipes.json'), 'utf8')
+  )
   return data.length
 }
 
@@ -41,9 +48,10 @@ function countNavCategories() {
 function countAlgorithm() {
   const dir = path.join(ROOT, 'docs/algorithm')
   if (!fs.existsSync(dir)) return 0
-  // fundamentals.md 是识字篇，不是题目
   const skip = new Set(['index.md', 'fundamentals.md'])
-  return fs.readdirSync(dir).filter(f => f.endsWith('.md') && !skip.has(f)).length
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.md') && !skip.has(f)).length
 }
 
 // 顺序与侧边栏一致。新增笔记目录时，这里和 README 的目录树要一起加。
@@ -63,7 +71,6 @@ const subdirs = [
   { key: 'frontier', label: '前沿技术' }
 ]
 
-// 硬件杂谈子目录
 const hwSubdirs = [
   { key: 'chips', label: '芯片' },
   { key: 'wired', label: '有线接口' },
@@ -71,42 +78,30 @@ const hwSubdirs = [
   { key: 'power', label: '电源与充电' }
 ]
 
-function assertNoteDirs(notesDir, expected) {
-  const actual = fs.readdirSync(notesDir).filter(name =>
-    fs.statSync(path.join(notesDir, name)).isDirectory()
+function assertDirs(dir, expected, label) {
+  if (!fs.existsSync(dir)) {
+    console.error(`${label} 目录不存在: ${dir}`)
+    process.exit(1)
+  }
+  const actual = fs.readdirSync(dir).filter((name) =>
+    fs.statSync(path.join(dir, name)).isDirectory()
   )
   const want = new Set(expected)
   const have = new Set(actual)
-  const missing = expected.filter(key => !have.has(key))
-  const extra = actual.filter(key => !want.has(key))
+  const missing = expected.filter((key) => !have.has(key))
+  const extra = actual.filter((key) => !want.has(key))
   if (missing.length === 0 && extra.length === 0) return
-  console.error('docs/notes 的子目录和脚本名单不一致，已停止，避免写错 README')
+  console.error(`${label} 的子目录和脚本名单不一致，已停止，避免写错 README`)
   if (missing.length) console.error('  名单里有、磁盘上没有: ' + missing.join(', '))
   if (extra.length) console.error('  磁盘上有、名单里没有: ' + extra.join(', '))
   process.exit(1)
 }
 
-function assertHwDirs(hwDir, expected) {
-  const actual = fs.readdirSync(hwDir).filter(name =>
-    fs.statSync(path.join(hwDir, name)).isDirectory()
-  )
-  const want = new Set(expected)
-  const have = new Set(actual)
-  const missing = expected.filter(key => !have.has(key))
-  const extra = actual.filter(key => !want.has(key))
-  if (missing.length === 0 && extra.length === 0) return
-  console.error('docs/hardware 的子目录和脚本名单不一致，已停止，避免写错 README')
-  if (missing.length) console.error('  名单里有、磁盘上没有: ' + missing.join(', '))
-  if (extra.length) console.error('  磁盘上有、名单里没有: ' + extra.join(', '))
-  process.exit(1)
-}
-
-// ── 统计 ──
 const notesDir = path.join(ROOT, 'docs/notes')
-assertNoteDirs(notesDir, subdirs.map(item => item.key))
+assertDirs(notesDir, subdirs.map((item) => item.key), 'docs/notes')
 
 const hwDir = path.join(ROOT, 'docs/hardware')
-assertHwDirs(hwDir, hwSubdirs.map(item => item.key))
+assertDirs(hwDir, hwSubdirs.map((item) => item.key), 'docs/hardware')
 
 const stats = {
   totalNotes: 0,
@@ -130,49 +125,56 @@ for (const { key } of hwSubdirs) {
   stats.totalHw += stats.hwSub[key]
 }
 
-// ── 更新 README ──
 let readme = fs.readFileSync(README, 'utf8')
 
-// 更新子目录行：替换 "标签（N 篇）" 中的数字
 for (const { key, label } of subdirs) {
-  const regex = new RegExp(label + '（' + '\\d+' + ' 篇）', 'g')
-  const replacement = label + '（' + stats.sub[key] + ' 篇）'
-  readme = readme.replace(regex, replacement)
+  readme = readme.replace(
+    new RegExp(label + '（\\d+ 篇）', 'g'),
+    `${label}（${stats.sub[key]} 篇）`
+  )
 }
 
-// 更新硬件杂谈子目录行
 for (const { key, label } of hwSubdirs) {
-  const regex = new RegExp(label + '（\\d+ 篇）', 'g')
-  const replacement = label + '（' + stats.hwSub[key] + ' 篇）'
-  readme = readme.replace(regex, replacement)
+  readme = readme.replace(
+    new RegExp(label + '（\\d+ 篇）', 'g'),
+    `${label}（${stats.hwSub[key]} 篇）`
+  )
 }
 
-// 更新目录树汇总：技术笔记（N 大分类，M 篇）
 readme = readme.replace(
-  /\u6280\u672F\u7B14\u8BB0\uFF08\d+ \u5927\u5206\u7C7B\uFF0C\d+ \u7BC7\uFF09/,
-  `\u6280\u672F\u7B14\u8BB0\uFF08${subdirs.length} \u5927\u5206\u7C7B\uFF0C${stats.totalNotes} \u7BC7\uFF09`
+  /技术笔记（\d+ 大分类，\d+ 篇）/,
+  `技术笔记（${subdirs.length} 大分类，${stats.totalNotes} 篇）`
 )
 
-// 更新汇总行
-readme = readme.replace(/(\d+)\+?\s*\u7BC7\u6280\u672F\u6587\u7AE0/, stats.totalNotes + ' \u7BC7\u6280\u672F\u6587\u7AE0')
-readme = readme.replace(/(\d+)\s*\u6B3E(?:\u7EAF)?\u524D\u7AEF\u5DE5\u5177/, stats.tools + ' \u6B3E\u524D\u7AEF\u5DE5\u5177')
-readme = readme.replace(/(\d+)\+?\s*\u9053\u5BB6\u5E38\u83DC\u8C31/, stats.recipes + ' \u9053\u5BB6\u5E38\u83DC\u8C31')
-readme = readme.replace(/(\d+)\s*\u4E2A\u5206\u7C7B/, stats.navCategories + ' \u4E2A\u5206\u7C7B')
-readme = readme.replace(/(\d+)\+?\s*\u4E2A\u5F00\u53D1\u7F51\u7AD9/, stats.navLinks + '+ \u4E2A\u5F00\u53D1\u7F51\u7AD9')
+readme = readme.replace(
+  /硬件杂谈（\d+ 分类，\d+ 篇）/,
+  `硬件杂谈（${hwSubdirs.length} 分类，${stats.totalHw} 篇）`
+)
 
-// 算法题库：目录块（algorithm/  # 算法题库（N 题））与汇总行（算法题库**：N 题）
+readme = readme.replace(/\d+ 篇技术文章/, `${stats.totalNotes} 篇技术文章`)
+readme = readme.replace(/\d+ 款前端工具/, `${stats.tools} 款前端工具`)
+readme = readme.replace(/\d+ 道家常菜谱/, `${stats.recipes} 道家常菜谱`)
+readme = readme.replace(/\d+ 个分类/, `${stats.navCategories} 个分类`)
+readme = readme.replace(/\d+\+? 个?开发网站/, `${stats.navLinks} 个开发网站`)
+
 readme = readme.replace(/算法题库（\d+ 题）/g, `算法题库（${stats.algorithm} 题）`)
 readme = readme.replace(/算法题库\*\*：\d+ 题/g, `算法题库**：${stats.algorithm} 题`)
-readme = readme.replace(/(recipes\.json\s+#\s*)(\d+)/, `$1${stats.recipes}`)
-readme = readme.replace(/(tools\.js\s+#\s*)(\d+)/, `$1${stats.tools}`)
-readme = readme.replace(/(navLinks\.js\s+#\s*)(\d+)/, `$1${stats.navLinks}`)
+readme = readme.replace(/(recipes\.json\s+#\s*)\d+/, `$1${stats.recipes}`)
+readme = readme.replace(/(tools\.js\s+#\s*)\d+/, `$1${stats.tools}`)
+readme = readme.replace(/(navLinks\.js\s+#\s*)\d+/, `$1${stats.navLinks}`)
 
 fs.writeFileSync(README, readme, 'utf8')
 
-// ── 输出 ──
 console.log('README.md updated')
-console.log(`  Notes: ${stats.totalNotes} (${subdirs.map(s => `${s.label} ${stats.sub[s.key]}`).join(', ')})`)
+console.log(
+  `  Notes: ${stats.totalNotes} (${subdirs.map((s) => `${s.label} ${stats.sub[s.key]}`).join(', ')})`
+)
 console.log(`  Tools: ${stats.tools}`)
 console.log(`  Recipes: ${stats.recipes}`)
-console.log(`  Nav: ${stats.navCategories} categories, ${stats.navLinks} links`)
-console.log(`  Hardware: ${stats.totalHw} (${hwSubdirs.map(s => `${s.label} ${stats.hwSub[s.key]}`).join(', ')})`)
+console.log(
+  `  Nav: ${stats.navCategories} categories, ${stats.navLinks} links`
+)
+console.log(
+  `  Hardware: ${stats.totalHw} (${hwSubdirs.map((s) => `${s.label} ${stats.hwSub[s.key]}`).join(', ')})`
+)
+console.log(`  Algorithm: ${stats.algorithm}`)
