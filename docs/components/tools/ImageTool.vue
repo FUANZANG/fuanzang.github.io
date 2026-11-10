@@ -91,8 +91,8 @@ function onImgDrop(e) {
   transition: all 0.25s;
 }
 .img-drop:hover {
-  border-color: var(--c-purple);
-  color: var(--c-purple);
+  border-color: var(--c-ink);
+  color: var(--c-ink);
 }
 .img-prev {
   text-align: center;
@@ -124,7 +124,7 @@ function onImgDrop(e) {
 .copy-btn {
   border: none;
   background: none;
-  color: var(--c-purple);
+  color: var(--c-ink);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;

@@ -215,7 +215,7 @@ function loadSample() {
 }
 .text-btn:hover:not(:disabled) {
   color: var(--vp-c-text-1);
-  border-color: var(--c-purple);
+  border-color: var(--c-ink);
 }
 .text-btn:disabled {
   opacity: 0.45;

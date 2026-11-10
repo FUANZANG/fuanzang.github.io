@@ -488,7 +488,7 @@ export const placeholderMap = {
   json: '粘贴 JSON，如：{"a":1,"b":[2,3]}',
   timestamp: '输入时间，如：2026-07-15 12:00:00',
   case: '输入任意命名，如：my_userName 或 user-name',
-  color: '输入颜色，如：#3b82f6 或 rgb(59,130,246) 或 hsl(217,90%,59%)',
+  color: '输入颜色，如：#141414 或 rgb(20,20,20) 或 hsl(0,0%,8%)',
   base: '输入数字，如：255 或 FF（按左侧进制解析）',
   text: '粘贴文本，统计字符、行数、词数与字节',
   jwt: '粘贴 JWT（header.payload.signature）',

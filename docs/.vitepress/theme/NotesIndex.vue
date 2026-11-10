@@ -1,25 +1,33 @@
 <script setup>
+/**
+ * 栏目总览列表：从 themeConfig.sidebar 读分组，笔记 / 硬件等共用。
+ */
 import { computed } from 'vue'
 import { useData } from 'vitepress'
 import { VPLink } from 'vitepress/theme'
 
+const props = defineProps({
+  /** sidebar 键，如 '/notes/'、'/hardware/' */
+  sidebarKey: { type: String, default: '/notes/' },
+  /** 统计文案单位，如「篇笔记」「篇」 */
+  unit: { type: String, default: '篇笔记' }
+})
+
 const { theme } = useData()
 
-// 直接读取 themeConfig.sidebar['/notes/']，与导航分组保持一致，新增笔记自动同步
 const groups = computed(() => {
   const sidebar = theme.value?.sidebar
   if (!sidebar || typeof sidebar !== 'object') return []
-  const notesSidebar = sidebar['/notes/']
-  if (!Array.isArray(notesSidebar)) return []
+  const section = sidebar[props.sidebarKey]
+  if (!Array.isArray(section)) return []
 
-  return notesSidebar
-    .map(group => {
-      // 按链接去重，避免 config 中重复项（如 SQL 基础）在总览页重复出现
-      // 跳过总览自链，避免在 /notes/ 页出现指向自己的卡片
+  return section
+    .map((group) => {
       const seen = new Set()
-      const items = (group.items || []).filter(it => {
+      const items = (group.items || []).filter((it) => {
         if (!it || !it.link) return false
-        if (it.link === '/notes/') return false
+        // 跳过总览自链
+        if (it.link === props.sidebarKey) return false
         if (seen.has(it.link)) return false
         seen.add(it.link)
         return true
@@ -29,7 +37,7 @@ const groups = computed(() => {
         items
       }
     })
-    .filter(group => group.items.length > 0)
+    .filter((group) => group.items.length > 0)
 })
 
 const total = computed(() =>
@@ -40,7 +48,7 @@ const total = computed(() =>
 <template>
   <div class="notes-index">
     <p v-if="total" class="notes-count">
-      共 {{ groups.length }} 个分类 · {{ total }} 篇笔记
+      共 {{ groups.length }} 个分类 · {{ total }} {{ unit }}
     </p>
 
     <section
@@ -48,90 +56,138 @@ const total = computed(() =>
       :key="group.text"
       class="notes-group"
     >
-      <h2 class="group-title">{{ group.text }}</h2>
-      <div class="group-grid">
-        <VPLink
-          v-for="item in group.items"
-          :key="item.link"
-          class="note-card"
-          :href="item.link"
-        >
-          {{ item.text }}
-        </VPLink>
-      </div>
+      <header class="group-head">
+        <h2 class="group-title">{{ group.text }}</h2>
+        <span class="group-meta">{{ group.items.length }}</span>
+      </header>
+      <ul class="group-list">
+        <li v-for="item in group.items" :key="item.link">
+          <VPLink class="note-link" :href="item.link">
+            <span class="note-title">{{ item.text }}</span>
+            <span class="note-arrow" aria-hidden="true">→</span>
+          </VPLink>
+        </li>
+      </ul>
     </section>
   </div>
 </template>
 
 <style scoped>
 .notes-index {
-  margin-top: 1.5rem;
+  margin-top: 0.25rem;
 }
 
 .notes-count {
+  font-family: var(--font-ui, inherit);
   font-size: 0.9rem;
   color: var(--vp-c-text-2);
-  margin-bottom: 2rem;
+  margin: 0 0 2rem;
 }
 
 .notes-group {
   margin-bottom: 2.5rem;
 }
 
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
 .group-title {
-  font-size: 1.25rem;
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--vp-c-text-1);
-  margin: 0 0 1.1rem;
-  padding-left: 0.7rem;
-  border-left: 3px solid transparent;
-  border-image: linear-gradient(180deg, var(--c-blue, #3b82f6), var(--c-purple, #8b5cf6)) 1;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
-/* 分类标题上方留白收紧（默认 .vp-doc h2 padding-top 过大，显空） */
 .notes-index :deep(.group-title) {
-  padding-top: 8px;
+  padding-top: 0;
+  border-top: none;
 }
 
-.group-grid {
+.group-meta {
+  font-family: var(--font-ui, inherit);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--vp-c-text-3);
+}
+
+.group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.15rem 1.5rem;
 }
 
-.note-card {
-  display: block;
-  padding: 0.9rem 1.1rem;
-  border-radius: 12px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
+.note-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.15rem;
   color: var(--vp-c-text-1);
-  font-size: 0.92rem;
-  font-weight: 500;
   text-decoration: none;
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    color 0.25s ease;
+  border-radius: 2px;
+  transition: color 0.18s ease;
 }
 
-.note-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(139, 92, 246, 0.35);
-  color: var(--c-purple, #8b5cf6);
-  box-shadow: 0 8px 20px -10px rgba(139, 92, 246, 0.4);
+.note-title {
+  font-family: var(--font-reading, inherit);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.note-arrow {
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  color: var(--c-ink, var(--vp-c-brand-1));
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.note-link:hover {
+  color: var(--c-ink, var(--vp-c-brand-1));
+}
+
+.note-link:hover .note-arrow {
+  opacity: 1;
+  transform: none;
+}
+
+.note-link:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {
-  .group-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.6rem;
+  .group-list {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
-  .note-card {
-    padding: 0.8rem 0.9rem;
-    font-size: 0.88rem;
+  .note-arrow {
+    opacity: 0.45;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-link,
+  .note-arrow {
+    transition: none;
   }
 }
 </style>

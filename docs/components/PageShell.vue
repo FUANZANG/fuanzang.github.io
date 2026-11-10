@@ -1,7 +1,7 @@
 <script setup>
 /**
  * 轻应用页统一壳：页头、色板、页宽与内边距。
- * 页头 emoji 与渐变文字拆开渲染，避免 background-clip 把 emoji 透明掉。
+ * 页头 emoji 与正文拆开渲染；色板与全站单墨黑对齐。
  */
 import { computed } from 'vue'
 
@@ -13,7 +13,7 @@ const props = defineProps({
   fill: { type: Boolean, default: false }
 })
 
-/** 拆出标题开头的 emoji，其余走渐变字 */
+/** 拆出标题开头的 emoji，其余走标题字 */
 const titleParts = computed(() => {
   const m = props.title.match(
     /^((?:\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)+)\s*(.*)$/u
@@ -40,12 +40,20 @@ const titleParts = computed(() => {
 
 <style scoped>
 .page-shell {
-  --c-blue: #3b82f6;
-  --c-purple: #8b5cf6;
-  --c-pink: #ec4899;
-  --c-cyan: #06b6d4;
+  --c-ink: var(--vp-c-text-1, #141414);
+  --c-on-ink: var(--vp-c-bg, #fafafa);
   margin: 0 auto;
   padding: 1rem 1.5rem 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.page-body {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .page-header {
@@ -55,7 +63,10 @@ const titleParts = computed(() => {
 }
 
 .page-header h1 {
+  font-family: var(--font-display, inherit);
   font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   margin: 0 0 0.6rem;
   display: flex;
   align-items: center;
@@ -72,15 +83,7 @@ const titleParts = computed(() => {
 }
 
 .title-text {
-  background: linear-gradient(
-    135deg,
-    var(--c-blue),
-    var(--c-purple),
-    var(--c-pink)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--c-ink);
 }
 
 .subtitle {
@@ -91,8 +94,8 @@ const titleParts = computed(() => {
 }
 @media (max-width: 860px) {
   .page-shell {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
   .page-header {
     margin-bottom: 1rem;
@@ -110,7 +113,7 @@ const titleParts = computed(() => {
   height: 3px;
   margin: 0.3rem auto 0;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--c-blue), var(--c-purple));
+  background: var(--c-ink);
 }
 
 /* 满高模式（仅桌面）：锁住高度，body 不滚动，内部区域各自滚动 */

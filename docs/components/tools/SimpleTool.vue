@@ -340,7 +340,7 @@ watch(
 }
 .seg button.on {
   background: var(--vp-c-brand-1);
-  color: #fff;
+  color: var(--c-on-ink, #fafafa);
 }
 .style-select {
   padding: 0.5rem 1rem;
@@ -389,7 +389,7 @@ watch(
 }
 .text-btn:hover {
   color: var(--vp-c-text-1);
-  border-color: var(--c-purple);
+  border-color: var(--c-ink);
 }
 .io {
   display: grid;
@@ -416,7 +416,7 @@ watch(
 .copy-btn {
   border: none;
   background: none;
-  color: var(--c-purple);
+  color: var(--c-ink);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;

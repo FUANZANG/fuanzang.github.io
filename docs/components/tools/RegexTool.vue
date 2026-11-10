@@ -182,7 +182,7 @@ const outText = computed(() =>
 }
 .seg button.on {
   background: var(--vp-c-brand-1);
-  color: #fff;
+  color: var(--c-on-ink, #fafafa);
 }
 .replace-input {
   width: 100%;
@@ -210,7 +210,7 @@ const outText = computed(() =>
   background: var(--vp-c-bg-soft);
 }
 .regex-row .slash {
-  color: var(--c-purple);
+  color: var(--c-ink);
   font-size: 1.1rem;
 }
 .regex-pattern {
@@ -251,7 +251,7 @@ const outText = computed(() =>
 .copy-btn {
   border: none;
   background: none;
-  color: var(--c-purple);
+  color: var(--c-ink);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;

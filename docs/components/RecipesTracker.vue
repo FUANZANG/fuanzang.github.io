@@ -8,10 +8,9 @@ const selectedCategory = ref('全部')
 const selectedTags = ref([])
 const expandedId = ref(null)
 const randomNotice = ref('')
-const viewMode = ref('grid')
 const sortBy = ref('default')
 const currentPage = ref(1)
-const perPage = 12
+const perPage = 16
 
 // 烹饪模式
 const cookingMode = ref(false)
@@ -337,9 +336,9 @@ const formatTime = s => {
 
 <template>
   <PageShell
-    title="🍳 今天吃什么？"
-    subtitle="记录一些家常菜谱，不知道吃什么的时候翻翻看"
-    max-width="1100px"
+    title="今天吃什么"
+    subtitle="家常菜手帐：不知道吃什么时翻翻看"
+    max-width="820px"
   >
     <section class="toolbar">
       <div class="toolbar-search">
@@ -352,26 +351,10 @@ const formatTime = s => {
         />
       </div>
       <div class="toolbar-row">
-        <button class="random-btn" type="button" @click="pickRandom">🎲 随机推荐</button>
+        <button class="random-btn" type="button" @click="pickRandom">随机一道</button>
         <transition name="notice-fade">
           <span v-if="randomNotice" class="random-notice">{{ randomNotice }}</span>
         </transition>
-        <div class="view-toggle" role="group" aria-label="视图切换">
-          <button
-            type="button"
-            :class="{ active: viewMode === 'grid' }"
-            :aria-pressed="viewMode === 'grid'"
-            title="网格视图"
-            @click="viewMode = 'grid'"
-          >▦</button>
-          <button
-            type="button"
-            :class="{ active: viewMode === 'list' }"
-            :aria-pressed="viewMode === 'list'"
-            title="列表视图"
-            @click="viewMode = 'list'"
-          >☰</button>
-        </div>
         <div class="filters-scroll">
           <div class="filter-group">
             <select v-model="selectedCategory" class="filter-select" aria-label="分类">
@@ -381,9 +364,9 @@ const formatTime = s => {
           <div class="filter-group">
             <select v-model="sortBy" class="filter-select" aria-label="排序">
               <option value="default">默认排序</option>
-              <option value="time-asc">时间 ↑</option>
-              <option value="time-desc">时间 ↓</option>
-              <option value="difficulty">难度</option>
+              <option value="time-asc">时间升序</option>
+              <option value="time-desc">时间降序</option>
+              <option value="difficulty">按难度</option>
               <option value="favorites">收藏优先</option>
             </select>
           </div>
@@ -407,57 +390,66 @@ const formatTime = s => {
       </div>
     </section>
 
-    <section class="recipe-list" :class="viewMode">
+    <section class="recipe-list">
       <div v-if="sortedRecipes.length === 0" class="empty-state">
         没有找到匹配的菜谱，换个关键词试试？
       </div>
-      <div
+      <article
         v-for="recipe in pagedRecipes"
         :key="recipe.name"
         class="recipe-card"
         :data-name="recipe.name"
         :class="{ expanded: expandedId === recipe.name, recommended: recommendedId === recipe.name }"
       >
-        <div class="card-header" @click="toggleExpand(recipe.name)">
+        <header class="card-header" @click="toggleExpand(recipe.name)">
           <div class="card-title-row">
-            <button class="fav-btn" @click.stop="toggleFavorite(recipe.name)" :title="isFavorite(recipe.name) ? '取消收藏' : '收藏'">
+            <button
+              class="fav-btn"
+              type="button"
+              @click.stop="toggleFavorite(recipe.name)"
+              :title="isFavorite(recipe.name) ? '取消收藏' : '收藏'"
+              :aria-label="isFavorite(recipe.name) ? '取消收藏' : '收藏'"
+            >
               {{ isFavorite(recipe.name) ? '★' : '☆' }}
             </button>
             <h3 class="recipe-name">{{ recipe.name }}</h3>
-            <span class="difficulty-badge" :class="difficultyClass(recipe.difficulty)">{{ recipe.difficulty }}</span>
-            <span class="expand-chevron" :class="{ open: expandedId === recipe.name }">›</span>
+            <span class="expand-chevron" :class="{ open: expandedId === recipe.name }" aria-hidden="true">›</span>
           </div>
           <div class="card-meta">
-            <span class="meta-item">⏱ {{ recipe.time }}</span>
-            <span class="meta-item">📂 {{ recipe.category }}</span>
+            <span class="meta-item">{{ recipe.time }}</span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span class="meta-item">{{ recipe.category }}</span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span class="difficulty-badge" :class="difficultyClass(recipe.difficulty)">{{ recipe.difficulty }}</span>
           </div>
-          <div class="card-tags">
+          <div v-if="recipe.tags?.length" class="card-tags">
             <span v-for="tag in recipe.tags" :key="tag" class="tag">{{ tag }}</span>
           </div>
-        </div>
+        </header>
         <div v-show="expandedId === recipe.name" class="card-body">
           <div class="section">
-            <h4>🥬 食材</h4>
+            <h4>食材</h4>
             <ul class="ingredient-list">
               <li v-for="ing in recipe.ingredients" :key="ing.name">
-                <strong>{{ ing.name }}</strong> — {{ ing.amount }}
+                <strong>{{ ing.name }}</strong>
+                <span>{{ ing.amount }}</span>
               </li>
             </ul>
           </div>
           <div class="section">
-            <h4>🧂 调料</h4>
+            <h4>调料</h4>
             <div class="seasonings">
               <span v-for="s in recipe.seasonings" :key="s" class="seasoning-tag">{{ s }}</span>
             </div>
           </div>
           <div class="section">
-            <h4>👨‍🍳 做法</h4>
+            <h4>做法</h4>
             <ol class="steps-list">
               <li v-for="(step, index) in recipe.steps" :key="index">{{ step }}</li>
             </ol>
           </div>
           <div v-if="recipe.tips" class="section tips-section">
-            <h4>💡 小贴士</h4>
+            <h4>小贴士</h4>
             <p>{{ recipe.tips }}</p>
           </div>
           <div v-if="seasoningRefFor(recipe.name)" class="section ref-section">
@@ -468,9 +460,9 @@ const formatTime = s => {
               @click.stop="openSeasoningRef(recipe.name)"
             >{{ seasoningRefFor(recipe.name) }}</button>
           </div>
-          <button class="cook-btn" @click.stop="startCooking(recipe)">🔥 开始烹饪</button>
+          <button class="cook-btn" type="button" @click.stop="startCooking(recipe)">开始烹饪</button>
         </div>
-      </div>
+      </article>
     </section>
 
     <div v-if="totalPages > 1" class="pagination">
@@ -503,7 +495,7 @@ const formatTime = s => {
           type="button"
           @click="pickRandom"
         >
-          🎲 换一道
+          换一道
         </button>
       </div>
     </Teleport>
@@ -544,7 +536,11 @@ const formatTime = s => {
 
 <style scoped>
 /* ── Toolbar ── */
-.toolbar { margin-bottom: 1.5rem; }
+.toolbar {
+  margin-bottom: 1.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
 .toolbar-search { margin-bottom: 0.65rem; }
 .toolbar-row {
   display: flex;
@@ -552,6 +548,7 @@ const formatTime = s => {
   gap: 0.65rem;
   align-items: center;
   margin-bottom: 0.75rem;
+  min-width: 0;
 }
 .filters-scroll {
   display: flex;
@@ -562,41 +559,44 @@ const formatTime = s => {
 }
 .search-input {
   width: 100%;
-  padding: 0.55rem 1rem;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
+  padding: 0.65rem 0;
+  border: none;
+  border-bottom: 1px solid var(--vp-c-divider);
+  border-radius: 0;
+  background: transparent;
   color: var(--vp-c-text-1);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   outline: none;
   transition: border-color 0.2s;
 }
-.search-input:focus { border-color: var(--vp-c-brand-1); }
+.search-input:focus { border-bottom-color: var(--vp-c-brand-1); }
 
 .random-btn {
-  padding: 0.55rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: #fff;
-  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--c-ink, var(--vp-c-brand-1));
+  border-radius: 6px;
+  background: var(--c-ink, var(--vp-c-brand-1));
+  color: var(--c-on-ink, #fafafa);
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.random-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px -4px rgba(99,102,241,0.5); }
-.random-btn:active { transform: translateY(0); }
+.random-btn:hover {
+  background: var(--vp-c-brand-2, #000);
+  border-color: var(--vp-c-brand-2, #000);
+}
+.random-btn:active { transform: translateY(1px); }
 
 /* 随机回退提示 */
 .random-notice {
-  margin-left: 0.5rem;
-  font-size: 0.82rem;
-  color: var(--vp-c-warning-1, #b45309);
-  background: var(--vp-c-warning-soft, rgba(245, 158, 11, 0.12));
-  border: 1px solid var(--vp-c-warning-2, rgba(245, 158, 11, 0.3));
-  padding: 0.28rem 0.6rem;
-  border-radius: 999px;
+  margin-left: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--vp-c-text-2);
+  background: transparent;
+  border: none;
+  padding: 0;
   white-space: nowrap;
 }
 .notice-fade-enter-active,
@@ -622,80 +622,39 @@ const formatTime = s => {
 }
 
 .random-fab {
-  padding: 0.7rem 1.15rem;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  color: #fff;
-  font-size: 0.95rem;
+  padding: 0.65rem 1.05rem;
+  border: 1px solid var(--c-ink, var(--vp-c-brand-1));
+  border-radius: 6px;
+  background: var(--c-ink, var(--vp-c-brand-1));
+  color: var(--c-on-ink, #fafafa);
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.55);
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s, color 0.15s;
 }
 .random-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.6);
-}
-.random-fab:active {
-  transform: translateY(0);
+  background: var(--vp-c-brand-2, #000);
 }
 
 /* 调味参考跳转后的返回按钮 */
 .ref-back-fab {
-  padding: 0.6rem 1.05rem;
+  padding: 0.55rem 0.95rem;
   border: 1px solid var(--vp-c-divider);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--vp-c-bg);
-  color: #6366f1;
-  font-size: 0.9rem;
+  color: var(--c-ink, var(--vp-c-brand-1));
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 24px -8px rgba(99, 102, 241, 0.4);
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.25);
 }
-.ref-back-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.5);
-}
-.ref-back-fab:active {
-  transform: translateY(0);
-}
-
-.view-toggle {
-  display: inline-flex;
-  align-items: stretch;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
-  box-sizing: border-box;
-}
-.view-toggle button {
-  margin: 0;
-  padding: 0.32rem 0.65rem;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--vp-c-text-2);
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1.25;
-  box-sizing: border-box;
-  appearance: none;
-}
-.view-toggle button.active {
-  background: var(--vp-c-brand-1);
-  color: #fff;
-}
-.view-toggle button:hover:not(.active) { background: var(--vp-c-bg); }
 
 .filter-select {
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.7rem;
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;
-  background: var(--vp-c-bg-soft);
+  background: transparent;
   color: var(--vp-c-text-1);
   font-size: 0.85rem;
   outline: none;
@@ -706,49 +665,249 @@ const formatTime = s => {
 .tag-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.35rem 0.55rem;
+  padding-top: 0.15rem;
+  border-top: 1px solid var(--vp-c-divider);
 }
 .tag-chip {
-  padding: 0.3rem 0.7rem;
-  min-height: 34px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 20px;
-  background: var(--vp-c-bg-soft);
+  padding: 0.2rem 0;
+  min-height: auto;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
   color: var(--vp-c-text-2);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s, border-color 0.15s;
 }
-.tag-chip:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.tag-chip:hover { color: var(--vp-c-text-1); }
 .tag-chip.selected {
-  background: var(--vp-c-brand-1);
-  color: #fff;
-  border-color: var(--vp-c-brand-1);
+  background: transparent;
+  color: var(--vp-c-text-1);
+  border-bottom-color: var(--c-ink, var(--vp-c-brand-1));
+  font-weight: 600;
 }
 .tag-clear {
-  padding: 0.3rem 0.6rem;
-  min-height: 34px;
-  border: 1px dashed var(--vp-c-divider);
-  border-radius: 20px;
+  padding: 0.2rem 0;
+  min-height: auto;
+  border: none;
   background: transparent;
   color: var(--vp-c-text-3);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-/* ── Recipe List ── */
-.recipe-list.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
+/* ── Recipe List：手帐列表 ── */
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--vp-c-divider);
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
 }
+
+.recipe-card {
+  border: none;
+  border-bottom: 1px solid var(--vp-c-divider);
+  border-radius: 0;
+  background: transparent;
+  transition: background 0.15s;
+  scroll-margin-top: calc(var(--vp-nav-height, 64px) + 12px);
+  min-width: 0;
+  max-width: 100%;
+}
+.recipe-card:hover { background: rgba(20, 20, 20, 0.02); }
+.recipe-card.recommended {
+  background: rgba(20, 20, 20, 0.035);
+  box-shadow: inset 3px 0 0 var(--c-ink, var(--vp-c-brand-1));
+}
+.recipe-card.expanded { background: rgba(20, 20, 20, 0.02); }
+
+.card-header {
+  padding: 1.05rem 1.25rem 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+.card-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+.recipe-name {
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  flex: 1;
+  color: var(--vp-c-text-1);
+}
+
+.expand-chevron {
+  font-size: 1rem;
+  color: var(--vp-c-text-3);
+  transition: transform 0.2s;
+  transform: rotate(0deg);
+  line-height: 1;
+}
+.expand-chevron.open { transform: rotate(90deg); }
+
+.fav-btn {
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--vp-c-text-3);
+  padding: 0;
+  line-height: 1;
+}
+.fav-btn:hover { color: var(--vp-c-text-1); }
+
+.difficulty-badge {
+  font-size: 0.78rem;
+  padding: 0;
+  border-radius: 0;
+  font-weight: 500;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--vp-c-text-2);
+}
+.difficulty-badge.easy,
+.difficulty-badge.medium,
+.difficulty-badge.hard {
+  background: transparent;
+  color: var(--vp-c-text-2);
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.meta-item { font-size: 0.8rem; color: var(--vp-c-text-2); }
+.meta-dot { color: var(--vp-c-text-3); font-size: 0.8rem; }
+.card-tags { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+.tag {
+  font-size: 0.74rem;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  color: var(--vp-c-text-3);
+}
+
+.card-body {
+  padding: 0 1.25rem 1.35rem;
+  border-top: 1px dashed var(--vp-c-divider);
+  min-width: 0;
+}
+.section { margin-top: 1rem; }
+.section h4 {
+  font-family: var(--font-display, inherit);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.45rem;
+  color: var(--vp-c-text-1);
+}
+
+.ingredient-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+  gap: 0.35rem 1rem;
+  min-width: 0;
+}
+.ingredient-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--vp-c-text-2);
+  border-bottom: 1px dotted var(--vp-c-divider);
+  padding-bottom: 0.2rem;
+  min-width: 0;
+}
+.ingredient-list strong { color: var(--vp-c-text-1); font-weight: 600; }
+
+.seasonings { display: flex; flex-wrap: wrap; gap: 0.35rem 0.7rem; }
+.seasoning-tag {
+  font-size: 0.82rem;
+  padding: 0;
+  background: transparent;
+  color: var(--vp-c-text-2);
+}
+
+.steps-list { padding-left: 1.15rem; margin: 0; }
+.steps-list li {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--vp-c-text-2);
+  margin-bottom: 0.35rem;
+}
+
+.tips-section {
+  margin-top: 1rem;
+  padding: 0.7rem 0 0.2rem;
+  background: transparent;
+  border-radius: 0;
+  border-left: none;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.tips-section p { font-size: 0.86rem; color: var(--vp-c-text-2); margin: 0; line-height: 1.6; }
+
+.ref-section {
+  margin-top: 0.85rem;
+  padding: 0.7rem 0 0;
+  background: transparent;
+  border-radius: 0;
+  border-left: none;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.ref-section h4 { margin: 0 0 0.4rem; }
+.ref-link {
+  display: inline-block;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--c-ink, var(--vp-c-brand-1));
+  border-radius: 0;
+  background: transparent;
+  color: var(--c-ink, var(--vp-c-brand-1));
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+.ref-link:hover { opacity: 0.75; }
+
+.cook-btn {
+  margin-top: 1.1rem;
+  width: auto;
+  min-width: 8.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--c-ink, var(--vp-c-brand-1));
+  border-radius: 6px;
+  background: var(--c-ink, var(--vp-c-brand-1));
+  color: var(--c-on-ink, #fafafa);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.cook-btn:hover { background: var(--vp-c-brand-2, #000); }
 
 /* ── Mobile：工具栏收束 + 标签横滑 ── */
 @media (max-width: 768px) {
   .toolbar { margin-bottom: 1.1rem; }
   .toolbar-search { margin-bottom: 0.55rem; }
   .search-input {
-    font-size: 1rem; /* 避免 iOS 聚焦缩放 */
+    font-size: 1rem;
     min-height: 44px;
   }
   .toolbar-row {
@@ -762,7 +921,6 @@ const formatTime = s => {
     padding: 0.5rem 0.85rem;
     font-size: 0.85rem;
   }
-  .view-toggle { display: none; }
   .filters-scroll {
     flex: 1 1 auto;
     flex-wrap: nowrap;
@@ -779,141 +937,53 @@ const formatTime = s => {
     font-size: 0.85rem;
   }
 
+  .card-header {
+    padding: 0.95rem 1.15rem 0.9rem;
+  }
+  .card-body {
+    padding: 0 1.15rem 1.2rem;
+  }
+  .recipe-card.recommended .card-header,
+  .recipe-card.recommended .card-body {
+    padding-left: 1.25rem;
+  }
+  .toolbar,
+  .recipe-list,
+  .pagination,
+  .stats-footer {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* 标签在壳内横滑，不用负边距，避免整页左右滚动条 */
   .tag-bar {
     flex-wrap: nowrap;
-    gap: 0.45rem;
-    margin-inline: -1.5rem;
-    padding: 0.1rem 1.5rem 0.25rem;
+    gap: 0.75rem;
+    margin-inline: 0;
+    padding: 0.55rem 0 0.35rem;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
+    max-width: 100%;
+    width: 100%;
   }
   .tag-bar::-webkit-scrollbar { display: none; }
   .tag-chip,
   .tag-clear {
     flex: 0 0 auto;
-    min-height: 40px;
-    padding: 0.4rem 0.85rem;
-    font-size: 0.85rem;
+    min-height: auto;
+    white-space: nowrap;
   }
 
-  .recipe-list.grid {
+  .random-notice {
+    display: none;
+  }
+
+  .ingredient-list {
     grid-template-columns: 1fr;
   }
 }
-.recipe-list.grid .recipe-card { margin-bottom: 0; }
-
-.recipe-list.list .recipe-card { margin-bottom: 0.75rem; }
-
-.recipe-card {
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: box-shadow 0.2s, transform 0.2s;
-  /* 为固定导航预留下方空间，避免 scrollIntoView 贴顶被遮挡 */
-  scroll-margin-top: calc(var(--vp-nav-height, 64px) + 12px);
-}
-.recipe-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
-.recipe-card.recommended { border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 2px rgba(139,92,246,0.2); }
-
-.card-header { padding: 1rem 1.15rem; cursor: pointer; user-select: none; position: relative; }
-.card-title-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
-.recipe-name { font-size: 1.1rem; margin: 0; flex: 1; }
-
-.expand-chevron {
-  font-size: 1.1rem;
-  color: var(--vp-c-text-3);
-  transition: transform 0.2s;
-  transform: rotate(0deg);
-  line-height: 1;
-  margin-left: 0.25rem;
-}
-.expand-chevron.open { transform: rotate(90deg); }
-
-.fav-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #f59e0b;
-  padding: 0;
-  line-height: 1;
-  transition: transform 0.15s;
-}
-.fav-btn:hover { transform: scale(1.2); }
-
-.difficulty-badge {
-  font-size: 0.7rem;
-  padding: 0.12rem 0.45rem;
-  border-radius: 4px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.difficulty-badge.easy { background: #dcfce7; color: #166534; }
-.difficulty-badge.medium { background: #fef3c7; color: #92400e; }
-.difficulty-badge.hard { background: #fee2e2; color: #991b1b; }
-
-:root.dark .difficulty-badge.easy { background: rgba(34,197,94,0.16); color: #86efac; }
-:root.dark .difficulty-badge.medium { background: rgba(245,158,11,0.16); color: #fcd34d; }
-:root.dark .difficulty-badge.hard { background: rgba(239,68,68,0.16); color: #fca5a5; }
-
-.card-meta { display: flex; gap: 0.8rem; margin-bottom: 0.35rem; }
-.meta-item { font-size: 0.8rem; color: var(--vp-c-text-2); }
-.card-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-.tag { font-size: 0.7rem; padding: 0.08rem 0.4rem; background: var(--vp-c-bg-soft); border-radius: 4px; color: var(--vp-c-text-2); }
-
-.card-body { padding: 0 1.15rem 1.15rem; border-top: 1px solid var(--vp-c-divider); }
-.section { margin-top: 0.9rem; }
-.section h4 { font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--vp-c-text-1); }
-
-.ingredient-list {
-  list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.3rem;
-}
-.ingredient-list li { font-size: 0.85rem; color: var(--vp-c-text-2); }
-
-.seasonings { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.seasoning-tag { font-size: 0.75rem; padding: 0.1rem 0.45rem; background: var(--vp-c-bg-soft); border-radius: 4px; color: var(--vp-c-text-2); }
-
-.steps-list { padding-left: 1.2rem; margin: 0; }
-.steps-list li { font-size: 0.85rem; line-height: 1.7; color: var(--vp-c-text-2); margin-bottom: 0.25rem; }
-
-.tips-section {
-  margin-top: 0.9rem; padding: 0.65rem 0.75rem;
-  background: var(--vp-c-bg-soft); border-radius: 8px;
-  border-left: 3px solid #f59e0b;
-}
-.tips-section p { font-size: 0.8rem; color: var(--vp-c-text-2); margin: 0; line-height: 1.5; }
-
-.ref-section {
-  margin-top: 0.6rem; padding: 0.55rem 0.75rem;
-  background: var(--vp-c-bg-soft); border-radius: 8px;
-  border-left: 3px solid #6366f1;
-}
-.ref-section h4 { margin: 0 0 0.4rem; font-size: 0.8rem; color: var(--vp-c-text-1); }
-.ref-link {
-  display: inline-block; padding: 0.3rem 0.7rem;
-  border: 1px solid var(--vp-c-divider); border-radius: 999px;
-  background: var(--vp-c-bg); color: #6366f1;
-  font-size: 0.8rem; cursor: pointer; transition: all 0.18s;
-}
-.ref-link:hover { border-color: #6366f1; background: rgba(99,102,241,0.08); }
-
-.cook-btn {
-  margin-top: 1rem;
-  width: 100%;
-  padding: 0.6rem;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f97316, #ef4444);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.cook-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -2px rgba(249,115,22,0.4); }
 
 /* ── Pagination ── */
 .pagination {
@@ -933,7 +1003,11 @@ const formatTime = s => {
   font-size: 0.85rem;
   transition: background 0.15s;
 }
-.pagination button:hover:not(:disabled) { background: var(--vp-c-brand-1); color: #fff; border-color: var(--vp-c-brand-1); }
+.pagination button:hover:not(:disabled) {
+  background: var(--vp-c-brand-1);
+  color: var(--c-on-ink, #fafafa);
+  border-color: var(--vp-c-brand-1);
+}
 .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 .page-info { font-size: 0.85rem; color: var(--vp-c-text-2); }
 
@@ -954,13 +1028,23 @@ const formatTime = s => {
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .cooking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.cooking-header h2 { margin: 0; font-size: 1.4rem; }
+.cooking-header h2 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
 .close-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--vp-c-text-2); padding: 0.25rem; }
 .close-btn:hover { color: var(--vp-c-text-1); }
 
 .cooking-step-indicator { text-align: center; font-size: 0.9rem; color: var(--vp-c-text-2); margin-bottom: 0.5rem; }
 .cooking-step-progress { height: 4px; background: var(--vp-c-divider); border-radius: 2px; overflow: hidden; margin-bottom: 1.5rem; }
-.progress-bar { height: 100%; background: linear-gradient(90deg, #f97316, #ef4444); transition: width 0.3s; border-radius: 2px; }
+.progress-bar {
+  height: 100%;
+  background: var(--c-ink, var(--vp-c-brand-1));
+  transition: width 0.3s;
+  border-radius: 2px;
+}
 
 .cooking-step-content {
   background: var(--vp-c-bg-soft); border-radius: 12px;
@@ -988,7 +1072,11 @@ const formatTime = s => {
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
 }
-.timer-btns button:hover { background: var(--vp-c-brand-1); color: #fff; border-color: var(--vp-c-brand-1); }
+.timer-btns button:hover {
+  background: var(--vp-c-brand-1);
+  color: var(--c-on-ink, #fafafa);
+  border-color: var(--vp-c-brand-1);
+}
 
 .cooking-nav { display: flex; gap: 0.75rem; }
 .cooking-nav button {
@@ -997,7 +1085,10 @@ const formatTime = s => {
   transition: background 0.15s, transform 0.1s;
 }
 .cooking-nav button:first-child { background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); }
-.cooking-nav button:last-child { background: linear-gradient(135deg, #f97316, #ef4444); color: #fff; }
+.cooking-nav button:last-child {
+  background: var(--c-ink, var(--vp-c-brand-1));
+  color: var(--c-on-ink, #fafafa);
+}
 .cooking-nav button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 .cooking-nav button:hover:not(:disabled) { transform: translateY(-1px); }
 

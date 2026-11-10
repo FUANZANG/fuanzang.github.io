@@ -160,7 +160,7 @@ function clearAll() {
 }
 .text-btn:hover {
   color: var(--vp-c-text-1);
-  border-color: var(--c-purple);
+  border-color: var(--c-ink);
 }
 .io {
   display: grid;
@@ -241,7 +241,7 @@ function clearAll() {
   cursor: pointer;
 }
 .diff-opt input {
-  accent-color: var(--c-purple);
+  accent-color: var(--c-ink);
   cursor: pointer;
 }
 .err {

@@ -168,7 +168,7 @@ watch([qrText, qrSize, qrLevel], renderQr)
   outline: none;
 }
 .style-select:focus {
-  border-color: var(--c-purple);
+  border-color: var(--c-ink);
 }
 .qr-label {
   font-size: 0.85rem;
@@ -201,7 +201,7 @@ watch([qrText, qrSize, qrLevel], renderQr)
 .copy-btn {
   border: none;
   background: none;
-  color: var(--c-purple);
+  color: var(--c-ink);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;

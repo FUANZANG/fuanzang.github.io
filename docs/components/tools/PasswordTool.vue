@@ -131,8 +131,8 @@ onMounted(genPassword)
   padding: 0.45rem 1.1rem;
   border-radius: 8px;
   border: none;
-  background: linear-gradient(135deg, var(--c-blue), var(--c-purple));
-  color: #fff;
+  background: var(--c-ink);
+  color: var(--c-on-ink, #fafafa);
   cursor: pointer;
   font-size: 0.85rem;
 }
@@ -156,7 +156,7 @@ onMounted(genPassword)
 .copy-btn {
   border: none;
   background: none;
-  color: var(--c-purple);
+  color: var(--c-ink);
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;

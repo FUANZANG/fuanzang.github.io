@@ -107,7 +107,7 @@ const html = computed(() => renderMarkdown(input.value))
   background: none;
 }
 .preview :deep(a) {
-  color: var(--c-purple);
+  color: var(--c-ink);
 }
 @media (max-width: 640px) {
   .io {

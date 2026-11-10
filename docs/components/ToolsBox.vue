@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
 
 <template>
   <PageShell
-    title="🛠 前端小工具"
+    title="前端小工具"
     subtitle="本地运行，随用随走；PlantUML 预览会把图发给渲染服务"
     max-width="1120px"
     fill
@@ -138,45 +138,51 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* 默认（桌面）：左侧竖向工具导航 + 右侧工作区，两栏在满高外壳内各自内部滚动 */
+/* 桌面：左侧文字目录 + 右侧工作区 */
 .layout {
   display: grid;
-  grid-template-columns: 208px minmax(0, 1fr);
-  gap: 1.8rem;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 1.5rem;
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .tool-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding-right: 0.2rem;
+  gap: 1rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid var(--vp-c-divider);
+  min-width: 0;
 }
 
 .tool-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .group-label {
-  padding: 0 0.35rem;
+  padding: 0 0 0.35rem;
+  font-family: var(--font-display, inherit);
   font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--vp-c-text-3);
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
 .group-tabs {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0;
 }
 
 .tool-main {
   min-width: 0;
 }
 
-/* 桌面满高：锁住高度，页面 body 不滚动，左栏与右栏各自内部滚动 */
 @media (min-width: 861px) {
   .layout {
     height: 100%;
@@ -199,64 +205,65 @@ onBeforeUnmount(() => {
 
 .tab {
   width: 100%;
-  padding: 0.5rem 0.9rem;
-  min-height: 38px;
-  border-radius: 10px;
-  border: 1px solid transparent;
+  padding: 0.45rem 0.15rem 0.45rem 0.55rem;
+  min-height: 34px;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
   color: var(--vp-c-text-2);
   font-size: 0.88rem;
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.15s, border-color 0.15s;
 }
 .tab:hover {
   color: var(--vp-c-text-1);
-  background: var(--vp-c-bg-soft);
 }
 .tab.active {
-  background: linear-gradient(135deg, var(--c-blue), var(--c-purple));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 8px 20px -14px var(--c-purple);
+  background: transparent;
+  color: var(--vp-c-text-1);
+  border-left-color: var(--c-ink, var(--vp-c-brand-1));
+  font-weight: 600;
 }
 
-/* 移动端：恢复顶部横向滑动标签，整页正常滚动 */
+/* 手机：壳内横滑文字标签，不用负边距 */
 @media (max-width: 860px) {
   .layout {
     display: block;
     height: auto;
     min-width: 0;
-    overflow: visible;
+    overflow-x: hidden;
   }
   .tool-nav {
-    position: static;
     flex-direction: row;
     align-items: flex-end;
-    gap: 0.85rem;
-    width: calc(100% + 2rem);
-    min-width: 0;
-    max-height: none;
-    margin-inline: -1rem;
-    margin-bottom: 1.15rem;
-    padding: 0.15rem 1rem 0.5rem;
-    box-sizing: border-box;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 1rem;
+    padding: 0 0 0.55rem;
+    border-right: none;
+    border-bottom: 1px solid var(--vp-c-divider);
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
   }
   .tool-group {
     flex: 0 0 auto;
-    gap: 0.3rem;
-    scroll-snap-align: start;
+    gap: 0.25rem;
+  }
+  .group-label {
+    padding: 0;
+    border-bottom: none;
+    font-size: 0.68rem;
   }
   .group-tabs {
     flex-direction: row;
-    gap: 0.45rem;
+    gap: 0.85rem;
   }
   .tool-nav::-webkit-scrollbar {
     display: none;
@@ -267,12 +274,15 @@ onBeforeUnmount(() => {
   .tab {
     flex: 0 0 auto;
     width: auto;
-    min-height: 40px;
-    padding: 0.45rem 1rem;
-    border: 1px solid var(--vp-c-divider);
-    border-radius: 999px;
-    background: var(--vp-c-bg-soft);
+    min-height: auto;
+    padding: 0.2rem 0;
+    border-left: none;
+    border-bottom: 1px solid transparent;
     font-size: 0.88rem;
+  }
+  .tab.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--c-ink, var(--vp-c-brand-1));
   }
 }
 
@@ -288,13 +298,13 @@ onBeforeUnmount(() => {
   left: 50%;
   bottom: 2.2rem;
   transform: translateX(-50%);
-  padding: 0.6rem 1.3rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #fff;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  background: var(--c-ink, #141414);
+  color: var(--c-on-ink, #fafafa);
   font-size: 0.85rem;
   z-index: 50;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.35);
 }
 
 .fade-enter-active,
@@ -313,6 +323,12 @@ onBeforeUnmount(() => {
 <style>
 /* 桌面端：让工具面板、输入区、文本域沿高度方向填满右栏（移动端仍用各组件自带高度）。
    选择器刻意提高权重，确保覆盖子组件 scoped 样式而不受打包顺序影响。 */
+.layout .tool-main .panel {
+  border-radius: 6px;
+  border-color: var(--vp-c-divider);
+  box-shadow: none;
+}
+
 @media (min-width: 861px) {
   .layout .tool-main .panel {
     flex: 1;

@@ -225,7 +225,7 @@ function useNow() {
   border-top: none;
 }
 .tz-list li.active {
-  background: color-mix(in srgb, var(--c-purple) 16%, transparent);
+  background: color-mix(in srgb, var(--c-ink) 16%, transparent);
 }
 .err {
   margin-top: 1rem;
