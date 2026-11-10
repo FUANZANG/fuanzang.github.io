@@ -132,3 +132,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 用最少数量的箭引爆气球（Minimum Number of Arrows to Burst Balloons） | Medium | [minimum-number-of-arrows-to-burst-balloons](./minimum-number-of-arrows-to-burst-balloons.md) |
 | 分糖果（Candy） | Hard | [candy](./candy.md) |
 | 插入区间（Insert Interval） | Medium | [insert-interval](./insert-interval.md) |
+| 二叉树的直径（Diameter of Binary Tree） | Easy | [diameter-of-binary-tree](./diameter-of-binary-tree.md) |
