@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点的工程共识（Kafka 仍是日志流/大数据标配，RabbitMQ 仍是业务解耦常客）。定位与 [Spring Cloud](/notes/java/spring-cloud)、[数仓](/notes/database/data-warehouse) 相同：**听懂黑话、会读链路**，不覆盖集群搭建与运维调优。
 
-> 关联：[Redis 基础](/notes/database/redis-basics)（List/Stream 可做轻量队列，但不是正经 MQ）；Java 发收落地见 [消息队列与 Java](/notes/java/message-queue-java)。
+> 关联：[Redis 基础](/notes/database/redis-basics)（List/Stream 可做轻量队列，但不是正经 MQ）；Java 发收落地见 [消息队列与 Java](/notes/java/message-queue-java)；Node 应用内 job 队列见 [Node 异步任务与队列](/notes/node/node-job-queue)。
 
 ## 为什么需要消息队列
 

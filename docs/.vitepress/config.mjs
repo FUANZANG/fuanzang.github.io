@@ -315,6 +315,7 @@ export default withPwa(defineConfig({
             { text: 'NestJS', link: '/notes/node/nestjs' },
             { text: 'Node 数据访问', link: '/notes/node/node-data' },
             { text: 'Node 中间件与文件存储', link: '/notes/node/node-middleware-storage' },
+            { text: 'Node 异步任务与队列', link: '/notes/node/node-job-queue' },
             { text: 'Node 鉴权', link: '/notes/node/node-auth' },
             { text: 'Node 测试', link: '/notes/node/node-testing' }
           ]
