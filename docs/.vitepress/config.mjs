@@ -33,20 +33,24 @@ function getAlgorithmSidebar() {
     }
   }
   const groups = {
-    Easy: { text: 'Easy', items: [] },
-    Medium: { text: 'Medium', items: [] },
-    Hard: { text: 'Hard', items: [] },
+    Easy: { text: 'Easy', collapsed: true, items: [] },
+    Medium: { text: 'Medium', collapsed: true, items: [] },
+    Hard: { text: 'Hard', collapsed: true, items: [] },
   }
   for (const item of order) {
     const grp = groups[item.level] || groups.Medium
     grp.items.push({ text: item.text, link: `/algorithm/${item.slug}` })
   }
-  const items = [
-    { text: '算法题库（目录）', link: '/algorithm/' },
-    { text: '数据结构与算法识字', link: '/algorithm/fundamentals' },
+  return [
+    {
+      text: '概览',
+      items: [
+        { text: '算法题库（目录）', link: '/algorithm/' },
+        { text: '数据结构与算法识字', link: '/algorithm/fundamentals' },
+      ],
+    },
     ...Object.values(groups).filter((g) => g.items.length > 0),
   ]
-  return [{ text: '算法题库', items }]
 }
 
 export default withPwa(defineConfig({
@@ -143,11 +147,15 @@ export default withPwa(defineConfig({
       ],
       '/hardware/': [
         {
+          text: '概览',
+          items: [{ text: '硬件杂谈总览', link: '/hardware/' }]
+        },
+        {
           text: '芯片',
           items: [
             { text: 'CPU 架构对比', link: '/hardware/chips/cpu-architectures' },
-            { text: '制程工艺与摩尔定律', link: '/hardware/chips/chip-process' },
             { text: '各厂商芯片历代对比', link: '/hardware/chips/chip-generations' },
+            { text: '制程工艺与摩尔定律', link: '/hardware/chips/chip-process' },
             { text: 'DDR 内存标准', link: '/hardware/chips/ddr-standards' },
             { text: 'GPU 架构与显存', link: '/hardware/chips/gpu-architectures' },
             { text: '移动 SoC 横评', link: '/hardware/chips/mobile-soc' }
@@ -178,6 +186,10 @@ export default withPwa(defineConfig({
         }
       ],
       '/notes/': [
+        {
+          text: '概览',
+          items: [{ text: '学习笔记总览', link: '/notes/' }]
+        },
         {
           text: '前端基础',
           collapsed: true,
@@ -210,7 +222,6 @@ export default withPwa(defineConfig({
             { text: 'Vue 总览', link: '/notes/frameworks/vue' },
             { text: 'Vue 2 (Options API)', link: '/notes/frameworks/vue2' },
             { text: 'Vue 3 (Composition API)', link: '/notes/frameworks/vue3' },
-            { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
             { text: 'Nuxt', link: '/notes/frameworks/nuxt' },
             { text: 'React', link: '/notes/frameworks/react' },
             { text: 'Next.js', link: '/notes/frameworks/nextjs' },
@@ -233,6 +244,7 @@ export default withPwa(defineConfig({
             { text: 'Webpack vs Vite', link: '/notes/engineering/webpack-vs-vite' },
             { text: 'Webpack 性能优化', link: '/notes/engineering/webpack-optimization' },
             { text: 'Vite 性能优化', link: '/notes/engineering/vite-optimization' },
+            { text: 'SSR / SSG', link: '/notes/engineering/ssr-ssg' },
             { text: 'Monorepo', link: '/notes/engineering/monorepo' },
             { text: '组件库开发', link: '/notes/engineering/component-library' },
             { text: '微前端', link: '/notes/engineering/micro-frontend' },
@@ -296,8 +308,8 @@ export default withPwa(defineConfig({
           collapsed: true,
           items: [
             { text: 'Node.js', link: '/notes/node/node' },
-            { text: 'NestJS', link: '/notes/node/nestjs' },
             { text: 'Express / Koa / Fastify', link: '/notes/node/express-koa' },
+            { text: 'NestJS', link: '/notes/node/nestjs' },
             { text: 'Node 数据访问', link: '/notes/node/node-data' },
             { text: 'Node 鉴权', link: '/notes/node/node-auth' },
             { text: 'Node 测试', link: '/notes/node/node-testing' }

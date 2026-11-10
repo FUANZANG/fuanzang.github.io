@@ -12,20 +12,24 @@ const groups = computed(() => {
   const notesSidebar = sidebar['/notes/']
   if (!Array.isArray(notesSidebar)) return []
 
-  return notesSidebar.map(group => {
-    // 按链接去重，避免 config 中重复项（如 SQL 基础）在总览页重复出现
-    const seen = new Set()
-    const items = (group.items || []).filter(it => {
-      if (!it || !it.link) return false
-      if (seen.has(it.link)) return false
-      seen.add(it.link)
-      return true
+  return notesSidebar
+    .map(group => {
+      // 按链接去重，避免 config 中重复项（如 SQL 基础）在总览页重复出现
+      // 跳过总览自链，避免在 /notes/ 页出现指向自己的卡片
+      const seen = new Set()
+      const items = (group.items || []).filter(it => {
+        if (!it || !it.link) return false
+        if (it.link === '/notes/') return false
+        if (seen.has(it.link)) return false
+        seen.add(it.link)
+        return true
+      })
+      return {
+        text: group.text || '未分组',
+        items
+      }
     })
-    return {
-      text: group.text || '未分组',
-      items
-    }
-  })
+    .filter(group => group.items.length > 0)
 })
 
 const total = computed(() =>
