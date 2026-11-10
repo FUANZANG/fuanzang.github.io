@@ -1,6 +1,6 @@
 # CDN（内容分发网络）
 
-> 部署流程见 [前端部署](/notes/ops/frontend-deployment)；缓存与回源的网络基础见 [网络协议](/notes/foundations/network-protocol)；源站用 Nginx 的见 [Nginx 生产配置](/notes/ops/nginx)。
+> 部署流程见 [前端部署](/notes/ops/frontend-deployment)；缓存与回源的网络基础见 [网络协议](/notes/foundations/network-protocol)；浏览器/源站 `Cache-Control` 语义见 [HTTP 缓存实战](/notes/foundations/http-caching)；源站用 Nginx 的见 [Nginx 生产配置](/notes/ops/nginx)。
 
 ## 什么是 CDN
 

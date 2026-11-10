@@ -207,6 +207,7 @@ export default withPwa(defineConfig({
             { text: '浏览器原理', link: '/notes/foundations/browser' },
             { text: '网络模型', link: '/notes/foundations/network-model' },
             { text: '网络协议', link: '/notes/foundations/network-protocol' },
+            { text: 'HTTP 缓存实战', link: '/notes/foundations/http-caching' },
             { text: 'Web 存储', link: '/notes/foundations/web-storage' },
             { text: 'Web Components', link: '/notes/foundations/web-components' },
             { text: '前端动画', link: '/notes/foundations/frontend-animation' },
