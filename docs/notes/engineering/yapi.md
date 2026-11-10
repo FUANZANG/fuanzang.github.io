@@ -2,6 +2,8 @@
 
 > YApi 是去哪儿网开源的可视化接口管理平台，支持 API 文档、Mock、自动化测试、团队协作。
 > GitHub: [YMFE/yapi](https://github.com/YMFE/yapi) | Stars: 27k+
+>
+> 新项目更常见以 OpenAPI 文件为契约源，见 [OpenAPI 接口契约](/notes/engineering/openapi)；接口风格约定见 [API 设计与前后端约定](/notes/practice/api-design)。
 
 ## 项目现状
 
