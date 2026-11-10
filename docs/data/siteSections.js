@@ -17,9 +17,20 @@ export const siteSections = [
   {
     id: 'blog',
     title: '技术博客',
-    description: '技术文章与经验分享，记录开发心得与思考',
+    description: '建站记录与开发随笔，记录这个站点本身的演进',
     link: '/blog/hello-world',
     icon: 'file-text',
+    showOnHome: true,
+    showInExplore: false,
+    homeVariant: 'card'
+  },
+  {
+    id: 'algorithm',
+    title: '算法题解',
+    navText: '算法',
+    description: 'LeetCode 题解与数据结构识字，按难度分组',
+    link: '/algorithm/',
+    icon: 'code',
     showOnHome: true,
     showInExplore: false,
     homeVariant: 'card'
@@ -73,7 +84,7 @@ export const siteSections = [
     title: '关于我',
     navText: '关于',
     description:
-      '一名从前端转向全栈的软件开发工程师，喜欢把复杂的工程做简单。这个站点用来沉淀学习笔记、记录技术思考，偶尔也放几道拿手菜谱。',
+      '写代码，爱折腾，偶尔下厨。这个站点用来沉淀学习笔记、记录技术思考，顺手放些小工具和拿手菜谱。',
     link: '/about',
     icon: 'user',
     showOnHome: true,

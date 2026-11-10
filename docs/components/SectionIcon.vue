@@ -57,6 +57,11 @@ defineProps({
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </template>
+    <!-- 算法：代码括号 -->
+    <template v-else-if="name === 'code'">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </template>
     <!-- 硬件：芯片 -->
     <template v-else-if="name === 'cpu'">
       <rect x="4" y="4" width="16" height="16" rx="2" />

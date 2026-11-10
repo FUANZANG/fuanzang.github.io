@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 import { withPwa } from '@vite-pwa/vitepress'
 import { getExploreNavItems } from '../data/siteSections.js'
+import { profileTagline } from '../data/profile.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -132,7 +133,7 @@ export default withPwa(defineConfig({
       { text: '算法', link: '/algorithm/' },
       { text: '博客', link: '/blog/hello-world' },
       {
-        text: '探索',
+        text: '栏目',
         items: getExploreNavItems()
       }
     ],
@@ -442,8 +443,8 @@ export default withPwa(defineConfig({
     socialLinks: [{ icon: 'github', link: 'https://github.com/FUANZANG' }],
 
     footer: {
-      message: '基于 VitePress 构建',
-      copyright: 'Copyright © 2026 FUANZANG'
+      message: profileTagline,
+      copyright: '© 2026 FUANZANG'
     },
 
     search: {

@@ -22,7 +22,6 @@
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/source-serif-4": "^5.3.1",
     "@fontsource/ibm-plex-sans": "^5.3.0",
-    "gsap": "^3.15.0",
     "pako": "^2.2.0",
     "qrcode": "^1.5.4"
   }

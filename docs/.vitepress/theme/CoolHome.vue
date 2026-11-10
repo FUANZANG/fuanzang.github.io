@@ -3,57 +3,15 @@ import { onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import { useRouter } from 'vitepress'
 import recipes from '../../data/recipes.json'
 import { getHomeSections } from '../../data/siteSections.js'
-import { techStack } from '../../data/profile.js'
+import { profileTagline, techStack } from '../../data/profile.js'
 import SectionIcon from '../../components/SectionIcon.vue'
-
-let gsap = null
-let ScrollTrigger = null
 
 const router = useRouter()
 const heroRef = ref(null)
-const orbsRef = ref(null)
-const titleChars = ref('FUANZANG'.split(''))
-const st = ref([])
-const tw = ref([])
 let scrollHandler = null
+let io = null
 
-// ── Hero 打字机标语 ──
-const typedText = ref('')
-const taglinePhrases = [
-  '前端开发',
-  '全栈探索',
-  '开源爱好者',
-  '偶尔下厨',
-  '记录与分享'
-]
-let typingTimer = null
-
-function startTyping() {
-  let pi = 0,
-    ci = 0,
-    deleting = false
-  const tick = () => {
-    const phrase = taglinePhrases[pi]
-    if (!deleting) {
-      typedText.value = phrase.slice(0, ++ci)
-      if (ci === phrase.length) {
-        deleting = true
-        typingTimer = setTimeout(tick, 1400)
-        return
-      }
-    } else {
-      typedText.value = phrase.slice(0, --ci)
-      if (ci === 0) {
-        deleting = false
-        pi = (pi + 1) % taglinePhrases.length
-      }
-    }
-    typingTimer = setTimeout(tick, deleting ? 45 : 95)
-  }
-  tick()
-}
-
-// ── 首页探索区（与顶栏探索同源：docs/data/siteSections.js）──
+// ── 首页探索区（与顶栏栏目同源：docs/data/siteSections.js）──
 const homeSections = getHomeSections()
 const homeCards = computed(() =>
   homeSections.filter((s) => s.homeVariant !== 'about')
@@ -102,22 +60,21 @@ function buildCode(recipe) {
 console.log(\`今晚吃：${recipe.name}\`)`
 }
 
-// 轻量语法高亮：关键字/字符串/注释/函数名上色
+// 轻量语法高亮：关键字 / 标识符 / 方法 / 字符串 / 注释
 function highlight(code) {
   const escape = (s) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   let html = escape(code)
-  // 注释
+  // 注释先上色，避免后续规则吃掉
   html = html.replace(/(\/\/.*)/g, '<span class="ln c">$1</span>')
   // 字符串（单引号 / 模板字符串）
   html = html.replace(/('[^']*'|`[^`]*`)/g, '<span class="ln s">$1</span>')
-  // 关键字
-  html = html.replace(
-    /\b(const|await|console|log|first|filter|name|r|Recipes)\b/g,
-    '<span class="ln k">$1</span>'
-  )
   // 方法调用（.xxx(）
   html = html.replace(/(\.\w+)(?=\()/g, '<span class="ln f">$1</span>')
+  // 关键字
+  html = html.replace(/\b(const|await)\b/g, '<span class="ln k">$1</span>')
+  // 类型 / 对象名
+  html = html.replace(/\b(Recipes|console)\b/g, '<span class="ln n">$1</span>')
   return html
 }
 
@@ -154,300 +111,62 @@ function startCodeTyping() {
   tick()
 }
 
-/** 点击代码区：换一道菜并重新打字 */
+/** 点击「换一道」：换一道菜并重新打字 */
 function reshuffleDinner() {
   startCodeTyping()
 }
 
-function kill() {
-  st.value.forEach(t => t.kill())
-  tw.value.forEach(t => t.kill())
-  st.value = []
-  tw.value = []
-}
-
-// Orb config: [gradient, size, top, left, blur, parallaxSpeed]
-const orbConfig = [
-  ['var(--g1)', '550px', '-8%', '8%', '80px', 0.15],
-  ['var(--g2)', '480px', '22%', '68%', '90px', 0.3],
-  ['var(--g3)', '380px', '58%', '3%', '70px', 0.25],
-  ['var(--g4)', '440px', '52%', '80%', '85px', 0.2],
-  ['var(--g1)', '300px', '82%', '38%', '75px', 0.4]
-]
-
-// Mouse parallax — uses x-axis (scroll parallax owns y-axis)
-function onMove(e) {
-  if (!orbsRef.value || !gsap) return
-  const mx = (e.clientX / window.innerWidth - 0.5) * 2
-  const my = (e.clientY / window.innerHeight - 0.5) * 2
-  const orbs = orbsRef.value.querySelectorAll('.parallax-orb')
-  orbs.forEach((orb, i) => {
-    const factor = (i + 1) * 10
-    gsap.to(orb, {
-      x: mx * factor,
-      y: my * factor * 0.4,
-      duration: 0.6,
-      ease: 'power2.out',
-      overwrite: 'auto'
+// ── 滚动揭示：一次性，进入视口即停 ──
+function setupReveal() {
+  const els = document.querySelectorAll('.reveal')
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    els.forEach((el) => {
+      el.classList.remove('is-pending')
+      el.classList.add('is-in')
     })
+    return
+  }
+  if (!('IntersectionObserver' in window)) {
+    els.forEach((el) => el.classList.add('is-in'))
+    return
+  }
+  if (io) io.disconnect()
+  io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        entry.target.classList.remove('is-pending')
+        entry.target.classList.add('is-in')
+        io.unobserve(entry.target)
+      }
+    },
+    { rootMargin: '0px 0px -4% 0px', threshold: 0.08 }
+  )
+  els.forEach((el, i) => {
+    el.classList.add('is-pending')
+    el.style.transitionDelay = `${(i % 3) * 60}ms`
+    io.observe(el)
   })
-}
-
-async function run() {
-  kill()
-  await nextTick()
-  await new Promise(r => setTimeout(r, 200))
-
-  if (!gsap) {
-    const [{ gsap: g }, { ScrollTrigger: st }] = await Promise.all([
-      import('gsap'),
-      import('gsap/ScrollTrigger')
-    ])
-    gsap = g
-    ScrollTrigger = st
-    gsap.registerPlugin(ScrollTrigger)
-  }
-
-  const hero = heroRef.value
-  if (!hero) return
-
-  // ── Scroll Parallax ──
-  const layers = [
-    ['.hero-title', -0.5],
-    ['.hero-subtitle', -0.35],
-    ['.hero-tagline', -0.25],
-    ['.hero-actions', -0.15]
-  ]
-  layers.forEach(([sel, speed]) => {
-    const el = hero.querySelector(sel)
-    if (!el) return
-    st.value.push(
-      ScrollTrigger.create({
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-        onUpdate: self => {
-          gsap.set(el, { y: self.progress * self.distance * speed })
-        }
-      })
-    )
-  })
-
-  // Orb parallax
-  const orbs = hero.querySelectorAll('.parallax-orb')
-  orbs.forEach((orb, i) => {
-    const speed = orbConfig[i]?.[5] || 0.2
-    st.value.push(
-      ScrollTrigger.create({
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-        onUpdate: self => {
-          gsap.set(orb, { y: self.progress * self.distance * -speed })
-        }
-      })
-    )
-  })
-
-  // ── Reveal Animations ──
-  // Orbs fade in
-  if (orbs.length) {
-    gsap.set(orbs, { scale: 0.4, opacity: 0 })
-    tw.value.push(
-      gsap.to(orbs, {
-        scale: 1,
-        opacity: 1,
-        duration: 2,
-        stagger: 0.25,
-        ease: 'power2.out',
-        filter: i => `blur(${orbConfig[i]?.[4]?.replace('px', '') || 80}px)`
-      })
-    )
-  }
-
-  // Title characters fly in
-  // 手机端不用 rotateX：部分 WebKit/安卓内核在 3D + background-clip:text 下会整段不绘制
-  const chars = hero.querySelectorAll('.char')
-  if (chars.length) {
-    const mobile = window.matchMedia('(max-width: 768px)').matches
-    const from = mobile
-      ? { y: 36, opacity: 0 }
-      : { y: 120, opacity: 0, rotateX: -90 }
-    const to = mobile
-      ? { y: 0, opacity: 1 }
-      : { y: 0, opacity: 1, rotateX: 0 }
-    gsap.set(chars, from)
-    tw.value.push(
-      gsap.to(chars, {
-        ...to,
-        duration: mobile ? 0.7 : 1.1,
-        stagger: mobile ? 0.04 : 0.07,
-        ease: mobile ? 'power2.out' : 'back.out(1.4)',
-        delay: mobile ? 0.15 : 0.4,
-        onComplete: () => {
-          // 清掉 transform，避免残留矩阵导致渐变字在部分浏览器消失
-          gsap.set(chars, { clearProps: 'transform' })
-        }
-      })
-    )
-  }
-
-  // Subtitle
-  const sub = hero.querySelector('.hero-subtitle')
-  if (sub) {
-    gsap.set(sub, { y: 50, opacity: 0 })
-    tw.value.push(
-      gsap.to(sub, {
-        y: 0,
-        opacity: 1,
-        duration: 0.9,
-        delay: 1,
-        ease: 'power3.out'
-      })
-    )
-  }
-
-  // Tagline
-  const tag = hero.querySelector('.hero-tagline')
-  if (tag) {
-    gsap.set(tag, { y: 30, opacity: 0 })
-    tw.value.push(
-      gsap.to(tag, {
-        y: 0,
-        opacity: 1,
-        duration: 0.8,
-        delay: 1.2,
-        ease: 'power3.out'
-      })
-    )
-  }
-
-  // Action buttons
-  const btns = hero.querySelectorAll('.action-btn')
-  if (btns.length) {
-    gsap.set(btns, { y: 30, opacity: 0 })
-    tw.value.push(
-      gsap.to(btns, {
-        y: 0,
-        opacity: 1,
-        stagger: 0.12,
-        duration: 0.7,
-        delay: 1.4,
-        ease: 'power3.out'
-      })
-    )
-  }
-
-  // ── Features 区：标题 + 卡片随滚动从右侧逐张飞入，回滚再飞出 ──
-  const featuresSection = document.querySelector('.features-section')
-  if (featuresSection) {
-    const sectionHeading = featuresSection.querySelector('.section-heading')
-    const cards = featuresSection.querySelectorAll('.feature-card, .about-card')
-
-    if (sectionHeading) {
-      gsap.set(sectionHeading, { x: 60, opacity: 0 })
-      st.value.push(
-        ScrollTrigger.create({
-          trigger: sectionHeading,
-          start: 'top 95%',
-          end: 'top 60%',
-          scrub: 0.6,
-          animation: gsap.to(sectionHeading, {
-            x: 0,
-            opacity: 1,
-            ease: 'power2.out'
-          })
-        })
-      )
-    }
-
-    cards.forEach((card, i) => {
-      gsap.set(card, { x: 120, opacity: 0 })
-      // 每张卡起点依次延后，形成「一张一张」飞入的节奏
-      st.value.push(
-        ScrollTrigger.create({
-          trigger: card,
-          start: `top ${95 - i * 6}%`,
-          end: `top ${60 - i * 6}%`,
-          scrub: 0.6,
-          animation: gsap.to(card, {
-            x: 0,
-            opacity: 1,
-            ease: 'power2.out'
-          })
-        })
-      )
-    })
-  }
-
-  // Refresh ScrollTrigger after DOM updates
-  ScrollTrigger.refresh()
-}
-
-// ── 卡片 3D 倾斜跟随鼠标（功能卡 + 关于卡）──
-const tiltSelector = '.feature-card, .about-card'
-function onCardTilt(e) {
-  const card = e.target.closest(tiltSelector)
-  if (!card || !gsap) return
-  // 先把其它卡片归位，避免移出后停留在倾斜姿态
-  document.querySelectorAll(tiltSelector).forEach(c => {
-    if (c !== card) resetTilt(c)
-  })
-  const rect = card.getBoundingClientRect()
-  const px = (e.clientX - rect.left) / rect.width - 0.5
-  const py = (e.clientY - rect.top) / rect.height - 0.5
-  gsap.to(card, {
-    rotateY: px * 12,
-    rotateX: -py * 12,
-    duration: 0.4,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-function resetTilt(card) {
-  if (!card || !gsap) return
-  gsap.to(card, {
-    rotateY: 0,
-    rotateX: 0,
-    duration: 0.6,
-    ease: 'power3.out',
-    overwrite: 'auto'
-  })
-}
-function resetCardTilt() {
-  document.querySelectorAll(tiltSelector).forEach(resetTilt)
 }
 
 function onHomeRoute(e) {
   if (e.detail === '/' || e.detail === '/index.html') {
     document.body.classList.add('cool-home-page')
-    setTimeout(run, 400)
+    setTimeout(() => setupReveal(), 60)
   } else {
     document.body.classList.remove('cool-home-page')
-    kill()
   }
 }
 
 onMounted(() => {
   document.body.classList.add('cool-home-page')
-  window.addEventListener('mousemove', onMove, { passive: true })
-  const grid = document.querySelector('.features-grid')
-  if (grid) {
-    grid.addEventListener('mousemove', onCardTilt, { passive: true })
-    grid.addEventListener('mouseleave', resetCardTilt, { passive: true })
-  }
+  nextTick(() => setupReveal())
 
   // 滚动监听：让导航栏在滚动后显示毛玻璃背景
   scrollHandler = () => {
     const vpNav = document.querySelector('.VPNav')
     if (vpNav) {
-      if (window.scrollY > 80) {
-        vpNav.classList.add('scrolled')
-      } else {
-        vpNav.classList.remove('scrolled')
-      }
+      vpNav.classList.toggle('scrolled', window.scrollY > 80)
     }
   }
   window.addEventListener('scroll', scrollHandler, { passive: true })
@@ -456,29 +175,19 @@ onMounted(() => {
   window.addEventListener('vp-route-change', onHomeRoute)
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    typedText.value = taglinePhrases[0]
     const rc = pickRandomRecipe()
     codeHtml.value = highlight(buildCode(rc))
     typing.value = false
     return
   }
-  startTyping()
   startCodeTyping()
-  run()
 })
 
 onUnmounted(() => {
   document.body.classList.remove('cool-home-page')
-  kill()
-  window.removeEventListener('mousemove', onMove)
+  if (io) io.disconnect()
   window.removeEventListener('vp-route-change', onHomeRoute)
-  if (typingTimer) clearTimeout(typingTimer)
   stopCodeTyping()
-  const grid = document.querySelector('.features-grid')
-  if (grid) {
-    grid.removeEventListener('mousemove', onCardTilt)
-    grid.removeEventListener('mouseleave', resetCardTilt)
-  }
   if (scrollHandler) {
     window.removeEventListener('scroll', scrollHandler)
     scrollHandler = null
@@ -488,51 +197,15 @@ onUnmounted(() => {
 
 <template>
   <div class="cool-home">
-    <!-- ═══ HERO ═══ -->
+    <!-- ═══ HERO：同一纸面，代码窗作签名，避免左右硬切 ═══ -->
     <section ref="heroRef" class="hero">
-      <!-- Floating gradient orbs (parallax layers) -->
-      <div ref="orbsRef" class="orbs-layer">
-        <div
-          v-for="(cfg, i) in orbConfig"
-          :key="i"
-          class="parallax-orb"
-          :style="{
-            background: cfg[0],
-            width: cfg[1],
-            height: cfg[1],
-            top: cfg[2],
-            left: cfg[3],
-            filter: `blur(${cfg[4]})`,
-            animationDelay: `${i * 1.8}s`
-          }"
-        />
-      </div>
-
-      <!-- Grid overlay -->
-      <div class="grid-overlay" />
-
-      <!-- Hero content (split) -->
       <div class="hero-inner">
-        <div class="hero-text">
-          <div class="hero-title">
-            <span class="char-wrapper">
-              <span
-                v-for="(ch, i) in titleChars"
-                :key="i"
-                class="char"
-                :style="{ animationDelay: `${i * 0.08 + 0.6}s` }"
-                >{{ ch }}</span
-              >
-            </span>
-          </div>
+        <div class="hero-copy">
+          <h1 class="hero-title">FUANZANG</h1>
           <p class="hero-subtitle">个人知识库 &amp; 博客</p>
-          <p class="hero-tagline">
-            <span class="typed">{{ typedText }}</span
-            ><span class="caret">|</span>
-          </p>
+          <p class="hero-tagline">{{ profileTagline }}</p>
           <div class="hero-actions">
             <a href="/notes/" class="action-btn primary">开始阅读</a>
-            <a href="/blog/hello-world" class="action-btn ghost">浏览博客</a>
             <a
               href="https://github.com/FUANZANG"
               target="_blank"
@@ -543,12 +216,12 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="hero-visual">
+        <div class="hero-visual" aria-label="今晚吃什么代码演示">
           <div class="code-window">
             <div class="code-bar">
-              <span class="dot red" />
-              <span class="dot yellow" />
-              <span class="dot green" />
+              <span class="dot" />
+              <span class="dot" />
+              <span class="dot" />
               <a
                 class="code-file"
                 :href="recipesDeepLink"
@@ -559,70 +232,74 @@ onUnmounted(() => {
                 "
                 >dinner.ts → 菜谱</a
               >
+              <button
+                type="button"
+                class="code-refresh"
+                title="换一道菜"
+                aria-label="换一道菜"
+                @click="reshuffleDinner"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="13"
+                  height="13"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                  <polyline points="21 3 21 9 15 9" />
+                </svg>
+                <span>换一道</span>
+              </button>
             </div>
-            <button
-              type="button"
-              class="code-body-btn"
-              title="换一道菜"
-              aria-label="换一道菜"
-              @click="reshuffleDinner"
-            >
-              <pre
-                class="code-body"
-                :class="{ typing }"
-              ><code class="code-plain">{{ codeText }}<span class="code-caret" v-show="typing">▋</span></code><code
+            <pre class="code-body" :class="{ typing }"><code class="code-plain">{{ codeText }}<span
+                  class="code-caret"
+                  v-show="typing"
+                >▋</span></code><code
                 class="code-hl"
                 v-html="codeHtml"
               /><span class="code-caret" v-show="!typing">▋</span></pre>
-            </button>
           </div>
         </div>
       </div>
-
-      <!-- Scroll hint -->
-      <div class="scroll-hint">
-        <div class="scroll-line" />
-        <span>向下滚动</span>
-      </div>
     </section>
 
-    <!-- ═══ FEATURES ═══ -->
+    <!-- ═══ 全部内容 ═══ -->
     <section class="features-section">
-      <h2 class="section-heading">探索</h2>
+      <h2 class="section-heading">全部内容</h2>
       <div class="features-grid">
         <a
           v-for="item in homeCards"
           :key="item.id"
           :href="item.link"
-          class="feature-card"
-          :class="{ 'recipe-card': item.homeVariant === 'recipe' }"
+          class="feature-card reveal"
         >
-          <div class="card-icon" aria-hidden="true">
-            <SectionIcon :name="item.icon" :size="22" />
-          </div>
-          <h3>{{ item.title }}</h3>
+          <h3>
+            <span class="card-icon" aria-hidden="true">
+              <SectionIcon :name="item.icon" :size="18" />
+            </span>
+            {{ item.title }}
+          </h3>
           <p>{{ item.description }}</p>
-          <div class="card-shine" />
-        </a>
-        <a
-          v-if="aboutSection"
-          class="about-card"
-          :href="aboutSection.link"
-        >
-          <div class="card-shine" />
-          <div class="about-avatar" aria-hidden="true">
-            <SectionIcon :name="aboutSection.icon" :size="26" />
-          </div>          <div class="about-body">
-            <h2 class="about-name">{{ aboutSection.title }}</h2>
-            <p class="about-text">{{ aboutSection.description }}</p>
-            <div class="tech-tags">
-              <span v-for="t in techStack" :key="t" class="tech-tag">{{
-                t
-              }}</span>
-            </div>
-          </div>
         </a>
       </div>
+    </section>
+
+    <!-- ═══ 关于我 ═══ -->
+    <section class="about-section">
+      <h2 class="section-heading">关于我</h2>
+      <a v-if="aboutSection" class="about-card reveal" :href="aboutSection.link">
+        <div class="about-body">
+          <p class="about-text">{{ aboutSection.description }}</p>
+          <ul class="tech-tags">
+            <li v-for="t in techStack" :key="t" class="tech-tag">{{ t }}</li>
+          </ul>
+        </div>
+      </a>
     </section>
   </div>
 </template>
@@ -639,18 +316,22 @@ onUnmounted(() => {
   padding-top: 0 !important;
 }
 
-/* 代码窗口语法高亮（作用于 v-html 注入的内容，需写在全局样式） */
+/* 代码窗口语法高亮：墨色窗里用灰度拉开层级，避免糊成一片 */
 .code-body .ln.k {
-  color: #c084fc;
+  color: #fafafa;
+  font-weight: 600;
+}
+.code-body .ln.n {
+  color: #d4d4d8;
 }
 .code-body .ln.f {
-  color: #38bdf8;
+  color: #a1a1aa;
 }
 .code-body .ln.s {
-  color: #86efac;
+  color: #e7e5e4;
 }
 .code-body .ln.c {
-  color: #64748b;
+  color: #737373;
   font-style: italic;
 }
 </style>
@@ -659,293 +340,217 @@ onUnmounted(() => {
 /* ─── CSS Custom Properties ─── */
 .cool-home {
   overflow-x: hidden;
-  --c-blue: #3b82f6;
-  --c-purple: #8b5cf6;
-  --c-pink: #ec4899;
-  --c-cyan: #06b6d4;
-  --g1: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.45),
-    rgba(139, 92, 246, 0.35)
-  );
-  --g2: linear-gradient(
-    135deg,
-    rgba(236, 72, 153, 0.4),
-    rgba(245, 158, 11, 0.3)
-  );
-  --g3: linear-gradient(
-    135deg,
-    rgba(6, 182, 212, 0.4),
-    rgba(59, 130, 246, 0.3)
-  );
-  --g4: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.4),
-    rgba(236, 72, 153, 0.3)
-  );
-}
-
-/* Dark mode adjustments */
-:root.dark .cool-home {
-  --g1: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.25),
-    rgba(139, 92, 246, 0.2)
-  );
-  --g2: linear-gradient(
-    135deg,
-    rgba(236, 72, 153, 0.2),
-    rgba(245, 158, 11, 0.15)
-  );
-  --g3: linear-gradient(
-    135deg,
-    rgba(6, 182, 212, 0.2),
-    rgba(59, 130, 246, 0.15)
-  );
-  --g4: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.2),
-    rgba(236, 72, 153, 0.15)
-  );
+  --c-ink: var(--vp-c-text-1, #141414);
+  --c-on-ink: var(--vp-c-bg, #fafafa);
+  --c-accent: var(--vp-c-text-1, #141414);
+  --c-accent-deep: var(--vp-c-brand-2, #000000);
 }
 
 /* ═══════════════════════════════════════
-   HERO SECTION
+   HERO：同一纸面双栏，去掉左右硬切
    ═══════════════════════════════════════ */
 .hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  perspective: 1200px;
+  border-bottom: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
 }
 
-/* Background gradient */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 80% 60% at 50% 30%,
-      rgba(59, 130, 246, 0.08) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 60% 80% at 70% 60%,
-      rgba(139, 92, 246, 0.06) 0%,
-      transparent 60%
-    );
-  pointer-events: none;
-}
-
-:root.dark .hero::before {
-  background:
-    radial-gradient(
-      ellipse 80% 60% at 50% 30%,
-      rgba(59, 130, 246, 0.12) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 60% 80% at 70% 60%,
-      rgba(139, 92, 246, 0.1) 0%,
-      transparent 60%
-    );
-}
-
-/* Grid overlay */
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(128, 128, 128, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(128, 128, 128, 0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-:root.dark .grid-overlay {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-/* ─── Orbs ─── */
-.orbs-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.parallax-orb {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.65;
-  animation: orb-float 22s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-:root.dark .parallax-orb {
-  opacity: 0.5;
-}
-
-@keyframes orb-float {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(25px, -35px) rotate(3deg);
-  }
-  66% {
-    transform: translate(-20px, 15px) rotate(-2deg);
-  }
-  100% {
-    transform: translate(15px, -20px) rotate(2deg);
-  }
-}
-
-/* ─── Hero Content ─── */
 .hero-inner {
-  position: relative;
-  z-index: 2;
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 7rem 2rem 2rem;
+  padding: 5.5rem 1.75rem 3rem;
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   align-items: center;
-  gap: 3rem;
+  gap: clamp(1.5rem, 4vw, 3rem);
 }
 
-.hero-text {
-  text-align: left;
+.hero-copy {
+  animation: home-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-/* ─── Code Window Visual ─── */
 .hero-visual {
-  display: flex;
-  justify-content: center;
+  animation: home-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.08s both;
 }
 
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.45em;
+  color: var(--vp-c-text-1);
+  white-space: nowrap;
+}
+
+.hero-subtitle {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  margin: 0 0 0.5em;
+}
+
+.hero-tagline {
+  font-size: 0.98rem;
+  color: var(--vp-c-text-2);
+  margin: 0 0 1.6rem;
+  letter-spacing: 0.01em;
+  max-width: 26rem;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.35rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+  cursor: pointer;
+}
+
+.action-btn.primary {
+  background: var(--c-ink);
+  color: var(--c-on-ink, #fafafa);
+  box-shadow: 0 4px 18px -10px rgba(0, 0, 0, 0.45);
+}
+
+.action-btn.primary:hover {
+  background: var(--c-accent-deep);
+  color: var(--c-on-ink, #fafafa);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+}
+
+.action-btn.subtle {
+  color: var(--vp-c-text-2);
+  background: transparent;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.action-btn.subtle:hover {
+  color: var(--vp-c-text-1);
+  border-color: var(--c-ink);
+  transform: translateY(-2px);
+}
+
+/* ─── Code Window：纸面上的墨色签名块 ─── */
 .code-window {
   width: 100%;
-  max-width: 420px;
-  height: 270px;
+  min-height: 260px;
+  height: clamp(250px, 32vh, 320px);
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
+  border-radius: 12px;
+  background: #141414;
+  border: 1px solid rgba(20, 20, 20, 0.85);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-}
-
-:root.dark .code-window {
-  background: rgba(2, 6, 23, 0.92);
+  font-family: var(--vp-font-family-mono);
 }
 
 .code-bar {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.7rem 0.9rem;
+  gap: 0.4rem;
+  padding: 0.55rem 0.8rem;
   background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dot {
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-}
-.dot.red {
-  background: #ff5f56;
-}
-.dot.yellow {
-  background: #ffbd2e;
-}
-.dot.green {
-  background: #27c93f;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .code-file {
-  margin-left: 0.6rem;
-  margin-right: 0.4rem;
+  margin-left: 0.45rem;
+  margin-right: auto;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: rgba(240, 240, 240, 0.62);
   text-decoration: none;
   transition: color 0.2s;
   border-radius: 2px;
 }
 .code-file:hover {
-  color: #e2e8f0;
-}
-.code-file:focus {
-  outline: none;
-}
-.code-file:focus-visible {
-  color: #e2e8f0;
-  outline: 1px solid rgba(148, 163, 184, 0.55);
-  outline-offset: 2px;
-}
-.code-file:active {
-  color: #e2e8f0;
-  background: transparent;
+  color: #f0f0f0;
 }
 
-.code-body-btn {
-  flex: 1;
-  min-height: 0;
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
+.code-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
   background: transparent;
-  cursor: pointer;
-  text-align: left;
-  color: inherit;
+  color: rgba(240, 240, 240, 0.62);
   font: inherit;
-  user-select: none;
-  -webkit-user-select: none;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
 }
-/* 盖住 VitePress button:focus 的系统蓝环，避免整窗闪蓝 */
-.code-body-btn:focus {
-  outline: none;
-}
-.code-body-btn:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.55);
-}
-.code-body-btn:hover .code-body {
-  background: rgba(255, 255, 255, 0.02);
+.code-refresh:hover {
+  color: #f0f0f0;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .code-body {
   flex: 1;
   height: 100%;
   margin: 0;
-  padding: 1.1rem 1.2rem;
-  font-size: 0.82rem;
-  line-height: 1.8;
-  color: #e2e8f0;
+  padding: 1rem 1.15rem;
+  font-size: 0.86rem;
+  line-height: 1.75;
+  color: #a1a1aa;
   white-space: pre-wrap;
   word-break: break-word;
   overflow: hidden;
-  transition: background 0.2s;
+  position: relative;
 }
 
 .code-caret {
   display: inline-block;
   margin-left: 1px;
-  color: #8b5cf6;
+  color: #fafafa;
   animation: code-blink 1s step-end infinite;
 }
 
@@ -956,9 +561,6 @@ onUnmounted(() => {
 }
 
 /* 两层叠放：打字层（纯文本）与高亮层交叉淡入，避免节点替换闪烁 */
-.code-body {
-  position: relative;
-}
 .code-plain,
 .code-hl {
   transition: opacity 0.4s ease;
@@ -982,443 +584,167 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .code-plain,
-  .code-hl {
-    transition: none;
-  }
+/* ═══════════════════════════════════════
+   揭示动画（滚动进入视口，一次性）
+   ═══════════════════════════════════════ */
+/* 默认可见，避免 IO 未触发时「全部内容」一片空白；入场只做轻位移 */
+.cool-home .reveal {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.45s ease-out,
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-
-/* ─── Typed tagline ─── */
-.hero-tagline {
-  font-size: clamp(0.95rem, 2vw, 1.15rem);
-  color: var(--vp-c-text-2);
-  margin-bottom: 2.5em;
-  letter-spacing: 0.05em;
-  min-height: 1.4em;
+.cool-home .reveal.is-pending {
+  opacity: 0;
+  transform: translateY(14px);
 }
-
-.typed {
-  color: var(--c-purple);
-  font-weight: 600;
-}
-
-.caret {
-  display: inline-block;
-  margin-left: 2px;
-  color: var(--c-purple);
-  animation: caret-blink 1s step-end infinite;
-  font-weight: 400;
-}
-
-@keyframes caret-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-/* Title：渐变落到每个 .char 上，避免父级 clip + 子级 transform 在部分手机不绘制 */
-.hero-title {
-  font-size: clamp(3rem, 9vw, 5.5rem);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.5em;
-}
-
-.char-wrapper {
-  display: inline-flex;
-  perspective: 600px;
-}
-
-.char {
-  display: inline-block;
-  will-change: transform;
-  background: linear-gradient(
-    135deg,
-    var(--c-blue) 0%,
-    var(--c-purple) 40%,
-    var(--c-pink) 80%
-  );
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: title-flow 6s ease infinite;
-}
-
-@keyframes title-flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* JS/动效失败时仍保证标题可见 */
-@media (prefers-reduced-motion: reduce) {
-  .char {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none;
-  }
-}
-
-/* Subtitle */
-.hero-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
-  font-weight: 600;
-  color: var(--vp-c-text-1);
-  margin-bottom: 0.5em;
-}
-
-/* Tagline */
-.hero-tagline {
-  font-size: clamp(0.95rem, 2vw, 1.15rem);
-  color: var(--vp-c-text-2);
-  margin-bottom: 2.5em;
-  letter-spacing: 0.05em;
-}
-
-/* ─── Action Buttons ─── */
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.75rem 1.8rem;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.action-btn.primary {
-  background: linear-gradient(135deg, var(--c-blue), var(--c-purple));
-  color: #fff;
-  box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.4);
-}
-
-.action-btn.primary:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 30px -4px rgba(99, 102, 241, 0.5);
-}
-
-.action-btn.ghost {
-  border: 1.5px solid var(--vp-c-divider);
-  color: var(--vp-c-text-1);
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-}
-
-:root.dark .action-btn.ghost {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.action-btn.ghost:hover {
-  transform: translateY(-3px);
-  border-color: var(--c-purple);
-  color: var(--c-purple);
-  box-shadow: 0 4px 20px -8px rgba(139, 92, 246, 0.3);
-}
-
-.action-btn.subtle {
-  color: var(--vp-c-text-2);
-  background: transparent;
-}
-
-.action-btn.subtle:hover {
-  color: var(--vp-c-text-1);
-  transform: translateY(-2px);
-}
-
-/* ─── Scroll Hint ─── */
-.scroll-hint {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  z-index: 2;
-  animation: hint-fade-in 1s ease 2.5s both;
-}
-
-.scroll-hint span {
-  font-size: 0.75rem;
-  color: var(--vp-c-text-3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, var(--vp-c-text-3), transparent);
-  animation: scroll-pulse 2s ease-in-out infinite;
-}
-
-@keyframes scroll-pulse {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scaleY(0.6);
-  }
-  50% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-}
-
-@keyframes hint-fade-in {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.cool-home .reveal.is-in {
+  opacity: 1;
+  transform: none;
 }
 
 /* ═══════════════════════════════════════
-   FEATURES SECTION
+   全部内容
    ═══════════════════════════════════════ */
 .features-section {
   position: relative;
-  padding: 6rem 2rem 8rem;
+  padding: 4.5rem 2rem 3rem;
   max-width: 1100px;
   margin: 0 auto;
-  /* 卡片/标题入场从右侧飞入（x: 60~120），裁剪避免撑出横向滚动条 */
-  overflow-x: hidden;
 }
 
 .section-heading {
-  text-align: center;
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
   font-weight: 700;
   color: var(--vp-c-text-1);
-  margin-bottom: 3.5rem;
-  letter-spacing: -0.02em;
+  margin: 0 0 1.75rem;
+  letter-spacing: -0.03em;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
-  perspective: 1000px;
 }
 
 /* ─── Feature Card ─── */
 .feature-card {
   position: relative;
-  padding: 2.5rem 2rem;
-  border-radius: 20px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
-  overflow: hidden;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
-  will-change: transform;
-  transform-style: preserve-3d;
-}
-
-a.feature-card {
   display: block;
+  padding: 1.35rem 1.25rem 1.45rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
   text-decoration: none;
   color: inherit;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .feature-card:hover {
-  box-shadow:
-    0 20px 40px -12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
-}
-
-:root.dark .feature-card:hover {
-  box-shadow:
-    0 20px 40px -12px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(139, 92, 246, 0.15);
+  background: rgba(20, 20, 20, 0.04);
+  border-top-color: var(--c-ink);
 }
 
 .card-icon {
-  width: 56px;
-  height: 56px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.1),
-    rgba(139, 92, 246, 0.1)
-  );
-  margin-bottom: 1.5rem;
-  color: var(--c-purple);
-  transition: color 0.25s, background 0.25s;
-}
-
-.feature-card:hover .card-icon {
-  color: var(--c-blue);
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.16),
-    rgba(139, 92, 246, 0.14)
-  );
+  width: auto;
+  height: auto;
+  margin: 0 0.45rem 0 0;
+  color: var(--c-accent);
+  vertical-align: -0.15em;
 }
 
 .feature-card h3 {
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--vp-c-text-1);
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.45rem;
 }
 
 .feature-card p {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: var(--vp-c-text-2);
-  line-height: 1.7;
-}
-
-/* Card shine effect on hover */
-.card-shine {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.06),
-    transparent
-  );
-  transition: left 0.6s ease;
-  pointer-events: none;
-}
-
-.feature-card:hover .card-shine,
-.about-card:hover .card-shine {
-  left: 100%;
+  line-height: 1.65;
+  margin: 0;
+  padding-left: 1.55rem;
 }
 
 /* ═══════════════════════════════════════
-   ABOUT CARD (in features grid, spans 2 cols)
+   关于我
    ═══════════════════════════════════════ */
-/* 关于卡：横向结构 + 统一 hover 流光/倾斜 */
+.about-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 2rem 7rem;
+}
+
+.about-section .section-heading {
+  margin-bottom: 1.25rem;
+}
+
 .about-card {
   position: relative;
-  grid-column: span 2;
-  display: flex;
-  gap: 1.6rem;
-  align-items: center;
-  padding: 2.2rem;
-  border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.06),
-    rgba(139, 92, 246, 0.06)
-  );
-  border: 1px solid var(--vp-c-divider);
+  display: block;
+  padding: 1.75rem 0 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
   text-decoration: none;
   color: inherit;
-  overflow: hidden;
-  will-change: transform;
-  transform-style: preserve-3d;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
-}
-.about-card .card-shine {
-  z-index: 0;
-}
-.about-card > *:not(.card-shine) {
-  position: relative;
-  z-index: 1;
+  transition: border-color 0.2s;
 }
 
-a.about-card:hover {
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 16px 36px -16px rgba(139, 92, 246, 0.4);
+.about-card:hover {
+  border-top-color: var(--c-accent);
 }
 
-.about-more {
-  display: inline-block;
-  margin-top: 0.4rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--c-purple);
-  transition: transform 0.25s;
-}
-
-a.about-card:hover .about-more {
-  transform: translateX(4px);
-}
-
-.about-avatar {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  color: var(--c-purple);
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.12),
-    rgba(139, 92, 246, 0.12)
-  );
-  transition: color 0.25s;
-}
-
-a.about-card:hover .about-avatar {
-  color: var(--c-blue);
-}
-
-.about-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--vp-c-text-1);
-  margin: 0 0 0.6rem;
-}
 .about-text {
-  font-size: 0.92rem;
-  color: var(--vp-c-text-2);
+  font-size: 1rem;
+  color: var(--vp-c-text-1);
   line-height: 1.8;
-  margin: 0 0 1.1rem;
+  margin: 0 0 1.15rem;
+  max-width: 46rem;
 }
 
 .tech-tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.35rem 1rem;
 }
+
 .tech-tag {
-  font-size: 0.78rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
+  font-size: 0.8rem;
+  padding: 0 0 0.1rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--vp-c-divider);
   color: var(--vp-c-text-2);
+}
+
+/* ─── 键盘焦点 ─── */
+.action-btn:focus-visible,
+.feature-card:focus-visible,
+.about-card:focus-visible,
+.code-refresh:focus-visible,
+.code-file:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
 }
 
 /* ═══════════════════════════════════════
@@ -1430,90 +756,51 @@ a.about-card:hover .about-avatar {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .hero {
-    min-height: 100vh; /* 兜底：不支持 svh 的浏览器 */
+    min-height: 100vh;
     min-height: 100svh;
-    justify-content: center;
   }
 
   .hero-inner {
     grid-template-columns: 1fr;
-    gap: 2rem;
-    padding: 5rem 1.25rem 1rem;
-    text-align: center;
+    padding: 5rem 1.25rem 2.5rem;
+    gap: 1.5rem;
   }
 
-  .hero-text {
-    text-align: center;
-  }
-
-  .hero-visual {
-    order: 2;
-  }
-
-  /* 紧凑 CTA：两个主按钮并排，GitHub 作次级链接 */
   .hero-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
+    gap: 0.7rem;
   }
 
-  .action-btn.primary,
-  .action-btn.ghost {
-    flex: 1 1 calc(50% - 0.375rem);
-    width: auto;
-    max-width: none;
-    justify-content: center;
-  }
-
-  .action-btn.subtle {
-    flex: 1 1 100%;
-    width: auto;
-    max-width: none;
-    margin-top: 0.25rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    justify-content: center;
+  .code-window {
+    height: 240px;
+    min-height: 230px;
   }
 
   .features-section {
-    padding: 4rem 1.5rem 5rem;
+    padding: 3rem 1.5rem 2.5rem;
   }
 
-  /* 探索区：收紧标题与卡片间距 */
   .section-heading {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .feature-card {
-    padding: 1.8rem 1.5rem;
+    padding: 1.15rem 0.2rem 1.25rem;
   }
 
-  .about-card {
-    grid-column: auto;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 1.8rem 1.5rem;
+  .feature-card p {
+    padding-left: 0;
   }
 
-  .tech-tags {
-    justify-content: center;
-  }
-
-  .parallax-orb {
-    transform: scale(0.6);
-  }
-
-  .scroll-hint {
-    display: none;
+  .about-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
@@ -1521,16 +808,30 @@ a.about-card:hover .about-avatar {
    REDUCED MOTION
    ═══════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  .parallax-orb {
+  .hero-copy,
+  .hero-visual {
+    animation: none;
+  }
+
+  .cool-home .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .code-caret {
     animation: none !important;
   }
 
-  .scroll-line {
-    animation: none !important;
+  .code-plain,
+  .code-hl {
+    transition: none;
   }
 
-  .scroll-hint {
-    animation: none !important;
+  .feature-card,
+  .about-card,
+  .action-btn {
+    transition: none;
   }
 }
 </style>
