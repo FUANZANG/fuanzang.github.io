@@ -272,6 +272,7 @@ export default withPwa(defineConfig({
           items: [
             { text: 'API 设计与前后端约定', link: '/notes/practice/api-design' },
             { text: '大文件上传', link: '/notes/practice/large-file-upload' },
+            { text: '图片压缩与处理', link: '/notes/practice/image-processing' },
             { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
             { text: '虚拟列表', link: '/notes/practice/virtual-list' },
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
