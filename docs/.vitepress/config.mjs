@@ -360,6 +360,7 @@ export default withPwa(defineConfig({
             { text: 'FastAPI', link: '/notes/python/fastapi' },
             { text: 'Django', link: '/notes/python/django' },
             { text: 'Python 数据访问（SQLAlchemy）', link: '/notes/python/python-data' },
+            { text: 'Python 鉴权（FastAPI + JWT）', link: '/notes/python/python-auth' },
             { text: 'Python 测试（pytest）', link: '/notes/python/python-testing' }
           ]
         },

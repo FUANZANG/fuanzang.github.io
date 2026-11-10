@@ -5,6 +5,7 @@
 > - 前端选型与存储：[前端鉴权实战](/notes/practice/frontend-auth)
 > - 安全属性（Cookie / XSS / CSRF）：[前端安全](/notes/performance/frontend-security)
 > - Node：[Node 鉴权](/notes/node/node-auth)
+> - Python：[Python 鉴权（FastAPI + JWT）](/notes/python/python-auth)
 > - Java：[Spring Security](/notes/java/spring-security)
 > - 协议层：[OAuth2](/notes/practice/oauth2)、[SSO 与 OIDC](/notes/practice/sso-oidc)
 > - 接口约定：[API 设计](/notes/practice/api-design)

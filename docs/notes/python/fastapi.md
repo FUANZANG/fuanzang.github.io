@@ -1,6 +1,6 @@
 # FastAPI
 
-> 本文时点：2026-11。FastAPI **0.162.0**（要求 Python ≥3.10，依赖 starlette ≥0.46、pydantic ≥2.9；当前配套 starlette 1.10.0、Pydantic 2.14.2）。Web 框架侧对标 [NestJS](/notes/node/nestjs)、[Spring Boot](/notes/java/spring-boot)；持久化见 [Python 数据访问](/notes/python/python-data)；测试见 [Python 测试](/notes/python/python-testing)，工具链见 [Python 生态与工具链](/notes/python/python-ecosystem)。
+> 本文时点：2026-11。FastAPI **0.162.0**（要求 Python ≥3.10，依赖 starlette ≥0.46、pydantic ≥2.9；当前配套 starlette 1.10.0、Pydantic 2.14.2）。Web 框架侧对标 [NestJS](/notes/node/nestjs)、[Spring Boot](/notes/java/spring-boot)；持久化见 [Python 数据访问](/notes/python/python-data)；鉴权见 [Python 鉴权](/notes/python/python-auth)；测试见 [Python 测试](/notes/python/python-testing)，工具链见 [Python 生态与工具链](/notes/python/python-ecosystem)。
 
 FastAPI 是 Python 的 web 框架，定位 ≈ **NestJS 的"轻装版"**：装饰器路由 + 依赖注入 + 类型校验三件套，但不带 NestJS 那种模块体系（Nest 的全家桶、Guard/Interceptor 全家在 FastAPI 里是"够用就好"的轻量等价物）。
 
