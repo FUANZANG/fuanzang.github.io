@@ -406,6 +406,7 @@ export default withPwa(defineConfig({
             { text: 'AI 交互模式', link: '/notes/ai/ai-interaction-patterns' },
             { text: 'AI 应用工程化', link: '/notes/ai/ai-app-engineering' },
             { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
+            { text: 'RAG 检索调优', link: '/notes/ai/rag-retrieval-tuning' },
             { text: 'Web AI', link: '/notes/ai/web-ai' }
           ]
         },
