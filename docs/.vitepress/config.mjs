@@ -358,6 +358,7 @@ export default withPwa(defineConfig({
             { text: 'Python 生态与工具链', link: '/notes/python/python-ecosystem' },
             { text: 'FastAPI', link: '/notes/python/fastapi' },
             { text: 'Django', link: '/notes/python/django' },
+            { text: 'Python 数据访问（SQLAlchemy）', link: '/notes/python/python-data' },
             { text: 'Python 测试（pytest）', link: '/notes/python/python-testing' }
           ]
         },
