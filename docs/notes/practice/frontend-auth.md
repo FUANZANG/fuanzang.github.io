@@ -9,7 +9,7 @@
 > - Axios 拦截器与 **Token 无感刷新实现** → [HTTP 请求与数据层 · Token 无感刷新](/notes/frameworks/http-request#5-token-无感刷新)
 > - `beforeEach` / ProtectedRoute **完整鉴权流程** → [前端路由](/notes/frameworks/frontend-routing)
 >
-> 实践向（SPA + BFF 常见形态）。Java 服务端见 [Spring Security 鉴权](/notes/java/spring-security)；Node 服务端见 [Node 鉴权](/notes/node/node-auth)。
+> 实践向（SPA + BFF 常见形态）。Java 服务端见 [Spring Security 鉴权](/notes/java/spring-security)；Node 服务端见 [Node 鉴权](/notes/node/node-auth)；三边对照见 [前后端鉴权对照](/notes/practice/auth-end-to-end)。
 
 ## 1. 要回答的三件事
 

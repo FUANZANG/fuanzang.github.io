@@ -2,7 +2,7 @@
 
 > 本文基于 Passport + JWT（NestJS 11 / 2026-10 时点）。定位是「Node 服务端怎么做认证与授权」——凭证形态、Guard、刷新与权限；不覆盖自建 OAuth 授权服务器。
 
-> 前置：[NestJS](/notes/node/nestjs)、[Node.js · JWT 小节](/notes/node/node#jwt-认证)。前端选型见 [前端鉴权实战](/notes/practice/frontend-auth)；Java 对标 [Spring Security](/notes/java/spring-security)；SSO 见 [SSO 与 OIDC](/notes/practice/sso-oidc)。
+> 前置：[NestJS](/notes/node/nestjs)、[Node.js · JWT 小节](/notes/node/node#jwt-认证)。前端选型见 [前端鉴权实战](/notes/practice/frontend-auth)；三边对照见 [前后端鉴权对照](/notes/practice/auth-end-to-end)；Java 对标 [Spring Security](/notes/java/spring-security)；SSO 见 [SSO 与 OIDC](/notes/practice/sso-oidc)。
 
 ## 认证 vs 授权
 

@@ -284,6 +284,7 @@ export default withPwa(defineConfig({
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
             { text: 'ECharts', link: '/notes/practice/echarts' },
             { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
+            { text: '前后端鉴权对照', link: '/notes/practice/auth-end-to-end' },
             { text: 'OAuth2 识字', link: '/notes/practice/oauth2' },
             { text: 'SSO 与 OIDC', link: '/notes/practice/sso-oidc' },
             { text: 'Web Workers 实战', link: '/notes/practice/web-workers' }
