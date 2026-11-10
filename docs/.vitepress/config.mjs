@@ -69,8 +69,8 @@ export default withPwa(defineConfig({
       name: 'FUANZANG 知识库',
       short_name: 'FUANZANG',
       description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
-      theme_color: '#1a1a2e',
-      background_color: '#ffffff',
+      theme_color: '#141414',
+      background_color: '#f4f4f4',
       display: 'standalone',
       lang: 'zh-CN',
       icons: [
@@ -99,11 +99,11 @@ export default withPwa(defineConfig({
     ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }],
     [
       'meta',
-      { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' }
+      { name: 'theme-color', content: '#f4f4f4', media: '(prefers-color-scheme: light)' }
     ],
     [
       'meta',
-      { name: 'theme-color', content: '#1a1a2e', media: '(prefers-color-scheme: dark)' }
+      { name: 'theme-color', content: '#111111', media: '(prefers-color-scheme: dark)' }
     ],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'FUANZANG' }],

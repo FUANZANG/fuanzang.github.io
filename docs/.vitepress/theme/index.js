@@ -1,5 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
 import Layout from './Layout.vue'
+import './fonts.css'
 import './style.css'
 import { onMounted } from 'vue'
 

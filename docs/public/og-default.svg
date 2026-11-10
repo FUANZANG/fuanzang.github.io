@@ -4,37 +4,31 @@
   height="630"
   viewBox="0 0 1200 630"
 >
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b82f6" />
-      <stop offset="1" stop-color="#8b5cf6" />
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="#0f172a" />
-  <rect width="1200" height="630" fill="url(#g)" opacity="0.14" />
-  <circle cx="120" cy="120" r="260" fill="url(#g)" opacity="0.10" />
-  <circle cx="1080" cy="560" r="220" fill="url(#g)" opacity="0.10" />
+  <rect width="1200" height="630" fill="#f4f4f4" />
+  <rect x="0" y="0" width="8" height="630" fill="#141414" />
+  <circle cx="1080" cy="80" r="220" fill="#141414" opacity="0.04" />
+  <circle cx="140" cy="560" r="180" fill="#141414" opacity="0.04" />
   <text
     x="600"
     y="300"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="130"
+    font-family="Manrope, Arial, Helvetica, sans-serif"
+    font-size="120"
     font-weight="800"
-    fill="url(#g)"
+    fill="#141414"
     text-anchor="middle"
-    letter-spacing="-2"
+    letter-spacing="-3"
   >
     FUANZANG
   </text>
   <text
     x="600"
     y="380"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="36"
-    fill="#cbd5e1"
+    font-family="IBM Plex Sans, Arial, Helvetica, sans-serif"
+    font-size="32"
+    fill="#5a5a5a"
     text-anchor="middle"
-    letter-spacing="2"
+    letter-spacing="1"
   >
-    知识库 · 博客 · 前端小工具
+    写代码 · 爱折腾 · 偶尔下厨
   </text>
 </svg>

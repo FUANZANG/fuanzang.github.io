@@ -1,8 +1,89 @@
-/* VitePress 自定义样式 + GSAP 动画支持 */
+/* VitePress 自定义样式：单墨黑 */
 
-/* ═══ 首页沉浸式导航 ═══ */
+:root {
+  --font-display: 'Manrope', 'IBM Plex Sans', 'PingFang SC', sans-serif;
+  --font-ui: 'IBM Plex Sans', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --font-reading: 'Source Serif 4', 'Songti SC', 'Noto Serif SC', serif;
+  --c-ink: #141414;
+  /* 实心墨色按钮上的字色（深色模式会翻转，避免浅底浅字） */
+  --c-on-ink: #fafafa;
+  --c-accent: #141414;
+  --c-accent-deep: #000000;
+  --c-paper: #f4f4f4;
+  --c-paper-soft: #ebebeb;
 
-/* 首页导航绝对定位，不需要占位，去掉 VPContent 的 nav 高度 padding */
+  --vp-font-family-base: var(--font-ui);
+  --vp-font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --vp-c-brand-1: #141414;
+  --vp-c-brand-2: #000000;
+  --vp-c-brand-3: #333333;
+  --vp-c-brand-soft: rgba(20, 20, 20, 0.1);
+
+  --vp-c-bg: #f4f4f4;
+  --vp-c-bg-alt: #ebebeb;
+  --vp-c-bg-soft: #ebebeb;
+  --vp-c-bg-elv: #fafafa;
+  --vp-c-text-1: #141414;
+  --vp-c-text-2: #5a5a5a;
+  --vp-c-text-3: #8a8a8a;
+  --vp-c-divider: rgba(20, 20, 20, 0.12);
+  --vp-c-gutter: #ebebeb;
+  --vp-sidebar-bg-color: #efefef;
+  --vp-nav-bg-color: rgba(244, 244, 244, 0.9);
+}
+
+.dark {
+  --c-ink: #f0f0f0;
+  --c-on-ink: #111111;
+  --c-accent: #f0f0f0;
+  --c-accent-deep: #ffffff;
+  --c-paper: #111111;
+  --c-paper-soft: #1a1a1a;
+
+  --vp-c-brand-1: #f0f0f0;
+  --vp-c-brand-2: #ffffff;
+  --vp-c-brand-3: #c8c8c8;
+  --vp-c-brand-soft: rgba(240, 240, 240, 0.12);
+
+  --vp-c-bg: #111111;
+  --vp-c-bg-alt: #1a1a1a;
+  --vp-c-bg-soft: #1a1a1a;
+  --vp-c-bg-elv: #222222;
+  --vp-c-text-1: #f0f0f0;
+  --vp-c-text-2: #a8a8a8;
+  --vp-c-text-3: #7a7a7a;
+  --vp-c-divider: rgba(240, 240, 240, 0.12);
+  --vp-c-gutter: #1a1a1a;
+  --vp-sidebar-bg-color: #151515;
+  --vp-nav-bg-color: rgba(17, 17, 17, 0.92);
+}
+
+.VPNavBarTitle .title {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.vp-doc p,
+.vp-doc li {
+  font-family: var(--font-reading);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.vp-doc :not(pre) > code {
+  font-family: var(--vp-font-family-mono);
+}
+
+/* ═══ 首页导航：纸面 hero，顶栏轻透明，滚动后加底 ═══ */
 body.cool-home-page .VPContent {
   padding-top: 0 !important;
 }
@@ -12,60 +93,28 @@ body.cool-home-page .VPNav {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 20;
   background: transparent !important;
   backdrop-filter: none !important;
-  border: none !important;
+  border-bottom: none !important;
 }
 
-body.cool-home-page .VPNavBar {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  border: none !important;
-}
-
+body.cool-home-page .VPNavBar,
 body.cool-home-page .VPNavBar .content-body {
   background: transparent !important;
   backdrop-filter: none !important;
+  border: none !important;
 }
 
-/* 导航文字在 hero 渐变背景上更清晰 */
-body.cool-home-page .VPNavBar .VPNavBarMenuLink,
-body.cool-home-page .VPNavBar .VPNavBarTitle {
-  color: var(--vp-c-text-1);
-}
-
-/* 滚动后导航栏恢复毛玻璃 */
 body.cool-home-page .VPNav.scrolled {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
+  background: color-mix(in srgb, var(--vp-c-bg) 90%, transparent) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
   border-bottom: 1px solid var(--vp-c-divider) !important;
 }
 
-:root.dark body.cool-home-page .VPNav.scrolled {
-  background: rgba(20, 20, 30, 0.7) !important;
-}
-
-/* Features 卡片悬浮效果（CSS 过渡，非 GSAP） */
-.VPFeature {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.VPFeature:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
-}
-
-.dark .VPFeature:hover {
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4);
-}
-
-/* 减少动画偏好的用户 */
-@media (prefers-reduced-motion: reduce) {
-  .VPFeature {
-    transition: none;
-  }
+body.cool-home-page .VPNavBar .VPNavBarMenuLink,
+body.cool-home-page .VPNavBar .VPNavBarTitle {
+  color: var(--vp-c-text-1);
 }
 
 /* ═══ 移动端：展开"探索"组，子项扁平化（不折叠进探索）═══ */
@@ -117,23 +166,60 @@ html {
   }
 }
 
-/* 滚动条美化 */
-::-webkit-scrollbar {
+/* ═══ 键盘焦点：全站导航与可点元素 ═══ */
+.VPNavBarMenuLink:focus-visible,
+.VPNavBarTitle:focus-visible,
+.VPNavScreenMenuLink:focus-visible,
+.VPNavScreenMenuGroupLink:focus-visible,
+.VPNavScreenMenuGroup .button:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 滚动条：默认隐藏，滚动中再露出 */
+html {
+  scrollbar-width: none;
+}
+
+html.is-scrolling {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 20, 20, 0.35) transparent;
+}
+
+html.dark.is-scrolling {
+  scrollbar-color: rgba(240, 240, 240, 0.35) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+html.is-scrolling::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-::-webkit-scrollbar-track {
+html.is-scrolling::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.3);
+html.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(20, 20, 20, 0.28);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.5);
+html.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 20, 20, 0.45);
+}
+
+html.dark.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(240, 240, 240, 0.28);
+}
+
+html.dark.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(240, 240, 240, 0.45);
 }
 
 /* 站名盖在侧边栏上，这块原是透明的，滚上来的分组标题会叠住 FUANZANG */

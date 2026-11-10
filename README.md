@@ -5,8 +5,11 @@
 ## 技术栈
 
 - VitePress 1.6.4 + Vue 3 Composition API
-- GSAP 3.15（首页动画、视差滚动）
+- PWA（`@vite-pwa/vitepress`）
+- 自托管字体（Manrope / IBM Plex Sans / Source Serif 4，经 fontsource）
 - GitHub Pages 自动部署
+
+视觉方向：单墨黑 `#141414`、纸感底 `#f4f4f4`。
 
 ## 快速开始
 
@@ -15,6 +18,8 @@ npm install          # 安装依赖
 npm run docs:dev     # 启动开发服务器
 npm run docs:build   # 构建
 npm run docs:preview # 预览构建结果
+npm run pwa:assets   # 从 SVG 源图重生 favicon / PWA 图标
+npm run sync:readme  # 按仓库内容同步 README 数量统计
 ```
 
 ## 目录结构
@@ -22,24 +27,29 @@ npm run docs:preview # 预览构建结果
 ```
 docs/
 ├── .vitepress/
-│   ├── config.mjs          # 站点配置（导航、侧边栏）
+│   ├── config.mjs          # 站点配置（导航、侧边栏、页脚）
 │   └── theme/              # 自定义主题
 │       ├── index.js        # 主题入口
-│       ├── Layout.vue      # 全局布局（滚动进度条、GSAP 动画）
-│       ├── CoolHome.vue    # 首页 Hero 组件
-│       ├── NotesIndex.vue  # 笔记总览组件
-│       └── style.css       # 全局样式
+│       ├── Layout.vue      # 全局布局（滚动进度条）
+│       ├── CoolHome.vue    # 首页
+│       ├── NotesIndex.vue  # 笔记总览
+│       └── style.css       # 全局样式 / 墨黑 token
 ├── components/             # Vue 组件
+│   ├── PageShell.vue       # 轻应用页统一壳
 │   ├── ToolsBox.vue        # 工具箱外壳
-│   ├── RecipesTracker.vue  # 菜谱组件
-│   ├── NavLinks.vue        # 导航组件
-│   ├── tools/              # 10 个专用组件，其余走 SimpleTool
+│   ├── RecipesTracker.vue  # 菜谱手帐
+│   ├── NavLinks.vue        # 网站导航
+│   ├── SectionIcon.vue     # 首页栏目图标
+│   ├── tools/              # 专用工具组件，其余走 SimpleTool
 │   ├── transforms.js       # 编解码转换纯函数
 │   └── useTool.js          # 共享 hook（复制、toast）
 ├── data/
+│   ├── profile.js          # 个人签名 / 技术栈标签
+│   ├── siteSections.js     # 栏目单一数据源（首页 + 顶栏）
 │   ├── recipes.json        # 117 道菜谱数据
 │   ├── tools.js            # 27 款工具定义
 │   └── navLinks.js         # 112 导航链接
+├── icon-src/               # maskable / apple 源图（不进部署）
 ├── notes/                  # 技术笔记（13 大分类，156 篇）
 │   ├── foundations/         # 前端基础（20 篇）
 │   ├── frameworks/          # 前端框架（12 篇）
@@ -54,14 +64,14 @@ docs/
 │   ├── ops/                 # 运维与部署（12 篇）
 │   ├── ai/                  # AI 工程（27 篇）
 │   └── frontier/            # 前沿技术（3 篇）
-├── hardware/               # 硬件杂谈（4 分类，9 篇）
+├── hardware/               # 硬件杂谈（4 分类，14 篇）
 │   ├── chips/              # 芯片（6 篇）
 │   ├── wired/              # 有线接口（5 篇）
 │   ├── wireless/           # 无线标准（1 篇）
 │   └── power/              # 电源与充电（2 篇）
 ├── algorithm/             # 算法题库（124 题）
 ├── blog/                   # 博客文章
-├── public/                 # 静态资源
+├── public/                 # 静态资源与站点图标
 ├── about.md                # 关于页
 ├── nav.md                  # 导航页
 ├── recipes.md              # 菜谱页
@@ -71,11 +81,11 @@ docs/
 
 ## 功能模块
 
-- **首页**：沉浸式 Hero（打字机、视差滚动、3D 卡片倾斜、渐变光球）
+- **首页**：全屏 Hero + 墨色代码签名块（打字机随机菜谱）；下方栏目卡片
 - **笔记**：156 篇技术文章，覆盖前端、后端、数据库、运维与 AI
 - **工具箱**：27 款前端工具（Base64、JSON、正则、密码、二维码等），转换在本地完成；PlantUML 预览会把图发给渲染服务
-- **菜谱**：117 道家常菜谱，支持搜索/分类/随机推荐
-- **导航**：15 个分类、112 开发网站速查
+- **菜谱**：117 道家常菜谱，支持搜索 / 标签 / 随机推荐 / 烹饪模式
+- **导航**：15 个分类、112 个开发网站速查
 - **算法题库**：124 题 LeetCode 练习，含题目、思路与解法
 - **博客**：技术文章与经验分享
 
@@ -96,6 +106,8 @@ docs/
 | `test` | 测试相关 | `build` | 构建系统 |
 
 规则：`subject` 使用中文、不加句号；`scope` 可选（如 `notes`、`theme`、`home`）
+
+数量统计变更后执行 `npm run sync:readme`，避免手工改数字。
 
 ## 部署
 
