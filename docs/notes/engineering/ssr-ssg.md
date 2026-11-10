@@ -1,6 +1,6 @@
 # SSR / SSG 笔记
 
-> 本文件记录服务端渲染（SSR）、静态生成（SSG）、增量静态再生（ISR）的核心原理、框架实践与性能优化。
+> 本文件记录服务端渲染（SSR）、静态生成（SSG）、增量静态再生（ISR）的核心原理、框架实践与性能优化。搜索引擎侧的 title / canonical / robots 见 [SEO 与 SSR 衔接](/notes/performance/seo-and-ssr)。
 
 ## 1. 渲染模式概览
 
