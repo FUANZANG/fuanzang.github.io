@@ -252,6 +252,7 @@ export default withPwa(defineConfig({
             { text: 'YApi 接口平台', link: '/notes/engineering/yapi' },
             { text: 'OpenAPI 接口契约', link: '/notes/engineering/openapi' },
             { text: '多环境与配置管理', link: '/notes/engineering/env-config' },
+            { text: '依赖与供应链安全', link: '/notes/engineering/dependency-security' },
             { text: 'mise 多语言版本管理', link: '/notes/engineering/mise' }
           ]
         },

@@ -3,6 +3,8 @@
 > 本文件记录前端三大包管理器 npm、pnpm、Yarn 的核心机制、Workspace 支持与选型建议。
 >
 > 基于以下版本：npm 12.x | pnpm 11.x | Yarn 4.x（Berry）
+>
+> 审计、锁文件与 provenance 见 [依赖与供应链安全](/notes/engineering/dependency-security)。
 
 ## 1. 核心机制对比
 
