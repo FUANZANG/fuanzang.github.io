@@ -373,7 +373,8 @@ export default withPwa(defineConfig({
             { text: 'GitHub Actions', link: '/notes/ops/github-actions' },
             { text: '前端部署', link: '/notes/ops/frontend-deployment' },
             { text: '监控栈', link: '/notes/ops/monitoring' },
-            { text: '后端可观测', link: '/notes/ops/observability' }
+            { text: '后端可观测', link: '/notes/ops/observability' },
+            { text: '应用日志与 requestId', link: '/notes/ops/app-logging' }
           ]
         },
         {

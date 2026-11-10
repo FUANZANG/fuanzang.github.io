@@ -2,7 +2,7 @@
 
 > 本文基于 Micrometer + OpenTelemetry（2026-09 时点；Spring Boot 3 起 Sleuth 已并入 Micrometer Tracing）。定位与 [前端监控](/notes/performance/frontend-monitoring) 对称：**Metrics / Tracing / Logging 怎么串**，听懂排障黑话；不覆盖自建可观测平台运维。
 
-> 前置：[Spring Boot](/notes/java/spring-boot)、[Spring Cloud](/notes/java/spring-cloud)（地图里的链路追踪）。AI 侧见 [AI 评测与可观测](/notes/ai/ai-eval-observability)。
+> 前置：[Spring Boot](/notes/java/spring-boot)、[Spring Cloud](/notes/java/spring-cloud)（地图里的链路追踪）。应用侧日志字段与 requestId 约定见 [应用日志与 requestId](/notes/ops/app-logging)。AI 侧见 [AI 评测与可观测](/notes/ai/ai-eval-observability)。
 
 ## 三大支柱
 
