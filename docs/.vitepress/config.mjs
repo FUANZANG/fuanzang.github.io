@@ -266,6 +266,7 @@ export default withPwa(defineConfig({
             { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
             { text: '前端测试', link: '/notes/performance/frontend-testing' },
             { text: '前端安全', link: '/notes/performance/frontend-security' },
+            { text: '前端包体积与 Bundle 分析', link: '/notes/performance/bundle-analysis' },
             { text: 'SEO 与 SSR 衔接', link: '/notes/performance/seo-and-ssr' }
           ]
         },
