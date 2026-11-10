@@ -262,7 +262,7 @@ export default withPwa(defineConfig({
             { text: '性能分析案例', link: '/notes/performance/performance-case' },
             { text: '前端监控', link: '/notes/performance/frontend-monitoring' },
             { text: '前端测试', link: '/notes/performance/frontend-testing' },
-            { text: '前端安全', link: '/notes/performance/frontend-security' }
+            { text: '前端安全', link: '/notes/performance/frontend-security' },
           ]
         },
         {
@@ -295,6 +295,7 @@ export default withPwa(defineConfig({
           items: [
             { text: 'SQL 基础', link: '/notes/database/sql-basics' },
             { text: '数据库设计', link: '/notes/database/db-design' },
+            { text: '事务与隔离级别', link: '/notes/database/transaction-isolation' },
             { text: 'MySQL 深入', link: '/notes/database/mysql-deep' },
             { text: 'PostgreSQL', link: '/notes/database/postgres' },
             { text: '数据库迁移（Flyway）', link: '/notes/database/db-migration' },
