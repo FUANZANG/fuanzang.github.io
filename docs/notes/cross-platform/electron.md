@@ -1,6 +1,8 @@
 # Electron
 
 > Electron 是一个使用 Chromium + Node.js 构建跨平台桌面应用的框架。本质上就是把 Web 应用装进一个定制浏览器里，同时赋予它访问操作系统底层的能力。
+>
+> 上线前安全 / 签名 / 更新核对见 [Electron 安全与发布清单](/notes/cross-platform/electron-checklist)。
 
 ## 架构原理
 

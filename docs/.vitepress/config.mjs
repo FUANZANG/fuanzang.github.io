@@ -293,7 +293,8 @@ export default withPwa(defineConfig({
           items: [
             { text: '小程序开发', link: '/notes/cross-platform/mini-program' },
             { text: 'React Native', link: '/notes/cross-platform/react-native' },
-            { text: 'Electron', link: '/notes/cross-platform/electron' }
+            { text: 'Electron', link: '/notes/cross-platform/electron' },
+            { text: 'Electron 安全与发布清单', link: '/notes/cross-platform/electron-checklist' }
           ]
         },
         {
