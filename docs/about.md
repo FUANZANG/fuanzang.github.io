@@ -14,7 +14,7 @@ const about = siteSections.find((s) => s.id === 'about')
 </script>
 
 <PageShell
-  :title="`👋 ${about?.title || '关于我'}`"
+  :title="about?.title || '关于我'"
   :subtitle="profileTagline"
   max-width="720px"
 >
@@ -27,40 +27,56 @@ const about = siteSections.find((s) => s.id === 'about')
     <h2>在做什么</h2>
     <ul>
       <li>维护这套个人知识库与博客</li>
-      <li>折腾前端动画、可视化与工程化</li>
+      <li>折腾工程化、可视化，偶尔碰碰 AI / Agent</li>
       <li>收集好用的小工具，做成纯前端在线版</li>
+      <li>不知道吃什么时，往菜谱手帐里记一道</li>
     </ul>
   </section>
 
   <section class="about-block">
     <h2>技术栈</h2>
-    <div class="tech-tags">
-      <span v-for="t in techStack" :key="t">{{ t }}</span>
-    </div>
+    <ul class="tech-list">
+      <li v-for="t in techStack" :key="t">{{ t }}</li>
+    </ul>
   </section>
 
   <section class="about-block">
     <h2>找到我</h2>
     <p>
-      <a href="https://github.com/FUANZANG" target="_blank" rel="noopener"
+      <a
+        class="about-link"
+        href="https://github.com/FUANZANG"
+        target="_blank"
+        rel="noopener"
         >GitHub ↗</a
       >
     </p>
   </section>
 
-  <button class="back-btn" @click="router.go('/')">← 返回首页</button>
+  <button class="back-btn" type="button" @click="router.go('/')">
+    ← 返回首页
+  </button>
 </PageShell>
 
-<style>
+<style scoped>
 .about-block {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.about-block:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 .about-block h2 {
-  font-size: 1.25rem;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--vp-c-text-1);
-  margin: 0 0 0.8rem;
-  padding-left: 0.7rem;
-  border-left: 3px solid var(--c-purple, #8b5cf6);
+  margin: 0 0 0.65rem;
+  padding: 0;
+  border: none;
 }
 .about-block p {
   color: var(--vp-c-text-2);
@@ -70,35 +86,44 @@ const about = siteSections.find((s) => s.id === 'about')
 .about-block ul {
   color: var(--vp-c-text-2);
   line-height: 1.9;
-  padding-left: 1.2rem;
+  padding-left: 1.15rem;
   margin: 0;
 }
-.tech-tags {
+.tech-list {
+  list-style: none;
+  padding: 0 !important;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.35rem 1.1rem;
 }
-.tech-tags span {
-  font-size: 0.82rem;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
+.tech-list li {
+  font-size: 0.88rem;
   color: var(--vp-c-text-2);
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding-bottom: 0.1rem;
+}
+.about-link {
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--c-ink, var(--vp-c-brand-1));
+}
+.about-link:hover {
+  opacity: 0.75;
 }
 .back-btn {
-  margin-top: 1rem;
-  padding: 0.6rem 1.4rem;
-  border-radius: 10px;
-  border: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
+  margin-top: 0.5rem;
+  padding: 0.45rem 0;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--vp-c-text-2);
   cursor: pointer;
   font-size: 0.9rem;
-  transition: all 0.25s;
 }
 .back-btn:hover {
-  border-color: var(--c-purple, #8b5cf6);
-  color: var(--c-purple, #8b5cf6);
+  color: var(--vp-c-text-1);
+  border-bottom-color: var(--c-ink, var(--vp-c-brand-1));
 }
 </style>

@@ -2,6 +2,8 @@
 node_modules
 docs/.vitepress/dist
 docs/.vitepress/cache
+# impeccable 设计工具的本地产物（评估快照、交接文档等）
+.impeccable/
 
 # 系统文件
 .DS_Store
