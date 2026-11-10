@@ -270,6 +270,7 @@ export default withPwa(defineConfig({
           text: '场景实战',
           collapsed: true,
           items: [
+            { text: 'API 设计与前后端约定', link: '/notes/practice/api-design' },
             { text: '大文件上传', link: '/notes/practice/large-file-upload' },
             { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
             { text: '虚拟列表', link: '/notes/practice/virtual-list' },
