@@ -406,6 +406,7 @@ export default withPwa(defineConfig({
           collapsed: true,
           items: [
             { text: 'Agent Harness', link: '/notes/ai/agent-harness' },
+            { text: 'Agent 上下文与指令设计', link: '/notes/ai/agent-context-instructions' },
             { text: 'Agent 设计模式', link: '/notes/ai/agent-patterns' },
             { text: 'Agent 框架生态', link: '/notes/ai/agent-frameworks' },
             { text: 'Agent 记忆系统', link: '/notes/ai/agent-memory' },

@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点的 Cursor / Claude 等 harness 里的 Skill 实践（`SKILL.md` 已成常见交付物）。定位识字：Skill 是什么、和 MCP / AGENTS.md / 系统提示差在哪、什么时候该写成 Skill。
 
-> 关联：[Agent Harness](/notes/ai/agent-harness)（上下文与生命周期）、[MCP 与工具调用](/notes/ai/mcp-tools)（运行时能力）、[LLM 基础](/notes/ai/llm-fundamentals)（上下文窗口与指令）。
+> 关联：[Agent Harness](/notes/ai/agent-harness)（上下文与生命周期）、[Agent 上下文与指令设计](/notes/ai/agent-context-instructions)（分层装配）、[MCP 与工具调用](/notes/ai/mcp-tools)（运行时能力）、[LLM 基础](/notes/ai/llm-fundamentals)（上下文窗口与指令）。
 
 ## Skill 是什么
 
