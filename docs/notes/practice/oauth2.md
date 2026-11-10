@@ -63,4 +63,4 @@ OAuth2 的 access token 表示「被允许做什么」，不保证里面有稳�
 
 + [OAuth 2.0（RFC 6749）](https://datatracker.ietf.org/doc/html/rfc6749)
 + [PKCE（RFC 7636）](https://datatracker.ietf.org/doc/html/rfc7636)
-+ [OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics)
++ [OAuth 2.0 Security BCP（RFC 9700）](https://datatracker.ietf.org/doc/html/rfc9700)
