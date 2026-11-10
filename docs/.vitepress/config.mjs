@@ -276,6 +276,7 @@ export default withPwa(defineConfig({
             { text: '动态表单渲染', link: '/notes/practice/dynamic-form' },
             { text: '虚拟列表', link: '/notes/practice/virtual-list' },
             { text: '拖拽交互', link: '/notes/practice/drag-and-drop' },
+            { text: '富文本编辑器', link: '/notes/practice/rich-text-editor' },
             { text: 'WebSocket 与实时通信', link: '/notes/practice/websocket-realtime' },
             { text: 'ECharts', link: '/notes/practice/echarts' },
             { text: '前端鉴权实战', link: '/notes/practice/frontend-auth' },
