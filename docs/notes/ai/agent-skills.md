@@ -106,10 +106,10 @@ description: >
 2. 只写好 `description`，故意换几种用户说法，看 harness 会不会命中
 3. 把又长又少用的表格挪到 `reference.md`，对比加载前后的 token
 4. 再写一个个人 Skill（跨仓库通用，如 commit 文风），体会个人 vs 项目边界
-5. 需要外部系统时：Skill 里写「何时调用哪个 MCP」，工具本身仍用 [MCP 篇](/notes/ai/mcp-tools) 那套
+5. 需要外部系统时：Skill 里写「何时调用哪个 MCP」，工具本身仍用 [MCP 篇](/notes/ai/mcp-tools) 那套；整条交付闭环见 [AI Coding 工作流](/notes/ai/ai-coding-workflow)
 
 ## 参考
 
 + [Cursor · Agent Skills](https://cursor.com/docs)（以你当前客户端文档为准）
 + [Anthropic · Skills / 工具使用相关文档](https://docs.anthropic.com/)
-+ 本站：[Agent Harness](/notes/ai/agent-harness) · [MCP 与工具调用](/notes/ai/mcp-tools)
++ 本站：[Agent Harness](/notes/ai/agent-harness) · [AI Coding 工作流](/notes/ai/ai-coding-workflow) · [MCP 与工具调用](/notes/ai/mcp-tools)

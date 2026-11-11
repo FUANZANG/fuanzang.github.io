@@ -97,6 +97,6 @@ Google 等实践强调：**检索指标与生成指标分开看**；一次实验
 
 ## 参考
 
-- 本站：[RAG](/notes/ai/rag)、[AI 评测与可观测](/notes/ai/ai-eval-observability)
+- 本站：[RAG](/notes/ai/rag)、[Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)、[AI 评测与可观测](/notes/ai/ai-eval-observability)
 - [Google Cloud: Optimizing RAG retrieval](https://cloud.google.com/blog/products/ai-machine-learning/optimizing-rag-retrieval)
 - [Qdrant: Best Practices in RAG Evaluation](https://qdrant.tech/blog/rag-evaluation-guide/)

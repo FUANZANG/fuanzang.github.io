@@ -110,7 +110,7 @@ print(result.output.claim)          # 已校验为 Fact 实例
 | 场景 | 用什么 |
 |---|---|
 | 单 Agent + 工具 + 结构化输出（80% 应用） | **Pydantic AI**（`run` / `run_sync` / `run_stream` 三入口，≈ OpenAI SDK 的 async + 类型强化） |
-| 多节点图、检查点、human-in-the-loop | **LangGraph**（图化工作流，见 Agent 框架生态） |
+| 多节点图、检查点、human-in-the-loop | **LangGraph**（图化工作流，见 [LangGraph 实战](/notes/ai/langgraph) / [框架生态](/notes/ai/agent-frameworks)） |
 | 多 Agent 角色协作 | CrewAI / AG2（认脸，见同上） |
 | 只想要 OpenAI 官方的 Agent 原语 | OpenAI Agents SDK（Python 为参考实现） |
 
@@ -122,7 +122,7 @@ print(result.output.claim)          # 已校验为 Fact 实例
 2. 把 ③ 的 `parse` 换成流式（`stream=True`，遍历事件），对照 [AI 流式输出](/notes/ai/ai-streaming) 的 JS 事件语义。
 3. 跑一遍 Semaphore 并发批处理，观察 10 并发 vs 50 并发的耗时与 429。
 4. Pydantic AI 写一个带两个工具的 Agent（工具 = 两个普通函数），体验 `output_type` 的类型化。
-5. 读 [Agent 框架生态](/notes/ai/agent-frameworks) 的 Python 列，决定要不要上 LangGraph。
+5. 读 [Agent 框架生态](/notes/ai/agent-frameworks) 的 Python 列，决定要不要上 LangGraph；上手见 [LangGraph 实战](/notes/ai/langgraph)。
 
 ## 参考
 

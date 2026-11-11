@@ -47,7 +47,7 @@ agent 的真实特征是**长任务 + 副作用**：跑一半进程挂了，"那
 按"从便宜到贵"问三个问题：
 
 1. **真的要框架吗？** 教学用途 / 需要绝对控制 / 极致省 token → 手写 `fetch + while` 循环（百行以内）；平台篇的 Dify / Coze 能覆盖"节点 + 连线"就先用平台
-2. **语言？** TS → **Vercel AI SDK**（轻，只做调用层）或 **Mastra**（全家桶）；Python → **Pydantic AI**（简单任务）或 **LangGraph**（要图化工作流 + 检查点）；Java → **Spring AI**（Spring 官方）或 **LangChain4j**（社区，统一 API）
+2. **语言？** TS → **Vercel AI SDK**（轻，只做调用层）或 **Mastra**（全家桶）；Python → **Pydantic AI**（简单任务）或 **LangGraph**（要图化工作流 + 检查点）；Java → **Spring AI** / **LangChain4j**（落地见 [Spring AI 与 LangChain4j](/notes/ai/spring-ai)）
 3. **是否已押注某模型厂商？** 押了 → 用厂商 SDK（OpenAI Agents SDK / Claude Agent SDK / ADK 对 Gemini）；.NET / Azure 栈 → Microsoft Agent Framework
 
 两个特殊判据：
@@ -60,7 +60,7 @@ agent 的真实特征是**长任务 + 副作用**：跑一半进程挂了，"那
 ## 语言选型（判据的补充）
 
 + **生态引力**：agent 工具是 Python 先行——版图里 CrewAI / AG2 / Pydantic AI 只有 Python，LangGraph / ADK / OpenAI Agents SDK 的 Python SDK 是参考实现；记忆层（Mem0 / Letta / Graphiti）同样。TS 是原生第二梯队：Mastra、Vercel AI SDK、@langchain/langgraph-js、Claude Agent SDK TS、E2B JS SDK。Python 选项多，TS 选项少但全是一等公民
-+ **Java（第三梯队）**：Spring AI（Spring 官方，Spring Boot 生态原生）与 LangChain4j（社区 1.x，统一 API + MCP + 向量库）是 JVM 上两条主路，Google ADK 也带官方 Java / Kotlin 版；工具与记忆生态落后 Python / TS，强项是 Spring 全家桶等存量企业集成——宿主服务已是 Java 时直接进程内接，别为 agent 重写服务
++ **Java（第三梯队）**：Spring AI 与 LangChain4j 是 JVM 两条主路（专篇 [Spring AI 与 LangChain4j](/notes/ai/spring-ai)）；Google ADK 也带官方 Java / Kotlin。工具与记忆生态落后 Python / TS，强项是存量 Spring 集成——宿主已是 Java 时进程内接，别为 agent 重写服务
 + **跑在哪决定语言**：agent 循环活在持有会话的那个进程里——那个服务用什么语言，agent 就用什么；agent 在浏览器（WebContainer 形态）或边缘（Workers）里跑时，JS/TS 是唯一选项。所以先定"跑在哪"，再回表选框架，而不是先挑语言再想怎么接
 + **前端主场**：用 Node / Vite 写 agent 循环，和你写流式 UI 同构——工具 schema ≈ API 类型，类型贯穿全链路；Python 选项留给数据密集场景
 
@@ -78,7 +78,7 @@ agent↔agent 的互操作层在 2026 年落了地：**A2A** 2025-06 捐给 Linu
 ## 学习路径建议
 
 1. 用 OpenAI Agents SDK（TS）或 Pydantic AI 写一个带两个工具的 agent，体验 handoff 与 guardrail
-2. 换成 LangGraph：把同样流程画成图，用 checkpointer + interrupt 实现"跑三步停下等人确认"
+2. 换成 LangGraph：把同样流程画成图，用 checkpointer + interrupt 实现"跑三步停下等人确认"（专篇见 [LangGraph 实战](/notes/ai/langgraph)）
 3. TS 栈再试 Mastra：给同一 agent 加 memory 与 workflow，体会 suspend/resume 与图执行的区别
 4. 接一个记忆后端，见 [Agent 记忆系统](/notes/ai/agent-memory)
 5. 选型前必问：副作用如何保证只执行一次（durable execution 怎么落）
@@ -88,4 +88,4 @@ agent↔agent 的互操作层在 2026 年落了地：**A2A** 2025-06 捐给 Linu
 + [LangGraph](https://langchain-ai.github.io/langgraph/) · [OpenAI Agents SDK](https://github.com/openai/openai-agents) · [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk)
 + [Google ADK](https://google.github.io/adk-docs/) · [CrewAI](https://docs.crewai.com/) · [Mastra](https://mastra.ai/docs)
 + [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) · [AG2](https://github.com/ag2ai/ag2) · [Pydantic AI](https://ai.pydantic.dev/)
-+ [A2A 协议](https://a2a-protocol.org/) · 本站：[Agent Harness](/notes/ai/agent-harness) · [MCP 与工具调用](/notes/ai/mcp-tools)
++ [A2A 协议](https://a2a-protocol.org/) · 本站：[LangGraph 实战](/notes/ai/langgraph) · [Agent Harness](/notes/ai/agent-harness) · [MCP 与工具调用](/notes/ai/mcp-tools)

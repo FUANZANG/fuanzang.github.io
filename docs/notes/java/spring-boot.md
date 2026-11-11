@@ -4,7 +4,7 @@
 
 Spring Boot 是 Java 后端的事实标准框架。它的核心价值一句话：**让 Spring 的配置成本趋近于零**。本篇聚焦前端最容易懵的三个概念——IoC/DI、分层架构、注解驱动——以及一个最小可运行的 CRUD。
 
-> 语言基础见 [Java 基础](/notes/java/java-basics)；工具链与 Spring 生态地图见 [Java 生态与工具链](/notes/java/java-ecosystem)。
+> 语言基础见 [Java 基础](/notes/java/java-basics)；工具链与 Spring 生态地图见 [Java 生态与工具链](/notes/java/java-ecosystem)。在 Boot 里接大模型 / 工具循环见 [Spring AI 与 LangChain4j](/notes/ai/spring-ai)。
 
 ## 先理解 Spring：IoC 与 DI
 

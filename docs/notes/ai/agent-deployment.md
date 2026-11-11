@@ -2,7 +2,7 @@
 
 > 本文基于 2026-11 时点的接入与部署实践（MCP 2026-07-28 无状态规范、LangGraph 生产 checkpointer 配置、OpenAI Agents SDK 0.24 的 durable execution 集成）。
 >
-> 关联：[Agent 框架生态](/notes/ai/agent-frameworks)（选型）、[Agent 设计模式](/notes/ai/agent-patterns)（循环与沙箱）、[LLM 应用平台](/notes/ai/llm-app-platforms)（BaaS 路线）、[AI 前端对接](/notes/ai/ai-frontend-integration)（客户端接入）。
+> 关联：[Agent 框架生态](/notes/ai/agent-frameworks)（选型）、[LangGraph 实战](/notes/ai/langgraph)（图与 CheckPointer）、[Agent 设计模式](/notes/ai/agent-patterns)（循环与沙箱）、[Agent 基础设施建设](/notes/ai/agent-infra)（网关与资产）、[LLM 应用平台](/notes/ai/llm-app-platforms)（BaaS 路线）、[AI 前端对接](/notes/ai/ai-frontend-integration)（客户端接入）。
 
 ## 定位：从"选好了"到"跑在生产里"
 
@@ -16,7 +16,7 @@
 
 | 形态 | 循环住哪 | 怎么连 | 状态谁管 | 适合 |
 |---|---|---|---|---|
-| **进程内 SDK** | 你自己服务的进程里（库） | 直接函数调用 | 你（DB 在你手里） | 定制深、单团队；TS：Mastra / Vercel AI SDK，Python：LangGraph / Pydantic AI，Java：Spring AI / LangChain4j |
+| **进程内 SDK** | 你自己服务的进程里（库） | 直接函数调用 | 你（DB 在你手里） | 定制深、单团队；TS：Mastra / Vercel AI SDK，Python：LangGraph / Pydantic AI，Java：[Spring AI / LangChain4j](/notes/ai/spring-ai) |
 | **agent-as-service** | 独立服务 | REST + SSE | 那个服务 | 多团队复用、前后端分离；LangGraph 自托管 / 厂商托管 agent / 自建服务 |
 | **BaaS 平台** | 厂商云 | REST + SSE | 平台 | Dify / Coze"搭完即接口"，见 [平台篇](/notes/ai/llm-app-platforms) |
 
@@ -75,10 +75,10 @@
 2. 给一步加副作用（发邮件 / 写文件），中途 `kill -9`，看是否重复执行——体会 durable execution 在防什么
 3. 改成事件驱动：cron 触发"夜间摘要 agent"，结果写文件 / IM，体验无人值守三道护栏
 4. 接 [AI 评测与可观测](/notes/ai/ai-eval-observability) 的 trace + 成本监控
-5. 需要多团队复用时抽成独立服务，前端只留 REST / SSE + 会话 ID
+5. 需要多团队复用时抽成独立服务，前端只留 REST / SSE + 会话 ID；网关与资产层见 [Agent 基础设施建设](/notes/ai/agent-infra)
 
 ## 参考
 
 + [LangGraph（含 checkpointer 生产配置）](https://langchain-ai.github.io/langgraph/) · [OpenAI Agents SDK（durable execution 集成）](https://github.com/openai/openai-agents)
 + [Temporal](https://temporal.io) · [DBOS](https://www.dbos.dev) · [Restate](https://restate.dev)
-+ 本站：[Agent 框架生态](/notes/ai/agent-frameworks) · [Agent 设计模式](/notes/ai/agent-patterns) · [LLM 应用平台](/notes/ai/llm-app-platforms) · [AI 评测与可观测](/notes/ai/ai-eval-observability)
++ 本站：[LangGraph 实战](/notes/ai/langgraph) · [Agent 基础设施建设](/notes/ai/agent-infra) · [Agent 框架生态](/notes/ai/agent-frameworks) · [Agent 设计模式](/notes/ai/agent-patterns) · [LLM 应用平台](/notes/ai/llm-app-platforms) · [AI 评测与可观测](/notes/ai/ai-eval-observability)

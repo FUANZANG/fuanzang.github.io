@@ -68,14 +68,26 @@ Simon Willison 的一句话定义流传最广：**"models using tools in a loop"
 
 前四层（E/T/C/L）是**结构支柱**——让 agent 跑起来；后三层（O/V/G）是**控制面**——让它可观测、可验证、可治理。综述的发现：开源生态在 E/T/C/L 很密，O/V/G 是普遍短板（89% 团队有可观测，只有 52% 跑离线评测——看得见做了什么，不判断做得对不对）。O/V 落地见 [AI 评测与可观测](/notes/ai/ai-eval-observability)。
 
-## 三个子题（深挖入口）
+## 深挖入口（与侧栏「Agent 与工具链」同序）
 
-单 agent 的循环与执行环境、实现工具链、跨会话记忆、接入上线，各有专篇：
+本篇是总览；往下按侧栏顺序读专篇（检索进阶在「AI 应用开发」分组）：
 
-+ **L 层控制流**（ReAct / Plan-Execute / Reflexion + 执行沙箱）：[Agent 设计模式](/notes/ai/agent-patterns)
-+ **循环的工程实现**（框架生态与选型）：[Agent 框架生态](/notes/ai/agent-frameworks)
-+ **状态与记忆**（跨会话长期记忆系统）：[Agent 记忆系统](/notes/ai/agent-memory)
-+ **接入与上线**（三形态 / 事件驱动 / 生产化要点）：[Agent 接入与部署](/notes/ai/agent-deployment)
++ [Agent 上下文与指令设计](/notes/ai/agent-context-instructions) — 每轮塞什么、指令分层
++ [Agent 设计模式](/notes/ai/agent-patterns) — ReAct / Plan-Execute / Reflexion；沙箱阶梯认脸
++ [Agent 框架生态](/notes/ai/agent-frameworks) — 选型（LangGraph / Agents SDK / Mastra…）
++ [LangGraph 实战](/notes/ai/langgraph) — State / CheckPointer / HITL
++ [Agent 记忆系统](/notes/ai/agent-memory) — 跨会话长期记忆
++ [MCP 与工具调用](/notes/ai/mcp-tools) — 工具协议
++ [Agent Skill](/notes/ai/agent-skills) — 可按需加载的流程手册
++ [AI Coding 工作流](/notes/ai/ai-coding-workflow) — Spec / Vibe、契约与门禁
++ [Agent 沙箱与 Code Agent](/notes/ai/agent-sandbox) — 隔离执行、权限、产物
++ [Web Agent](/notes/ai/web-agent) — 浏览器操作类 agent
++ [LLM 应用平台（Dify / Coze）](/notes/ai/llm-app-platforms) — 可视化 / BaaS 路线
++ [Agent 接入与部署](/notes/ai/agent-deployment) — 住哪、谁触发、生产化
++ [Spring AI 与 LangChain4j](/notes/ai/spring-ai) — Java / Spring 宿主怎么接模型与工具
++ [Agent 基础设施建设](/notes/ai/agent-infra) — 网关、AgentSpec、产物存储
++ [AI 评测与可观测](/notes/ai/ai-eval-observability) — O / V 层
++ [Graph RAG 与 Agentic RAG](/notes/ai/graph-rag) — 进阶检索（应用开发分组）
 
 ## Harness 工程三阶段
 
@@ -131,4 +143,4 @@ Harness 工程是**前端转 AI 工程最顺的切入点**——它的核心技�
 + [Agent Harness Engineering: A Survey（ETCLOVG，arXiv 2507.15330）](https://arxiv.org/abs/2507.15330)
 + [lm-evaluation-harness（EleutherAI）](https://github.com/EleutherAI/lm-evaluation-harness)
 + [Microsoft Agent Framework — Harness 概念](https://learn.microsoft.com/en-us/agent-framework/concepts/harness)
-+ 本站：[AI 评测与可观测](/notes/ai/ai-eval-observability)
++ 本站：[AI Coding 工作流](/notes/ai/ai-coding-workflow) · [LangGraph 实战](/notes/ai/langgraph) · [Agent 沙箱与 Code Agent](/notes/ai/agent-sandbox) · [AI 评测与可观测](/notes/ai/ai-eval-observability)

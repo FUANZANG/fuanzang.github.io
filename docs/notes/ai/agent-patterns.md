@@ -69,25 +69,17 @@ Replanner：失败后看 计划 + 已有结果 + 目标，决定继续 / 修改 
 
 ## 执行沙箱：工具在哪跑
 
-agent 的工具常常是"跑代码 / 跑 shell / 开浏览器"——这由 harness 的 **E 层（执行环境）** 决定，核心就两个问题：**在哪跑、爆炸半径多大**。隔离阶梯（从松到紧）：
+agent 的工具常常是「跑代码 / 跑 shell / 开浏览器」——这由 harness 的 **E 层**决定，先认隔离阶梯（从松到紧）：
 
 | 层 | 机制 | 例子 | 残余风险 |
 |---|---|---|---|
-| 进程内解释器 | 在虚拟文件系统上重实现 shell/语言，不碰真实 OS | just-bash、Pydantic Monty | 逃逸打的是宿主语言运行时 |
-| OS 进程沙箱 | 内核级文件/网络规则圈住一个进程 | bubblewrap、Seatbelt（Anthropic sandbox-runtime） | 其余资源与宿主共享 |
-| 容器 | namespaces + cgroups，**共享宿主内核** | Daytona 默认、Codex cloud | 内核漏洞可跨界 |
-| gVisor | 用户态"应用内核"拦截系统调用 | Modal 默认 | 系统调用密集时更慢 |
-| **microVM** | 自带 guest 内核（客户机内核），硬件虚拟化 | Firecracker（E2B、Vercel Sandbox、Blaxel、LangSmith Sandboxes） | 启动成本；网络与凭据仍要单独控制 |
+| 进程内解释器 | 虚拟文件系统上重实现 shell/语言 | just-bash、Pydantic Monty | 逃逸打宿主语言运行时 |
+| OS 进程沙箱 | 内核级文件/网络规则 | bubblewrap、Seatbelt | 其余资源仍与宿主共享 |
+| 容器 | namespaces + cgroups，**共享宿主内核** | Daytona、Codex cloud | 内核漏洞可跨界 |
+| gVisor | 用户态拦截系统调用 | Modal 默认 | 系统调用密集时更慢 |
+| **microVM** | 自带 guest 内核 | Firecracker（E2B、Vercel Sandbox 等） | 启动成本；网络与凭据仍要单管 |
 
-**2026 默认值：不可信代码 = microVM**（自带内核，宿主被攻破的路最短）。两个值得认脸的项目：
-
-- **E2B**（Apache-2.0，Terraform 可自托管，JS/TS SDK 现成）：每个 agent 一个独立 microVM，按秒计费，仅 CPU，会话最长 24h，**pause/resume 保留内存状态**；**Vercel Sandbox**（2026-01 GA）同 lineage，文件系统快照
-- 浏览器端替代：**WebContainer**（StackBlitz，WASM 跑 Node.js）——"agent 在用户浏览器里干活"的形态
-
-两条设计要点：
-
-1. **大脑在外**：agent 循环与凭据留在沙箱外，只把"手"（代码执行）放进去
-2. **隔离 ≠ 完事**：凭据、可达性、出口流量（egress，出站白名单）要单独控制，默认封死云元数据端点（否则 VM 里能偷到实例的临时凭据）——任何隔离原语都替代不了这部分设计
+**2026 默认：不可信代码 = microVM。** 口诀只有两句——**大脑与密钥在沙箱外**；**隔离 ≠ 完事（出站白名单、封云元数据）**。E2B / 权限 HITL / 产物预览等落地，见 [Agent 沙箱与 Code Agent](/notes/ai/agent-sandbox)，本篇不展开。
 
 ## 前端视角
 
@@ -101,8 +93,8 @@ agent 的工具常常是"跑代码 / 跑 shell / 开浏览器"——这由 harne
 1. 手写一个单 agent ReAct 循环（TS，约 100 行），配两个工具：读文件、跑命令（先不用沙箱）
 2. 升级 Plan-and-Execute：计划是 JSON 数组，执行器是纯代码；加一道"展示计划、点确认才跑"的门
 3. 给一个有检查器的任务（生成 JSON + schema 校验）加 Reflexion 外层（最多 3 轮），记录 token 成本倍数
-4. 把代码执行搬进沙箱：同一任务分别在 E2B 与本地 Docker 跑，体会"爆炸半径"差别
-5. 读 [Agent 框架生态](/notes/ai/agent-frameworks)，看这些模式在框架里如何暴露成 API
+4. 把代码执行搬进沙箱：同一任务分别在 E2B 与本地 Docker 跑，体会"爆炸半径"差别（落地见 [Agent 沙箱与 Code Agent](/notes/ai/agent-sandbox)）
+5. 读 [Agent 框架生态](/notes/ai/agent-frameworks)，看这些模式在框架里如何暴露成 API；图编排专篇见 [LangGraph 实战](/notes/ai/langgraph)
 
 ## 参考
 
@@ -110,4 +102,4 @@ agent 的工具常常是"跑代码 / 跑 shell / 开浏览器"——这由 harne
 + Reflexion：arXiv 2303.11366（Shinn et al., 2023）
 + ReWOO / LLMCompiler（规划后并行执行的变体，2023）
 + [E2B 文档](https://e2b.dev/docs) · [Vercel Sandbox](https://vercel.com/sandbox) · [gVisor](https://gvisor.dev) · [Firecracker](https://firecracker-microvm.github.io)
-+ 本站：[Agent Harness](/notes/ai/agent-harness) · [Agent 框架生态](/notes/ai/agent-frameworks) · [Agent 记忆系统](/notes/ai/agent-memory)
++ 本站：[Agent Harness](/notes/ai/agent-harness) · [Agent 沙箱与 Code Agent](/notes/ai/agent-sandbox) · [Agent 框架生态](/notes/ai/agent-frameworks) · [Agent 记忆系统](/notes/ai/agent-memory)

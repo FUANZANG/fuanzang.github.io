@@ -83,8 +83,8 @@ LLM 的三个先天缺陷，RAG 各治一个：
 
 ## 进阶概念（认脸即可）
 
-+ **Agentic RAG**：检索本身也交给 agent 决定——要不要检索、检索几次、查询怎么改写、结果够不够好再补检。简单文档问答基础 RAG 够用，多跳推理/复杂约束才值得上
-+ **GraphRAG**：把文档抽成知识图谱再检索，擅长"全局性问题"（"这批文档的主题是什么"）——构建成本高。2026 年对比研究（[arXiv 2606.25656](https://arxiv.org/abs/2606.25656)）结论是按场景选型：复杂关系查询才更吃 GraphRAG，简单问答不必上
++ **Agentic RAG**：检索本身也交给 agent 决定——要不要检索、检索几次、查询怎么改写、结果够不够好再补检。简单文档问答基础 RAG 够用，多跳推理/复杂约束才值得上（专篇见 [Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)）
++ **GraphRAG**：把文档抽成知识图谱再检索，擅长"全局性问题"（"这批文档的主题是什么"）——构建成本高。2026 年对比研究（[arXiv 2606.25656](https://arxiv.org/abs/2606.25656)）结论是按场景选型：复杂关系查询才更吃 GraphRAG，简单问答不必上（落地见 [Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)）
 + **Contextual Retrieval**：索引时给每块加上 LLM 生成的上下文摘要，缓解"块脱离原文看不懂"
 + **评估**：RAG 效果要测检索（recall@k）和生成（忠实度/答案质量）两层，LLM-as-judge 是主流做法——"跑通了"不等于"检索对了"。系统化调参与题集见 [RAG 检索调优](/notes/ai/rag-retrieval-tuning)
 
@@ -102,7 +102,7 @@ RAG 应用的前端有明确的模式库：
 1. 100 行代码跑通最小 RAG：拿你的 VitePress 笔记当语料，OpenAI embedding + pgvector/Chroma + API 生成
 2. 故意用型号/专有名词提问，看纯向量检索翻车，加 BM25 混合修复
 3. 加 rerank，对比前后 top-5 的相关性变化（体感明显）
-4. 之后按需：Agentic RAG、[AI 评测与可观测](/notes/ai/ai-eval-observability)、增量索引
+4. 之后按需：[Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)、[AI 评测与可观测](/notes/ai/ai-eval-observability)、增量索引
 
 ## 参考
 
