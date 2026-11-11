@@ -149,4 +149,4 @@ AI 交互模式几乎是纯前端工程，且用的全是既有技能：
 
 + [AI SDK · Chatbot UI 指南](https://ai-sdk.dev/docs/ai-sdk-ui/chatbot)
 + [MDN · AbortController](https://developer.mozilla.org/zh-CN/docs/Web/API/AbortController)
-+ 本站：[前端对接 AI](/notes/ai/ai-frontend-integration) · [AI 流式输出](/notes/ai/ai-streaming) · [AI 应用工程化](/notes/ai/ai-app-engineering)
++ 本站：[前端对接 AI](/notes/ai/ai-frontend-integration) · [AI 流式输出](/notes/ai/ai-streaming) · [AI 应用前端架构](/notes/ai/ai-frontend-architecture) · [AI 应用工程化](/notes/ai/ai-app-engineering)

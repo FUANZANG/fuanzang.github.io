@@ -182,4 +182,4 @@ function renderAIContent(markdown: string): string {
 + [OpenAI · Production best practices](https://platform.openai.com/docs/guides/production-best-practices)
 + [DOMPurify](https://github.com/cure53/DOMPurify)
 + [OWASP · LLM Top 10](https://genai.owasp.org/llm-top-10/)
-+ 本站：[前端对接 AI](/notes/ai/ai-frontend-integration) · [AI 评测与可观测](/notes/ai/ai-eval-observability) · [前端安全](/notes/performance/frontend-security)
++ 本站：[前端对接 AI](/notes/ai/ai-frontend-integration) · [AI 应用前端架构](/notes/ai/ai-frontend-architecture) · [AI 评测与可观测](/notes/ai/ai-eval-observability) · [前端安全](/notes/performance/frontend-security)

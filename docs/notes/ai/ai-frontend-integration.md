@@ -2,7 +2,7 @@
 
 > 本文基于 2026-10 时点（Vercel AI SDK `ai@7` / OpenAI Node SDK `openai@7`）。本篇是 AI 系列的**接入层**：模型 API 怎么调、SDK 怎么选、Key 怎么不泄露。
 
-> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（token / 消息结构 / 结构化输出）、[AI 流式输出](/notes/ai/ai-streaming)（SSE 怎么消费）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（聊天界面等 UI 形态）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本 / 错误 / 安全）、[Python LLM 开发](/notes/ai/python-llm-apps)（服务端 Python 侧的镜像：OpenAI Python SDK / Pydantic AI / litellm）。
+> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（token / 消息结构 / 结构化输出）、[AI 流式输出](/notes/ai/ai-streaming)（SSE 怎么消费）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（聊天界面等 UI 形态）、[AI 应用前端架构](/notes/ai/ai-frontend-architecture)（会话壳 / 三轨 / BFF）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本 / 错误 / 安全）、[Python LLM 开发](/notes/ai/python-llm-apps)（服务端 Python 侧的镜像：OpenAI Python SDK / Pydantic AI / litellm）。
 
 ## 三条接入路线
 
@@ -287,11 +287,11 @@ for await (const event of stream) {
 2. 加上自有后端代理，把 Key 挪到服务端，前端改调 `/api/chat`——体会"Key 出前端"这一步
 3. 换一次模型（OpenAI → DeepSeek），确认只改了 `baseURL` + `model`——验证"OpenAI 兼容"的价值
 4. 装 `ai` + `@ai-sdk/vue`，用 `useChat` 重写步骤 2 的聊天，对比手写流式解析的代码量
-5. 接着读 [AI 流式输出](/notes/ai/ai-streaming)（协议层）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（UI 层）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本/错误/安全）
+5. 接着读 [AI 流式输出](/notes/ai/ai-streaming)（协议层）、[AI 交互模式](/notes/ai/ai-interaction-patterns)（UI 层）、[AI 应用前端架构](/notes/ai/ai-frontend-architecture)（整页骨架）、[AI 应用工程化](/notes/ai/ai-app-engineering)（成本/错误/安全）
 
 ## 参考
 
 + [AI SDK 官方文档](https://ai-sdk.dev/docs/introduction)（含 [useChat API](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) 与 [4→5 迁移指南](https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0)）
 + [OpenAI · Responses API 迁移指南](https://developers.openai.com/api/docs/guides/migrate-to-responses)
 + [OpenAI · Function Calling](https://platform.openai.com/docs/guides/function-calling)
-+ 本站：[LLM 基础概念](/notes/ai/llm-fundamentals) · [AI 流式输出](/notes/ai/ai-streaming) · [AI 应用工程化](/notes/ai/ai-app-engineering)
++ 本站：[LLM 基础概念](/notes/ai/llm-fundamentals) · [AI 流式输出](/notes/ai/ai-streaming) · [AI 应用前端架构](/notes/ai/ai-frontend-architecture) · [AI 应用工程化](/notes/ai/ai-app-engineering)
