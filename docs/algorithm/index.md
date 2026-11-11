@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 123 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 125 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -133,3 +133,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 分糖果（Candy） | Hard | [candy](./candy.md) |
 | 插入区间（Insert Interval） | Medium | [insert-interval](./insert-interval.md) |
 | 二叉树的直径（Diameter of Binary Tree） | Easy | [diameter-of-binary-tree](./diameter-of-binary-tree.md) |
+| 不同子序列（Distinct Subsequences） | Hard | [distinct-subsequences](./distinct-subsequences.md) |
