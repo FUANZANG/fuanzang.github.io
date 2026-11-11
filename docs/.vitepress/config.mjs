@@ -70,7 +70,7 @@ export default withPwa(defineConfig({
       name: 'FUANZANG 知识库',
       short_name: 'FUANZANG',
       description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
-      theme_color: '#141414',
+      theme_color: '#f4f4f4',
       background_color: '#f4f4f4',
       display: 'standalone',
       lang: 'zh-CN',
