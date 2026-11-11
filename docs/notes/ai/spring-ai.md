@@ -140,7 +140,7 @@ String answer = assistant.chat("订单 A100 到哪了？");
 
 ## 前端 / 后端视角
 
-+ `ChatClient` ≈ 你在 Node 里封装的 `openai.chat` 服务，只是挂在 Spring DI 上
++ `ChatClient` ≈ Node 里封装的 `openai.chat` 服务，只是挂在 Spring DI 上
 + `@Tool` Bean ≈ controller 里的 application service，被模型按 schema 调用
 + Java 宿主 + Python 循环 ≈ BFF 调下游：Java 管鉴权与领域，Python 管长任务状态机
 
@@ -150,7 +150,7 @@ String answer = assistant.chat("订单 A100 到哪了？");
 2. 加一个读库的 `@Tool`，验证「模型调你的 OrderService」
 3. 把 `base-url` 指到 [Agent 基建](/notes/ai/agent-infra) 式网关，体会换模型零改业务代码
 4. 需要多步审批流时：不要硬在 Java 里堆状态机——评估旁路 [LangGraph](/notes/ai/langgraph)
-5. 对照 [框架生态](/notes/ai/agent-frameworks) 的语言判据，写进自己的默认选型表
+5. 对照 [框架生态](/notes/ai/agent-frameworks) 的语言判据，沉淀一份默认选型表
 
 ## 参考
 

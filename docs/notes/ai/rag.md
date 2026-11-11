@@ -51,7 +51,7 @@ LLM 的三个先天缺陷，RAG 各治一个：
 常用策略（生产默认是前两种的组合）：
 
 + **递归分割**：先按段落切，太大再按句子、再按词——LangChain 的默认，生产共识首选
-+ **结构感知**：按 Markdown 标题/HTML 标签/章节切，技术文档最佳（你的 VitePress 笔记就该这么切）
++ **结构感知**：按 Markdown 标题/HTML 标签/章节切，技术文档最佳（VitePress / Docs 站点语料很适合）
 + 固定长度：原型期用，三分之一的切割点会落在句子中间
 + 语义切块：相邻句向量距离突变处切分——真实文档上容易过度切碎，慎用
 - overlap（相邻块重叠 10–20%）：2026 年的系统研究发现收益统计上≈0，从零开始即可
@@ -99,7 +99,7 @@ RAG 应用的前端有明确的模式库：
 
 ## 学习路径建议
 
-1. 100 行代码跑通最小 RAG：拿你的 VitePress 笔记当语料，OpenAI embedding + pgvector/Chroma + API 生成
+1. 100 行代码跑通最小 RAG：拿一份本地 Markdown / 文档站语料，OpenAI embedding + pgvector/Chroma + API 生成
 2. 故意用型号/专有名词提问，看纯向量检索翻车，加 BM25 混合修复
 3. 加 rerank，对比前后 top-5 的相关性变化（体感明显）
 4. 之后按需：[Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)、[AI 评测与可观测](/notes/ai/ai-eval-observability)、增量索引

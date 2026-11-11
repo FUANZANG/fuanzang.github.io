@@ -102,7 +102,7 @@ description: >
 
 ## 学习路径建议
 
-1. 把你重复过两遍的流程（例如「本站加一篇笔记要改 config + README 统计」）收成一个项目 Skill
+1. 把重复过两遍的流程（例如「文档站加一篇笔记要改侧栏 config + 统计脚本」）收成一个项目 Skill
 2. 只写好 `description`，故意换几种用户说法，看 harness 会不会命中
 3. 把又长又少用的表格挪到 `reference.md`，对比加载前后的 token
 4. 再写一个个人 Skill（跨仓库通用，如 commit 文风），体会个人 vs 项目边界

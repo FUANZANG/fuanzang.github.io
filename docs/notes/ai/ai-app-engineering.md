@@ -151,7 +151,7 @@ function renderAIContent(markdown: string): string {
 }
 ```
 
-这和你笔记里的[前端安全](/notes/performance/frontend-security)是同一套防线，只是**注入源从"用户输入"变成了"模型输出"**——而模型输出比用户输入更不可信，因为它会复述别人喂给它的内容。
+这和[前端安全](/notes/performance/frontend-security)是同一套防线，只是**注入源从「用户输入」变成了「模型输出」**——而模型输出比用户输入更不可信，因为它会复述别人喂给它的内容。
 
 ### 3. Prompt 注入
 

@@ -155,7 +155,7 @@ def presign_put(s3, bucket: str, key: str, expires: int = 600) -> str:
 
 ## 前端视角
 
-+ AI 网关 ≈ 你们前端的 BFF / API 网关：鉴权、路由、限流、日志——只是上游变成了模型
++ AI 网关 ≈ 前端常见的 BFF / API 网关：鉴权、路由、限流、日志——只是上游变成了模型
 + AgentSpec ≈ 远程配置的 feature flag + 服务名解析
 + 产物预览 ≈ 上传 CDN 后的静态资源 URL，前端只消费链接
 + 回退策略 ≈ 弱网降级：主通道挂了还有可读的降级体验

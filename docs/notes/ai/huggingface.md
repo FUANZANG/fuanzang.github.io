@@ -83,7 +83,7 @@ vec = emb.encode(["前端知识库", "VitePress 侧边栏机制"])   # 各 1024 
 | **PEFT**（0.21.x） | LoRA/QLoRA 等参数高效微调 | 冻结底座、只训小 adapter；训练产出可独立加载的 adapter 文件 |
 | **TRL**（1.17.x） | SFT / DPO / GRPO 训练循环 | LLM 后训练框架，[模型微调与定制](/notes/ai/fine-tuning) 讲的三路线在 Python 侧的落点 |
 | **datasets** | 数据加载/切分/流式 | ≈ 带缓存的 DataFrame 管道 |
-| **accelerate** | 多卡/多机分发训练代码 | 你本机单卡用不上，认脸 |
+| **accelerate** | 多卡/多机分发训练代码 | 单卡场景通常用不上，认脸即可 |
 | **bitsandbytes**（0.50.x） | 4/8-bit 量化权重载入 | QLoRA 的"Q"就来自它 |
 
 本机（24GB M5）实际走 MLX 微调（[模型微调与定制](/notes/ai/fine-tuning)），上面这套是 GPU 服务器路线——**adapter 格式互通**：MLX 训完可导出 HF PEFT 格式上服务器续训/部署。

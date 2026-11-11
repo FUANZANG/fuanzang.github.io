@@ -34,7 +34,7 @@ resp2 = await client.responses.create(
     previous_response_id=resp.id,
 )
 
-# ③ 结构化输出：传 Pydantic 类直接拿类型化结果（≈ FastAPI 的 response_model，你熟的）
+# ③ 结构化输出：传 Pydantic 类直接拿类型化结果（≈ FastAPI 的 response_model）
 from pydantic import BaseModel
 
 class Movie(BaseModel):

@@ -58,7 +58,7 @@
 
 ## 前端视角
 
-+ 记忆系统 ≈ 你早已熟记的状态三层设计：上下文窗口 = Pinia（易失、当前会话），外部存储 = localStorage / IndexedDB（持久、自己管 schema），多用户同步 = 服务端
++ 记忆系统 ≈ 前端熟悉的状态三层：上下文窗口 = Pinia（易失、当前会话），外部存储 = localStorage / IndexedDB（持久、自管 schema），多用户同步 = 服务端
 + "记忆即工具" ≈ 给 store 加两个 CRUD 接口：`memory.get(user, query)` / `memory.set(user, fact)`
 + MemGPT 的"上下文 = RAM、分页 = archival"就是操作系统课程的内存管理，换个位置重学一遍
 

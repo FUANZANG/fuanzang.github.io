@@ -64,7 +64,7 @@
 
 ## 前端视角
 
-+ agent-as-service ≈ 你写过的任何 Node 服务，只是响应从"请求-响应"变成"会话 + 流"——流式消费直接复用 [AI 流式输出](/notes/ai/ai-streaming) 那套
++ agent-as-service ≈ 常见 Node 服务，只是响应从「请求-响应」变成「会话 + 流」——流式消费直接复用 [AI 流式输出](/notes/ai/ai-streaming) 那套
 + 事件驱动 agent 的结果回推 ≈ 你的通知中心：队列 → 邮件 / IM / webhook
 + 审批 UI = 框架 interrupt + 确认按钮（模式篇），前端心智模型不变
 + BaaS 形态下前端的全部工作：连 REST + 流式 + 会话 ID——其余平台包了

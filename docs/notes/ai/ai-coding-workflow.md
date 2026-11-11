@@ -64,20 +64,20 @@ Skill（按需）             「开 PR」「加 API」「补 e2e」的标准步
 2. 定一条垂直切片（例如「会话列表 API」）的契约与测试入口
 3. 只在该切片上跑通「实现 → 测 → 文档」闭环，再扩到别的模块
 
-最小 `AGENTS.md` 样例（短比全重要）：
+最小 `AGENTS.md` 样例（短比全重要；以下以文档站仓库为例）：
 
 ```markdown
 # AGENTS
 
 ## 怎么跑
 - 安装：`npm ci`
-- 文档站：`npm run docs:dev`
+- 开发：`npm run docs:dev`
 - 构建：`npm run docs:build`
 
-## 改笔记时
-- 正文放 `docs/notes/<分类>/`
-- 侧栏必须改 `docs/.vitepress/config.mjs`
-- 改完跑 `npm run sync:readme` 更新统计
+## 改文档时
+- 正文放约定目录（如 `docs/notes/<分类>/`）
+- 侧栏 / 导航配置必须同步改
+- 若有统计脚本，改完跑一遍
 
 ## 不要做
 - 不要改无关格式化
@@ -141,11 +141,11 @@ description: 按 ListSessionsResponse 契约补会话列表 API 与测试
 + Spec Coding ≈ 先定 props / OpenAPI，再填实现——你本来就会的契约驱动
 + Vibe Coding ≈ 设计稿阶段的快速探索，不进主干也没关系
 + Sub Agent ≈ 把「调研依赖升级」和「改业务代码」分进两个上下文，避免主线程被日志淹没
-+ 「API 文档沉淀」≈ 你笔记里的 [OpenAPI](/notes/engineering/openapi) 纪律，只是写入者换成了人 + agent
++ 「API 文档沉淀」≈ [OpenAPI](/notes/engineering/openapi) 那套契约纪律，只是写入者换成了人 + agent
 
 ## 学习路径建议
 
-1. 给本仓库补一份短 AGENTS.md（构建、测试、目录约定），用 CLI agent 只靠它跑通一条已有测试
+1. 给目标仓库补一份短 AGENTS.md（构建、测试、目录约定），用 CLI agent 只靠它跑通一条已有测试
 2. 选一个小 API：先写 OpenAPI 或类型，再让 agent 实现，用契约测试关门
 3. 把「开 PR」写成一条 Skill，下次复用（见 [Agent Skill](/notes/ai/agent-skills)）
 4. 同一需求分别用纯 Vibe 与 Spec 各做一次，对比返工次数

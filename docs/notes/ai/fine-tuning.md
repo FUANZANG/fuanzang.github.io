@@ -116,7 +116,7 @@ mlx_lm.fuse --model <base> --adapter-path ./adapters/v1 --save-path ./models/my-
 **两个坑**：
 
 + **GGUF 不能直接训**——你 LM Studio 里那批是 GGUF（推理格式），微调要 safetensors 格式的 base model，得另外下载一份
-+ **unsloth 的 Python 版本要求**：它有 MLX 后端支持 Mac，但要求 **Python 3.11 ~ 3.13**（不含 3.14）——你本机是 **3.14.6，不在范围内**，要用得单独建个 3.13 环境
++ **unsloth 的 Python 版本要求**：它有 MLX 后端支持 Mac，但要求 **Python 3.11 ~ 3.13**（不含 3.14）——若本机是 3.14+，需单独建 3.13 环境
 + 另一条路是 **torchtune**（走 MPS 后端，Apple Silicon 支持最好），但比 CUDA 慢 2–3 倍
 
 ### ③ 平台侧微调

@@ -104,7 +104,7 @@ JS 是单线程 + 事件循环，CPU 阻塞卡死整页（[浏览器原理](/not
 | 3.14 | 2025-10 | **成熟主流**（安全补丁到 2030-10） | t-string（PEP 750）、延迟标注（PEP 649/749）、子解释器（PEP 734）、`except` 免括号（PEP 758）、zstd、REPL 语法高亮 |
 | **3.15** | 2026-10 | **最新**（3.15.2，安全补丁到 2031-10） | `lazy import` 惰性导入（PEP 810）、Tachyon 高频采样 profiler（PEP 799）、UTF-8 默认编码（PEP 686）、frozendict 内置、free-threaded 稳定 ABI |
 
-选型：**新项目用 3.14**（发版一年，特性齐全，生态兼容成熟）；3.15 刚发 4 周，部分第三方库还在补轮子，不急。注意 AI 生态有版本带：比如 [微调（unsloth）](/notes/ai/fine-tuning) 要求 3.11–3.13（不含 3.14），那个场景单独建环境。本机已装 **3.14.6**，多版本切换用 [mise](/notes/engineering/mise)（`mise install python@3.13`）。
+选型：**新项目用 3.14**（发版一年，特性齐全，生态兼容成熟）；3.15 刚发不久时部分第三方库还在补轮子，不急。注意 AI 生态有版本带：比如 [微调（unsloth）](/notes/ai/fine-tuning) 要求 3.11–3.13（不含 3.14），那个场景单独建环境。多版本切换用 [mise](/notes/engineering/mise)（如 `mise install python@3.13`）。
 
 ## 读懂 Python 世界的三个对照
 
