@@ -405,6 +405,7 @@ export default withPwa(defineConfig({
             { text: '前端对接 AI', link: '/notes/ai/ai-frontend-integration' },
             { text: 'AI 流式输出', link: '/notes/ai/ai-streaming' },
             { text: 'AI 交互模式', link: '/notes/ai/ai-interaction-patterns' },
+            { text: 'AI 应用前端架构', link: '/notes/ai/ai-frontend-architecture' },
             { text: 'AI 应用工程化', link: '/notes/ai/ai-app-engineering' },
             { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
             { text: 'RAG 检索调优', link: '/notes/ai/rag-retrieval-tuning' },
