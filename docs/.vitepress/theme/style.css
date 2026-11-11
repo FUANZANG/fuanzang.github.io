@@ -274,3 +274,40 @@ html.dark.is-scrolling::-webkit-scrollbar-thumb:hover {
 .VPSidebar .VPSidebarItem.level-0 > .items {
   padding-left: 12px;
 }
+
+/*
+ * 无子项的一级链接（如「学习笔记总览」）：
+ * 1) 激活态会去掉 collapsed，scoped 样式把 padding-bottom 拉到 24px
+ * 2) 右侧无箭头时文字会顶满，补 32px 与折叠分组对齐
+ */
+.VPSidebar .VPSidebarItem.level-0.is-link:not(:has(> .items)) {
+  padding-bottom: 10px !important;
+}
+
+.VPSidebar .VPSidebarItem.level-0.is-link:not(:has(> .items)) > .item {
+  align-items: center;
+  min-height: 32px;
+}
+
+.VPSidebar .VPSidebarItem.level-0.is-link:not(:has(> .items)) > .item > .link {
+  padding-right: 32px;
+}
+
+/*
+ * 子项竖线尺寸始终固定（与字号同高、行盒居中），激活时只显色。
+ * 避免 is-active 时从默认 top/bottom 拉满突然收成 14px 造成「跳一下」。
+ */
+.VPSidebar .VPSidebarItem:not(.level-0) > .item > .indicator {
+  top: calc(4px + (24px - 14px) / 2) !important;
+  bottom: auto !important;
+  left: -10px !important;
+  width: 2px !important;
+  height: 14px !important;
+  border-radius: 1px;
+  background-color: transparent;
+  transition: none !important;
+}
+
+.VPSidebar .VPSidebarItem:not(.level-0).is-active > .item > .indicator {
+  background-color: var(--vp-c-text-1) !important;
+}

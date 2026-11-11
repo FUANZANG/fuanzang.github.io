@@ -43,13 +43,9 @@ function getAlgorithmSidebar() {
     grp.items.push({ text: item.text, link: `/algorithm/${item.slug}` })
   }
   return [
-    {
-      text: '概览',
-      items: [
-        { text: '算法题库（目录）', link: '/algorithm/' },
-        { text: '数据结构与算法识字', link: '/algorithm/fundamentals' },
-      ],
-    },
+    // items: [] → 一级项，避免被包成缩进子链接
+    { text: '算法题库（目录）', link: '/algorithm/', items: [] },
+    { text: '数据结构与算法识字', link: '/algorithm/fundamentals', items: [] },
     ...Object.values(groups).filter((g) => g.items.length > 0),
   ]
 }
@@ -147,10 +143,7 @@ export default withPwa(defineConfig({
         }
       ],
       '/hardware/': [
-        {
-          text: '概览',
-          items: [{ text: '硬件杂谈总览', link: '/hardware/' }]
-        },
+        { text: '硬件杂谈总览', link: '/hardware/', items: [] },
         {
           text: '芯片',
           items: [
@@ -187,10 +180,7 @@ export default withPwa(defineConfig({
         }
       ],
       '/notes/': [
-        {
-          text: '概览',
-          items: [{ text: '学习笔记总览', link: '/notes/' }]
-        },
+        { text: '学习笔记总览', link: '/notes/', items: [] },
         {
           text: '前端基础',
           collapsed: true,
