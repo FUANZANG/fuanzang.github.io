@@ -408,6 +408,7 @@ export default withPwa(defineConfig({
             { text: 'AI 应用工程化', link: '/notes/ai/ai-app-engineering' },
             { text: 'RAG 检索增强生成', link: '/notes/ai/rag' },
             { text: 'RAG 检索调优', link: '/notes/ai/rag-retrieval-tuning' },
+            { text: 'Graph RAG 与 Agentic RAG', link: '/notes/ai/graph-rag' },
             { text: 'Web AI', link: '/notes/ai/web-ai' }
           ]
         },
@@ -419,12 +420,17 @@ export default withPwa(defineConfig({
             { text: 'Agent 上下文与指令设计', link: '/notes/ai/agent-context-instructions' },
             { text: 'Agent 设计模式', link: '/notes/ai/agent-patterns' },
             { text: 'Agent 框架生态', link: '/notes/ai/agent-frameworks' },
+            { text: 'LangGraph 实战', link: '/notes/ai/langgraph' },
             { text: 'Agent 记忆系统', link: '/notes/ai/agent-memory' },
             { text: 'MCP 与工具调用', link: '/notes/ai/mcp-tools' },
             { text: 'Agent Skill', link: '/notes/ai/agent-skills' },
+            { text: 'AI Coding 工作流', link: '/notes/ai/ai-coding-workflow' },
+            { text: 'Agent 沙箱与 Code Agent', link: '/notes/ai/agent-sandbox' },
             { text: 'Web Agent', link: '/notes/ai/web-agent' },
             { text: 'LLM 应用平台（Dify / Coze）', link: '/notes/ai/llm-app-platforms' },
             { text: 'Agent 接入与部署', link: '/notes/ai/agent-deployment' },
+            { text: 'Spring AI 与 LangChain4j', link: '/notes/ai/spring-ai' },
+            { text: 'Agent 基础设施建设', link: '/notes/ai/agent-infra' },
             { text: 'AI 评测与可观测', link: '/notes/ai/ai-eval-observability' }
           ]
         },
