@@ -1,6 +1,6 @@
 # 多环境与配置管理
 
-> 前端以 [Vite: Env Variables and Modes](https://vite.dev/guide/env-and-mode) 为准。后端通用原则：密钥不进仓库、按环境注入。部署见 [前端部署](/notes/ops/frontend-deployment)、[CI/CD](/notes/ops/ci-cd)；本地多语言运行时见 [mise](/notes/engineering/mise)。
+> 前端以 [Vite: Env Variables and Modes](https://vite.dev/guide/env-and-mode) 为准。后端通用原则：密钥不进仓库、按环境注入。部署见 [前端部署](/notes/ops/frontend-deployment)、[CI/CD](/notes/ops/ci-cd)；本地多语言运行时见 [mise](/notes/engineering/mise)；拿线上环境跑本地代码（反向"多环境"）见 [Whistle 线上调试](/notes/engineering/whistle)。
 
 ## 1. 环境 ≠ 随便改几个常量
 
