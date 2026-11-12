@@ -368,6 +368,7 @@ export default withPwa(defineConfig({
             { text: 'CI/CD', link: '/notes/ops/ci-cd' },
             { text: 'GitHub Actions', link: '/notes/ops/github-actions' },
             { text: '前端部署', link: '/notes/ops/frontend-deployment' },
+            { text: '懒加载 chunk 版本漂移', link: '/notes/ops/lazy-chunk-version-drift' },
             { text: '监控栈', link: '/notes/ops/monitoring' },
             { text: '后端可观测', link: '/notes/ops/observability' },
             { text: '应用日志与 requestId', link: '/notes/ops/app-logging' }

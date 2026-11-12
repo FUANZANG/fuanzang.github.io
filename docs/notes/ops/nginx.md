@@ -85,6 +85,8 @@ location ~* \.(js|css|png|jpg|svg|woff2)$ {
 
 前端构建产物通常带内容哈希（`app.abc123.js`），可放心设长缓存；**HTML 不缓存**（确保发版后立即生效）。
 
+**注意**：静态资源 404 不要落入 SPA 回退——`try_files ... /index.html` 会把缺失的 `.js` 也回成 200 HTML，module script 的 MIME 校验直接失败（发版后旧 tab 懒加载的经典坑，完整链路见 [懒加载 chunk 版本漂移](/notes/ops/lazy-chunk-version-drift)）。
+
 ## Gzip / Brotli 压缩
 
 ```nginx

@@ -333,6 +333,7 @@ if ('serviceWorker' in navigator) {
 1. 构建路径不对（`base` 配置错误，Vite 默认 `/`，如果是子路径要改）
 2. 资源 404（文件名变了但 HTML 没更新——HTML 被缓存了）
 3. 路由模式问题（history 模式需要 `try_files`）
+4. 懒加载 chunk 版本漂移（旧 tab 的旧 hash chunk 被删，404 又被 SPA 回退吞成 HTML → MIME 报错）→ 见 [懒加载 chunk 版本漂移](/notes/ops/lazy-chunk-version-drift)
 
 ```js
 // Vite base 配置

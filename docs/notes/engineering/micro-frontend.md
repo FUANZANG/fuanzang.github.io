@@ -423,6 +423,7 @@
 
 + 原因：子应用的 publicPath 未正确设置
 + 解决：设置 `__webpack_public_path__` 或 vite 的 `base` 为运行时动态路径
++ 另一类原因是**版本漂移**（与 publicPath 无关）：子应用独立发版、宿主旧 tab / entry 缓存仍引用子应用旧 chunk，懒加载 404 被 SPA 回退吞成 HTML → MIME 报错。链路排查与客户端兜底见 [懒加载 chunk 版本漂移](/notes/ops/lazy-chunk-version-drift)
 
 ### 路由冲突
 
