@@ -177,13 +177,14 @@ html {
   border-radius: 4px;
 }
 
-/* 滚动条：默认隐藏，滚动中再露出 */
+/* 滚动条：始终占位，仅切换拇指可见性，避免显隐时页面横向抖动 */
 html {
-  scrollbar-width: none;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 html.is-scrolling {
-  scrollbar-width: thin;
   scrollbar-color: rgba(20, 20, 20, 0.35) transparent;
 }
 
@@ -192,22 +193,21 @@ html.dark.is-scrolling {
 }
 
 html::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-html.is-scrolling::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-html.is-scrolling::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track {
   background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
 }
 
 html.is-scrolling::-webkit-scrollbar-thumb {
   background: rgba(20, 20, 20, 0.28);
-  border-radius: 4px;
 }
 
 html.is-scrolling::-webkit-scrollbar-thumb:hover {

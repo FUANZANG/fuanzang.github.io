@@ -2,10 +2,12 @@
 /**
  * 站点壳：顶部滚动进度条 + 滚动时短暂显示滚动条。
  * 路由切换后把侧栏当前项滚入可视区（总览点进深层笔记时需要）。
+ * 同步 theme-color，使安卓安装态状态栏跟深浅色一致。
  */
 import DefaultTheme from 'vitepress/theme'
 import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vitepress'
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT } from './themeColors.js'
 
 const { Layout } = DefaultTheme
 const router = useRouter()
@@ -14,8 +16,25 @@ let progressHandler = null
 let scrollUiHandler = null
 let scrollHideTimer = null
 let sidebarScrollTimer = null
+let themeColorObserver = null
 /** 点击来自侧栏时不再自动居中，避免竖线先出现再被滚走 */
 let navFromSidebar = false
+
+/** 按 html.dark 更新无 media 的 theme-color，供安卓 Chrome 安装态状态栏使用 */
+function syncThemeColor() {
+  const dark = document.documentElement.classList.contains('dark')
+  const color = dark ? THEME_COLOR_DARK : THEME_COLOR_LIGHT
+  let meta = document.querySelector('meta[name="theme-color"]:not([media])')
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.setAttribute('name', 'theme-color')
+    document.head.appendChild(meta)
+  }
+  if (meta.getAttribute('content') !== color) {
+    meta.setAttribute('content', color)
+  }
+  document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+}
 
 function markSidebarNav(e) {
   navFromSidebar = !!e.target?.closest?.('.VPSidebar a')
@@ -118,6 +137,13 @@ onMounted(() => {
   window.addEventListener('resize', progressHandler, { passive: true })
   updateProgress()
   scheduleSidebarScroll()
+
+  syncThemeColor()
+  themeColorObserver = new MutationObserver(syncThemeColor)
+  themeColorObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
 })
 
 onUnmounted(() => {
@@ -139,6 +165,10 @@ onUnmounted(() => {
     clearTimeout(sidebarScrollTimer)
     sidebarScrollTimer = null
   }
+  if (themeColorObserver) {
+    themeColorObserver.disconnect()
+    themeColorObserver = null
+  }
   document.documentElement.classList.remove('is-scrolling')
 })
 </script>
@@ -158,13 +188,8 @@ onUnmounted(() => {
   z-index: 100;
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: #141414;
-  box-shadow: 0 0 8px rgba(20, 20, 20, 0.35);
+  background: var(--c-ink);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--c-ink) 35%, transparent);
   pointer-events: none;
-}
-
-.dark #scroll-progress {
-  background: #f0f0f0;
-  box-shadow: 0 0 8px rgba(240, 240, 240, 0.35);
 }
 </style>

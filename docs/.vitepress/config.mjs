@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { withPwa } from '@vite-pwa/vitepress'
 import { getExploreNavItems } from '../data/siteSections.js'
 import { profileTagline } from '../data/profile.js'
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT } from './theme/themeColors.js'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -66,8 +67,8 @@ export default withPwa(defineConfig({
       name: 'FUANZANG 知识库',
       short_name: 'FUANZANG',
       description: 'FUANZANG 的个人站点 - 知识库、博客与作品展示',
-      theme_color: '#f4f4f4',
-      background_color: '#f4f4f4',
+      theme_color: THEME_COLOR_LIGHT,
+      background_color: THEME_COLOR_LIGHT,
       display: 'standalone',
       lang: 'zh-CN',
       icons: [
@@ -94,13 +95,29 @@ export default withPwa(defineConfig({
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
     ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }],
+    // 无 media 的 theme-color：安卓安装 PWA 后会优先用它；运行时由 Layout 按深浅色同步
+    ['meta', { name: 'theme-color', content: THEME_COLOR_LIGHT }],
     [
       'meta',
-      { name: 'theme-color', content: '#f4f4f4', media: '(prefers-color-scheme: light)' }
+      {
+        name: 'theme-color',
+        content: THEME_COLOR_LIGHT,
+        media: '(prefers-color-scheme: light)'
+      }
     ],
     [
       'meta',
-      { name: 'theme-color', content: '#111111', media: '(prefers-color-scheme: dark)' }
+      {
+        name: 'theme-color',
+        content: THEME_COLOR_DARK,
+        media: '(prefers-color-scheme: dark)'
+      }
+    ],
+    ['meta', { name: 'mobile-web-app-capable', content: 'yes' }],
+    ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
+    [
+      'meta',
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
     ],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'FUANZANG' }],
