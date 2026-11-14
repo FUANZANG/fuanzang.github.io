@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 127 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 128 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -136,3 +136,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 不同子序列（Distinct Subsequences） | Hard | [distinct-subsequences](./distinct-subsequences.md) |
 | 冗余连接（Redundant Connection） | Medium | [redundant-connection](./redundant-connection.md) |
 | 买卖股票的最佳时机 IV（Best Time to Buy and Sell Stock IV） | Hard | [best-time-to-buy-and-sell-stock-iv](./best-time-to-buy-and-sell-stock-iv.md) |
+| 平衡二叉树（Balanced Binary Tree） | Easy | [balanced-binary-tree](./balanced-binary-tree.md) |
