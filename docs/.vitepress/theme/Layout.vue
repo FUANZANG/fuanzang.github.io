@@ -48,7 +48,7 @@ function updateProgress() {
   if (bar) bar.style.transform = `scaleX(${p})`
 }
 
-/** 滚动时短暂显示滚动条，停下后隐藏 */
+/** 页面滚动时短暂显示滚动条，停下后隐藏 */
 function onScrollUi() {
   document.documentElement.classList.add('is-scrolling')
   if (scrollHideTimer) clearTimeout(scrollHideTimer)

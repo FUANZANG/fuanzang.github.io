@@ -177,7 +177,8 @@ html {
   border-radius: 4px;
 }
 
-/* 滚动条：始终占位，仅切换拇指可见性，避免显隐时页面横向抖动 */
+/* 滚动条：始终占位，仅切换拇指可见性，避免显隐时页面横向抖动。
+ * scrollbar-color 会继承，侧栏需单独切断，否则滚页面时侧栏条也会亮。 */
 html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
@@ -220,6 +221,17 @@ html.dark.is-scrolling::-webkit-scrollbar-thumb {
 
 html.dark.is-scrolling::-webkit-scrollbar-thumb:hover {
   background: rgba(240, 240, 240, 0.45);
+}
+
+/* 侧栏可滚但始终隐藏滚动条；切断 html 的 scrollbar-color 继承 */
+.VPSidebar {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+.VPSidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 /* 站名盖在侧边栏上，这块原是透明的，滚上来的分组标题会叠住 FUANZANG */
