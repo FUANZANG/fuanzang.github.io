@@ -415,10 +415,12 @@ export default defineNuxtConfig({
 
 ## 6. SEO 优化
 
+> 抓取原则、canonical/robots 清单与更完整的 Nuxt/Next 示例见专篇 [SEO 与 SSR 衔接](/notes/performance/seo-and-ssr)。本节只留框架里「写进首屏 HTML」的最短写法，避免和专篇重复维护两份。
+
 ### Meta 标签
 
 ```vue
-<!-- Nuxt: useHead / useSeoMeta -->
+<!-- Nuxt: useHead / useSeoMeta —— 须在服务端就能解析，勿仅靠客户端事后改 title -->
 <script setup>
 useSeoMeta({
   title: '页面标题',
@@ -429,16 +431,9 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
-// 更灵活的 useHead
 useHead({
-  title: '页面标题',
   htmlAttrs: { lang: 'zh-CN' },
-  link: [
-    { rel: 'canonical', href: 'https://example.com/page' },
-  ],
-  script: [
-    { type: 'application/ld+json', innerHTML: JSON.stringify(schema) },
-  ],
+  link: [{ rel: 'canonical', href: 'https://example.com/page' }],
 })
 </script>
 ```

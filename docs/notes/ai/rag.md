@@ -23,7 +23,7 @@ LLM 的三个先天缺陷，RAG 各治一个：
 ```
 【离线索引】
 文档（PDF/Markdown/网页/数据库）
-  → 清洗解析
+  → 清洗解析（扫描件/复杂版面往往要专用解析器）
   → 切块（chunking）
   → Embedding：每块文本 → 一个向量（如 1536 维）
   → 存入向量数据库
@@ -35,6 +35,25 @@ LLM 的三个先天缺陷，RAG 各治一个：
   → 块 + 问题拼成 prompt
   → LLM 基于给定材料生成答案（带引用）
 ```
+
+### 文档解析（认脸，不必单独成篇）
+
+Markdown / 纯文本可直接切；**扫描 PDF、多栏论文、表格公式**才需要解析器。常见选项：
+
+| 工具 | 定位 |
+|------|------|
+| **MinerU**（OpenDataLab） | PDF/Office → Markdown/JSON，面向 LLM/RAG；公式→LaTeX、表→HTML；可接 LangChain / RAGFlow |
+| Docling / Unstructured | 另一路开源文档抽取 |
+| 云 OCR / 多模态直接读图 | 页少或已有视觉模型时 |
+
+MinerU **不是** RAG 框架或向量库——只负责「文件 → 可切块文本」。CLI 示意（以 [官方 Quick Usage](https://opendatalab.github.io/MinerU/usage/quick_usage/) 为准）：
+
+```bash
+pip install "mineru>=4.0,<5"
+mineru parse paper.pdf -o paper.md --pages all
+```
+
+解析后再走本篇的切块 → embedding → pgvector。没有复杂 PDF 时，不必为了热度强行上 MinerU。
 
 ### Embedding：语义怎么变成可计算的
 
@@ -81,40 +100,26 @@ LLM 的三个先天缺陷，RAG 各治一个：
 
 选型经验法则（来自社区共识）：**"选你团队凌晨两点能 debug 的那个"**。多数项目向量数 < 1000 万，pgvector 或 Qdrant 都绰绰有余，别为了想象中的规模上 Milvus 三件套（etcd+minio+milvus 的 docker-compose）。
 
-### pgvector 最小落地
+### pgvector 最小落地（RAG 视角）
 
-> 以 [pgvector README](https://github.com/pgvector/pgvector) 为准；维度必须与 embedding 模型一致（如 `text-embedding-3-small` 常用 1536）。
+库侧细节（扩展、HNSW/IVFFlat、运算符）见 [PostgreSQL · pgvector](/notes/database/postgres)；这里只留管线最短路径。维度须与 embedding 模型一致（如 1536）。
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
-
 CREATE TABLE chunks (
-  id        bigserial PRIMARY KEY,
-  content   text NOT NULL,
+  id bigserial PRIMARY KEY,
+  content text NOT NULL,
   embedding vector(1536) NOT NULL
 );
-
--- 写入：把 embedding 数组序列化成 '[0.1,0.2,...]' 再插入
-INSERT INTO chunks (content, embedding)
-VALUES ('如何部署服务', '[0.01,0.02, /* …1536 维 */ ]');
-
--- 余弦距离近邻（<=>）；相似度 = 1 - distance
+-- 写入 embedding 后：
 SELECT id, content, 1 - (embedding <=> $1::vector) AS score
 FROM chunks
 ORDER BY embedding <=> $1::vector
 LIMIT 5;
-
--- 查询用同一距离时再建索引（ops 必须匹配）
 CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops);
 ```
 
-| 运算符 | 含义 |
-|--------|------|
-| `<->` | L2 |
-| `<=>` | 余弦距离 |
-| `<#>` | 负内积（只要 ASC 扫描，所以取负） |
-
-应用侧伪流程：切块 → 调 embedding API → `INSERT` → 问答时问题向量 `ORDER BY embedding <=> query LIMIT k` → 拼 prompt 调 LLM。混合检索可再加 `tsvector`/`BM25` 一路，用 RRF 合并（见上「Level 2」）；系统化调参见 [RAG 检索调优](/notes/ai/rag-retrieval-tuning)。
+流程：切块 → embedding API → `INSERT` → 上式 Top-K → 拼 prompt。混合检索 / RRF 见上文 Level 2；调参见 [RAG 检索调优](/notes/ai/rag-retrieval-tuning)。
 
 ## 进阶概念（认脸即可）
 

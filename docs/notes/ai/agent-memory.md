@@ -62,16 +62,60 @@
 + "记忆即工具" ≈ 给 store 加两个 CRUD 接口：`memory.get(user, query)` / `memory.set(user, fact)`
 + MemGPT 的"上下文 = RAM、分页 = archival"就是操作系统课程的内存管理，换个位置重学一遍
 
+## 最小可跑：SQLite「记忆即工具」
+
+学习路径第 1 步的落地骨架（无向量、无抽取模型；先把读写闭环跑通）：
+
+```python
+# pip install openai  # 仅当后面要接真实 agent；本段可先纯本地测
+import sqlite3, json, time
+
+conn = sqlite3.connect("memory.db")
+conn.execute(
+    """CREATE TABLE IF NOT EXISTS facts (
+         id INTEGER PRIMARY KEY,
+         user_id TEXT NOT NULL,
+         fact TEXT NOT NULL,
+         ts REAL NOT NULL
+       )"""
+)
+
+def write_memory(user_id: str, fact: str) -> str:
+    conn.execute(
+        "INSERT INTO facts(user_id, fact, ts) VALUES (?,?,?)",
+        (user_id, fact, time.time()),
+    )
+    conn.commit()
+    return "ok"
+
+def read_memory(user_id: str, query: str, limit: int = 5) -> str:
+    # 原型：LIKE；生产再换 embedding + pgvector
+    rows = conn.execute(
+        """SELECT fact FROM facts
+           WHERE user_id=? AND fact LIKE ?
+           ORDER BY ts DESC LIMIT ?""",
+        (user_id, f"%{query}%", limit),
+    ).fetchall()
+    return json.dumps([r[0] for r in rows], ensure_ascii=False)
+
+# 接到 agent 时暴露为两个 tool：
+# write_memory(user_id, fact) / read_memory(user_id, query)
+write_memory("u1", "用户用 mise 管 Node 版本")
+print(read_memory("u1", "Node"))
+```
+
+接 OpenAI Agents SDK / LangGraph 时，把上面两个函数封成 tool 即可（见 [Agent 框架生态](/notes/ai/agent-frameworks) 最小示例）。自动抽取、多 scope、时态失效再换 Mem0 / Graphiti。
+
 ## 学习路径建议
 
-1. 先不引库：手写最小记忆 = SQLite 一张表（user_id, fact, ts, 一个 embedding 列）+ 两个工具读写，百行以内
-2. 接 Mem0（托管或自托管），对比"自动抽取 vs 自己写 fact"的质量差
-3. 试一个 Letta agent，观察它自己往记忆块里写了什么
-4. 时间敏感场景（日程、状态变更）试 Graphiti，体会 valid_at / learned_at 四个时间戳的差别
-5. 读 [AI 评测与可观测](/notes/ai/ai-eval-observability)，给记忆建评测：漏召回（该记得的没想起）与污染（错事实占比）
+1. 跑通上一节 SQLite 读写，再挂到任意 agent 循环当 tool  
+2. 接 Mem0（托管或自托管），对比「自动抽取 vs 自己写 fact」  
+3. 试 Letta，观察它往记忆块里写了什么  
+4. 时间敏感场景试 Graphiti（valid_at / learned_at）  
+5. 评测：漏召回与污染，见 [AI 评测与可观测](/notes/ai/ai-eval-observability)
 
 ## 参考
 
 + [Mem0](https://github.com/mem0ai/mem0) · [Letta（原 MemGPT，论文 arXiv 2310.08560）](https://github.com/letta-ai/letta) · [Zep / Graphiti](https://github.com/getzep/graphiti)
 + [Cognee](https://github.com/top-ai-camp/cognee) · [Basic Memory](https://github.com/basicmachines-co/basic-memory)
-+ 本站：[Agent Harness](/notes/ai/agent-harness) · [RAG](/notes/ai/rag) · [AI 评测与可观测](/notes/ai/ai-eval-observability)
++ 本站：[Agent Harness](/notes/ai/agent-harness) · [Agent 框架生态](/notes/ai/agent-frameworks) · [RAG](/notes/ai/rag) · [AI 评测与可观测](/notes/ai/ai-eval-observability)

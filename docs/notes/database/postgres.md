@@ -43,7 +43,7 @@ psql postgresql://postgres:pass@localhost:5432/postgres   # psql 交互
 
 ## pgvector：内置向量库（AI 线的默认答案）
 
-[RAG](/notes/ai/rag) 篇的向量库选型表里 pgvector 的定位是"已有 PG 的团队，少运维一个库"。现状（2026-11）：**pgvector 0.8.7**，用法全在一条建库流程里：
+[RAG](/notes/ai/rag) 选型表里 pgvector =「已有 PG、少运维一个库」；RAG 管线最短 SQL 也在那篇。现状（2026-11）：**pgvector 0.8.7**，库侧一条龙如下：
 
 ```sql
 CREATE EXTENSION vector;                 -- ≈ 给数据库装 npm 包

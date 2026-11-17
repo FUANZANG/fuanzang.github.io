@@ -2,7 +2,7 @@
 
 Web Vitals 是 Google 提出的一套**用户体验量化指标**，用于统一衡量网页的加载速度、交互响应与视觉稳定性。其中核心的三项称为 **Core Web Vitals（核心网页指标）**，直接影响 SEO 排名。
 
-> 本篇聚焦指标定义与前端优化方向；更宽泛的性能手段见 [前端性能优化](/notes/performance/performance-optimization)。
+> 本篇聚焦指标定义与前端优化方向；对照 Performance 面板怎么读见 [性能分析案例](/notes/performance/performance-case)；更宽泛手段见 [前端性能优化](/notes/performance/performance-optimization)。
 
 ## 三大核心指标（Core Web Vitals）
 

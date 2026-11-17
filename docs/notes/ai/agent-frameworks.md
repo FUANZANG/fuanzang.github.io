@@ -75,17 +75,50 @@ agent↔agent 的互操作层在 2026 年落了地：**A2A** 2025-06 捐给 Linu
 + handoff ≈ 事件转发；subagent ≈ Web Worker（主线程不阻塞、只收结果）
 + 框架是 harness 的工程底座：概念在 [Agent Harness](/notes/ai/agent-harness)，循环形态在 [Agent 设计模式](/notes/ai/agent-patterns)，本篇只解决"挑哪个开工"
 
+## 最小可跑：OpenAI Agents SDK（TS）
+
+> 官方 [Quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)；npm `@openai/agents@0.22.x`（2026-11）。需 `OPENAI_API_KEY`。
+
+```bash
+npm i @openai/agents zod
+```
+
+```ts
+import { Agent, run, tool } from '@openai/agents'
+import { z } from 'zod'
+
+const getWeather = tool({
+  name: 'get_weather',
+  description: 'Get weather for a city',
+  parameters: z.object({ city: z.string() }),
+  async execute({ city }) {
+    return `It is sunny in ${city}.`
+  },
+})
+
+const agent = new Agent({
+  name: 'Weather bot',
+  instructions: 'Answer weather questions using get_weather when needed.',
+  tools: [getWeather],
+})
+
+const result = await run(agent, 'Weather in Tokyo?')
+console.log(result.finalOutput)
+```
+
+`run` 会自动：调模型 → 若有 tool call 就执行 → 把结果塞回对话 → 直到产出最终文本。记忆工具把 [Agent 记忆](/notes/ai/agent-memory) 里的 `read_memory` / `write_memory` 再封一个 `tool({...})` 即可。图编排、interrupt 见 [LangGraph 实战](/notes/ai/langgraph)。
+
 ## 学习路径建议
 
-1. 用 OpenAI Agents SDK（TS）或 Pydantic AI 写一个带两个工具的 agent，体验 handoff 与 guardrail
-2. 换成 LangGraph：把同样流程画成图，用 checkpointer + interrupt 实现"跑三步停下等人确认"（专篇见 [LangGraph 实战](/notes/ai/langgraph)）
-3. TS 栈再试 Mastra：给同一 agent 加 memory 与 workflow，体会 suspend/resume 与图执行的区别
-4. 接一个记忆后端，见 [Agent 记忆系统](/notes/ai/agent-memory)
-5. 选型前必问：副作用如何保证只执行一次（durable execution 怎么落）
+1. 跑通上一节带 tool 的 agent；再加第二个 tool（读记忆）  
+2. 换成 LangGraph：checkpointer + interrupt（专篇 [LangGraph](/notes/ai/langgraph)）  
+3. TS 再试 Mastra：memory + workflow / suspend  
+4. 接记忆后端，见 [Agent 记忆系统](/notes/ai/agent-memory)  
+5. 选型前必问：副作用如何保证只执行一次（durable execution）
 
 ## 参考
 
 + [LangGraph](https://langchain-ai.github.io/langgraph/) · [OpenAI Agents SDK](https://github.com/openai/openai-agents) · [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk)
 + [Google ADK](https://google.github.io/adk-docs/) · [CrewAI](https://docs.crewai.com/) · [Mastra](https://mastra.ai/docs)
 + [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) · [AG2](https://github.com/ag2ai/ag2) · [Pydantic AI](https://ai.pydantic.dev/)
-+ [A2A 协议](https://a2a-protocol.org/) · 本站：[LangGraph 实战](/notes/ai/langgraph) · [Agent Harness](/notes/ai/agent-harness) · [MCP 与工具调用](/notes/ai/mcp-tools)
++ [A2A 协议](https://a2a-protocol.org/) · 本站：[LangGraph 实战](/notes/ai/langgraph) · [Agent Harness](/notes/ai/agent-harness) · [Agent 记忆系统](/notes/ai/agent-memory) · [MCP 与工具调用](/notes/ai/mcp-tools)

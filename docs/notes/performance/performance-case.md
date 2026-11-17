@@ -1,42 +1,69 @@
 # 性能分析案例
 
-> 指标定义见 [Web Vitals](/notes/performance/web-vitals)，面板怎么点见 [Chrome DevTools](/notes/performance/debug-devtools)。下面是一次示意录制：数字用来说明怎么读，不是某次线上报告。
+> 指标定义见 [Web Vitals](/notes/performance/web-vitals)，面板怎么点见 [Chrome DevTools](/notes/performance/debug-devtools)。下面是示意录制：数字用来说明怎么读，不是某次线上报告。
 
-目标只有两个：LCP 降到 2.5s 以内，INP 降到 200ms 以内。一次 Lighthouse 分数不够，改完要用字段数据看趋势，见 [前端监控](/notes/performance/frontend-monitoring)。
+目标：LCP ≤ 2.5s，INP ≤ 200ms。Lighthouse 分数不够当验收；改完用字段数据看趋势，见 [前端监控](/notes/performance/frontend-monitoring)。
 
-## 录之前
+## 录之前（可照抄）
 
-1. 打开无痕窗口，禁用会注入脚本的扩展
-2. DevTools → Performance，勾选 Screenshots 和 Web Vitals
-3. 用 Slow 4G、CPU 4× slowdown 录首屏点击。实验室条件故意更差，方便把问题放大
+1. 无痕窗口，关掉会注入脚本的扩展  
+2. DevTools → **Performance**：勾选 Screenshots、Web Vitals；Network 条件选 **Slow 4G**，CPU **4× slowdown**  
+3. 点录制 → 硬刷新（首屏）或完成一次点击（交互）→ 停录  
+4. 时间轴上方找 **LCP / INP / CLS** 标记；点标记会跳到对应主线程活动
 
-## 案例：LCP 是一张没设尺寸的大图
+读图口诀（和 [Web Vitals](/notes/performance/web-vitals) 对齐）：
 
-录制里 LCP 标记落在首屏主图，时间约 4.1s（示意）。Network 里这张图是 1.8MB 的 PNG，并且 HTML 里没有 `width` / `height`，图片到达后把下面的文字顶下去，CLS 也跟着跳。
+| 标记 | 先看哪 | 坏信号 |
+|------|--------|--------|
+| LCP | 哪个元素、Network 里该资源大小与排队 | 超大图、无尺寸、被长任务拖晚 |
+| INP | 点击后有没有 >50ms 的长任务（红色条） | 同步过滤/排序整表、强制布局 |
+| CLS | Experience 轨布局偏移 | 图片无宽高、晚插入的顶栏广告 |
 
-改法，按收益从高到低：
+## 案例 A：LCP 是没设尺寸的大图
 
-1. 压成 WebP / AVIF，宽度只保留布局需要的那一档
-2. `img` 写上宽高，或用 `aspect-ratio` 占位，避免图片到达后撑开布局
-3. 这张图就是 LCP 元素时，给它 `fetchpriority="high"`，不要懒加载
-4. 带内容哈希后走长缓存，见 [前端部署](/notes/ops/frontend-deployment)
+**现象（示意）**：LCP ≈ 4.1s，落在首屏主图。Network 里该 PNG ≈ 1.8MB；HTML 无 `width`/`height`，图到达后顶开下文，CLS 跟着跳。
 
-再录一次：LCP 标记还在这张图上，但时间落到 2s 这一档（示意），CLS 不再在图片出现时跳。若 LCP 换成了一块很晚才插入的文字，说明阻塞它的是 JS 或字体，而不是图片。
+**Performance 上怎么确认**
 
-## 案例：点击后主线程卡 300ms
+1. 点 LCP 标记 → Summary 里看 element（常是 `img`）  
+2. Network 按 Size 排序，对上同一 URL  
+3. 火焰图在图片下载结束前若有大段 Evaluate Script，说明 JS 也在抢主线程
 
-INP 示意值 380ms。Performance 里这次点击后面挂着一条超过 200ms 的长任务，火焰图堆在「过滤并重排两千行表格」的同步函数上，期间没有绘制。
+**改法（收益从高到低）**
 
-改法：
+1. 压成 WebP/AVIF，宽度只保留布局档  
+2. `img` 写宽高或 `aspect-ratio` 占位  
+3. 该图即 LCP 时：`fetchpriority="high"`，**不要**懒加载  
+4. 带内容哈希长缓存，见 [前端部署](/notes/ops/frontend-deployment)
 
-1. 输入用防抖，不要每次按键都全量过滤
-2. 单次仍超过 50ms 时，把计算拆开，或丢进 [Web Worker](/notes/practice/web-workers)
-3. 列表本身很长时用 [虚拟列表](/notes/practice/virtual-list)，少创建 DOM
+**再录验收**：LCP 仍在该图上但落到 ~2s 档；图片到达时 CLS 不再跳。若 LCP 换成很晚才出现的文字块 → 瓶颈在字体/JS，不是图。
 
-再点一次：长任务拆成几段 30ms 左右的任务，中间能插入绘制，INP 落到 200ms 以内（示意）。
+## 案例 B：点击后主线程卡 300ms+
+
+**现象（示意）**：INP ≈ 380ms。点击后一条 >200ms 长任务，堆栈在「同步过滤并重排两千行表格」，中间无绘制。
+
+**Performance 上怎么确认**
+
+1. 点 INP / 交互标记 → 看 Interaction 到 Next Paint 的间隙  
+2. Main 轨找红色长任务 → Bottom-Up / Call Tree 看自耗时函数名  
+3. 若伴随紫色 Recalculate Style / Layout 尖刺，还有强制同步布局
+
+**改法**
+
+1. 输入防抖，勿每次按键全量过滤  
+2. 单次仍 >50ms：拆任务，或丢 [Web Worker](/notes/practice/web-workers)  
+3. 长列表用 [虚拟列表](/notes/practice/virtual-list)
+
+**再录验收**：长任务拆成多段 ~30ms，中间能插入绘制，INP ≤ 200ms。
 
 ## 怎么算改完
 
-+ 实验室：同一台机器、同一种限速，前后各录三次，看 LCP / INP 的方向，不看某一帧的个位数
-+ 线上：把 `web-vitals` 报到 [前端监控](/notes/performance/frontend-monitoring)，看 P75，而不是自己电脑上的一次刷新
-+ Lighthouse 分数可以当清单，不当验收线。它是实验室数据，和用户机器上的字段数据会有差距
+| 环境 | 做法 |
+|------|------|
+| 实验室 | 同机、同限速，前后各录 **3** 次，看 LCP/INP **方向**，不抠个位数 |
+| 线上 | `web-vitals` 报到监控，看 **P75**（[前端监控](/notes/performance/frontend-monitoring)） |
+| Lighthouse | 当清单，不当验收线（实验室 ≠ 字段数据） |
+
+## 参考
+
++ [Web Vitals](/notes/performance/web-vitals) · [Chrome DevTools](/notes/performance/debug-devtools) · [前端性能优化](/notes/performance/performance-optimization)
