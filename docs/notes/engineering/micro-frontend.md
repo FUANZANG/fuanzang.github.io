@@ -176,7 +176,7 @@ export async function unmount() {
 + 以自定义元素 `<micro-app>` 嵌入子应用；默认 **JS 沙箱 + scopecss**（按 `name` 给选择器加前缀）
 + 组件化心智：一个标签一个子应用，适合「页面里嵌一块别的系统」
 
-### 主应用
+### 主应用（micro-app.start）
 
 ```js
 import microApp from '@micro-zoe/micro-app'
@@ -285,7 +285,7 @@ npm i wujie-vue3 -S
 + 头条号场景演进的微前端方案；核心模块：Loader（HTML/JS entry）、Router、Sandbox、Store/Channel、插件
 + 支持路由驱动（`activeWhen`）与手动 `Garfish.loadApp`；可多实例；默认 **VM 沙箱**（`snapshot: false`）
 
-### 主应用
+### 主应用（Garfish.run）
 
 ```js
 import Garfish from 'garfish'
