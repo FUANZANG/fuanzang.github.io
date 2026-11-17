@@ -1,6 +1,7 @@
 # React Native 笔记
 
-> 本文件记录 React Native 核心概念、组件、API 与实战技巧。React 基础请查看 [React ](/notes/frameworks/react)
+> 本文件记录 React Native 核心概念、组件、API 与实战技巧。React 基础见 [React](/notes/frameworks/react)。
+> 已有 Web 要上架、复用 DOM → [Capacitor](/notes/cross-platform/capacitor)；小程序生态 → [小程序](/notes/cross-platform/mini-program)；桌面 → [Electron](/notes/cross-platform/electron) / [Tauri 2](/notes/cross-platform/tauri2)。
 
 <!-- 基于 React Native 0.76+ (New Architecture) -->
 

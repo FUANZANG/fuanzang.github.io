@@ -3,7 +3,7 @@
 > Tauri 用 **系统 WebView + Rust 后端** 做跨端桌面（及移动）应用：前端仍是 Web 技术，系统能力经 IPC 调 Rust，不捆绑 Chromium/Node。
 >
 > 版本锚点（2026-11）：`@tauri-apps/cli@2.12.x` · 文档 [v2.tauri.app](https://v2.tauri.app/)
-> 对照体积/安全心智见 [Electron](/notes/cross-platform/electron) · [Electron 清单](/notes/cross-platform/electron-checklist)
+> 对照体积/安全心智见 [Electron](/notes/cross-platform/electron) · [Electron 清单](/notes/cross-platform/electron-checklist)；移动 Web 壳见 [Capacitor](/notes/cross-platform/capacitor)。
 
 ## 和 Electron 差在哪
 

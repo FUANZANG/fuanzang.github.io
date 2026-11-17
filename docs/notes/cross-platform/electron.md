@@ -2,7 +2,7 @@
 
 > Electron 是一个使用 Chromium + Node.js 构建跨平台桌面应用的框架。本质上就是把 Web 应用装进一个定制浏览器里，同时赋予它访问操作系统底层的能力。
 >
-> 上线前安全 / 签名 / 更新核对见 [Electron 安全与发布清单](/notes/cross-platform/electron-checklist)。
+> 上线前安全 / 签名 / 更新核对见 [Electron 安全与发布清单](/notes/cross-platform/electron-checklist)。要更小体积、系统 WebView → [Tauri 2](/notes/cross-platform/tauri2)；移动 Web 壳 → [Capacitor](/notes/cross-platform/capacitor)。
 
 ## 架构原理
 

@@ -4,7 +4,7 @@
 >
 > 基于以下版本：微信小程序基础库 3.x | uni-app 3.x（Vue 3 + Vite） | Taro 4.x | Mpx 2.x
 >
-> 跨端开发相关：[React Native](/notes/cross-platform/react-native)（移动端原生）、[Electron](/notes/cross-platform/electron)（桌面端）
+> 跨端对照：[React Native](/notes/cross-platform/react-native) · [Capacitor](/notes/cross-platform/capacitor)（Web 壳上架）· [Electron](/notes/cross-platform/electron) · [Tauri 2](/notes/cross-platform/tauri2)
 
 ## 1. 小程序平台概览
 

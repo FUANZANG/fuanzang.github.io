@@ -68,4 +68,4 @@ contextBridge.exposeInMainWorld('api', {
 - [Electron Security](https://github.com/electron/electron/blob/main/docs/tutorial/security.md)
 - [Context Isolation](https://github.com/electron/electron/blob/main/docs/tutorial/context-isolation.md)
 - [Tutorial: Preload](https://github.com/electron/electron/blob/main/docs/tutorial/tutorial-3-preload.md)
-- 本站：[Electron](/notes/cross-platform/electron)
+- 本站：[Electron](/notes/cross-platform/electron) · [Tauri 2](/notes/cross-platform/tauri2)
