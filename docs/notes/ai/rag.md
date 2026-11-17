@@ -81,6 +81,41 @@ LLM 的三个先天缺陷，RAG 各治一个：
 
 选型经验法则（来自社区共识）：**"选你团队凌晨两点能 debug 的那个"**。多数项目向量数 < 1000 万，pgvector 或 Qdrant 都绰绰有余，别为了想象中的规模上 Milvus 三件套（etcd+minio+milvus 的 docker-compose）。
 
+### pgvector 最小落地
+
+> 以 [pgvector README](https://github.com/pgvector/pgvector) 为准；维度必须与 embedding 模型一致（如 `text-embedding-3-small` 常用 1536）。
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE chunks (
+  id        bigserial PRIMARY KEY,
+  content   text NOT NULL,
+  embedding vector(1536) NOT NULL
+);
+
+-- 写入：把 embedding 数组序列化成 '[0.1,0.2,...]' 再插入
+INSERT INTO chunks (content, embedding)
+VALUES ('如何部署服务', '[0.01,0.02, /* …1536 维 */ ]');
+
+-- 余弦距离近邻（<=>）；相似度 = 1 - distance
+SELECT id, content, 1 - (embedding <=> $1::vector) AS score
+FROM chunks
+ORDER BY embedding <=> $1::vector
+LIMIT 5;
+
+-- 查询用同一距离时再建索引（ops 必须匹配）
+CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops);
+```
+
+| 运算符 | 含义 |
+|--------|------|
+| `<->` | L2 |
+| `<=>` | 余弦距离 |
+| `<#>` | 负内积（只要 ASC 扫描，所以取负） |
+
+应用侧伪流程：切块 → 调 embedding API → `INSERT` → 问答时问题向量 `ORDER BY embedding <=> query LIMIT k` → 拼 prompt 调 LLM。混合检索可再加 `tsvector`/`BM25` 一路，用 RRF 合并（见上「Level 2」）；系统化调参见 [RAG 检索调优](/notes/ai/rag-retrieval-tuning)。
+
 ## 进阶概念（认脸即可）
 
 + **Agentic RAG**：检索本身也交给 agent 决定——要不要检索、检索几次、查询怎么改写、结果够不够好再补检。简单文档问答基础 RAG 够用，多跳推理/复杂约束才值得上（专篇见 [Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)）
@@ -99,7 +134,7 @@ RAG 应用的前端有明确的模式库：
 
 ## 学习路径建议
 
-1. 100 行代码跑通最小 RAG：拿一份本地 Markdown / 文档站语料，OpenAI embedding + pgvector/Chroma + API 生成
+1. 按上节把 pgvector 表建起来，本地 Markdown 切块 + embedding + Top-K 检索，再接一层 LLM 生成
 2. 故意用型号/专有名词提问，看纯向量检索翻车，加 BM25 混合修复
 3. 加 rerank，对比前后 top-5 的相关性变化（体感明显）
 4. 之后按需：[Graph RAG 与 Agentic RAG](/notes/ai/graph-rag)、[AI 评测与可观测](/notes/ai/ai-eval-observability)、增量索引

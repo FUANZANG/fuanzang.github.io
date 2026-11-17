@@ -1,6 +1,8 @@
 # Rancher 管理平台
 
 > 基于 Rancher v2.15（2026-09 时点）。Rancher 是 SUSE 旗下的 Kubernetes 集群管理平台，解决"多集群怎么管"的问题。
+>
+> **前置**：[Kubernetes](/notes/ops/kubernetes) 的 Deployment / Service / Ingress / Namespace；本篇不重讲 Pod 调度。Fleet 细节见 [Fleet GitRepo](https://fleet.rancher.io/how-tos-for-users/gitrepo-add)。
 
 ## 解决什么问题
 
@@ -106,31 +108,45 @@ helm install rancher rancher-stable/rancher \
 
 ## 日常操作
 
-### 创建集群
+### 导入现有集群（最短路径）
 
-1. **RKE2 自建** — Rancher UI → Cluster Management → Create → RKE2/K3s → 自定义节点
-2. **导入现有** — 在目标集群执行 Rancher 生成的 `kubectl apply` 命令
-3. **云托管** — 对接 AWS/GCP/Azure 凭证，自动创建 EKS/GKE/AKS
+1. Rancher UI → **Cluster Management** → **Import Existing**
+2. 选 Generic（自建）或对应云厂商；复制生成的注册命令
+3. 在**目标集群**执行（示意）：
 
-### 项目与命名空间
+```bash
+kubectl apply -f https://<rancher-host>/v3/import/<token>.yaml
+```
 
-Rancher 的 **Project** 是 K8s Namespace 之上的逻辑分组：
+4. 等 Agent 就绪后，集群出现在列表；此后可用 Rancher 发 Deployment / 看事件，不必换 kubeconfig
+
+自建 RKE2/K3s、云托管（EKS/GKE/AKS）走 Create，流程更长，但同样进 Cluster Management。
+
+### Project 与 RBAC
+
+Rancher **Project** = 多个 Namespace + 一套成员权限（K8s 没有 Project 概念）：
 
 ```
 Cluster
 ├── Project A（团队 A）
 │   ├── Namespace: app-a-prod
 │   ├── Namespace: app-a-staging
-│   └── 成员: user1, user2
+│   └── 成员: user1（Project Owner）, user2（Member）
 ├── Project B（团队 B）
-│   ├── Namespace: app-b-prod
-│   └── 成员: user3
+│   └── Namespace: app-b-prod
 ```
 
-### 应用部署
+实操顺序：
+
+1. 集群 → **Projects/Namespaces** → 建 Project，勾选/新建 Namespace
+2. 成员页绑定用户/组：Owner 管成员与配额，Member 管工作负载
+3. 全局用户先走 **Users & Authentication**（对接 LDAP/OIDC），再下放到 Project——避免每人一把集群 admin
+
+### 应用部署（一次 Helm / YAML）
+
+UI：进入集群 → 选 Project → **Workloads** → Create / Import YAML。
 
 ```yaml
-# Rancher 也支持原生 K8s YAML
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -165,7 +181,31 @@ spec:
       targetPort: 8080
 ```
 
-Rancher UI 中：Cluster → Project → Workloads → Deploy → 粘贴 YAML。
+Catalog / Apps：装现成 Chart（Redis、监控组件等）时选对 Project/Namespace，别装进 `default` 完事。
+
+### Fleet：GitRepo 最小示例
+
+> Rancher 预装 Fleet；UI 路径：**☰ → Continuous Delivery**。下游已注册集群默认在 workspace `fleet-default`。
+
+```yaml
+# kubectl apply -n fleet-default -f gitrepo.yaml
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: demo-manifests
+  namespace: fleet-default
+spec:
+  repo: https://github.com/rancher/fleet-examples
+  paths:
+    - simple
+  targets:
+    - name: all-downstream
+      clusterSelector: {} # 匹配该 workspace 内全部集群；生产改成 label/env
+```
+
++ 改 Git 后 Fleet 自动同步；私有库配 `clientSecretName`（HTTPS token / SSH，见 Fleet 文档）
++ 只打某一个导入集群：用 `clusterName: <clusters.fleet.cattle.io 名>` 或 `matchLabels`
++ 单集群玩 Fleet 可用 `fleet-local`；多下游用 `fleet-default`
 
 ### 监控面板
 

@@ -94,42 +94,122 @@ function frame() {
 frame()
 ```
 
-## Compute Shader（通用计算）
+## Compute 端到端（把数组每个元素 ×2）
 
-WebGPU 一大亮点是**计算着色器**，可在 GPU 上并行处理大规模数据（如矩阵运算、粒子系统）：
+> API 以 [MDN `createComputePipeline`](https://developer.mozilla.org/en-US/docs/Web/API/GPUDevice/createComputePipeline) / [`dispatchWorkgroups`](https://developer.mozilla.org/en-US/docs/Web/API/GPUComputePassEncoder/dispatchWorkgroups) 为准。
+> `dispatchWorkgroups` 传的是 **workgroup 个数**，不是元素个数：`@workgroup_size(64)` 时应用 `Math.ceil(n / 64)`。
 
-```wgsl
-@group(0) @binding(0) var<storage, read_write> data: array<f32>;
+```js
+async function doubleOnGpu(input) {
+  if (!navigator.gpu) throw new Error('WebGPU unavailable')
+  const adapter = await navigator.gpu.requestAdapter()
+  if (!adapter) throw new Error('No GPU adapter')
+  const device = await adapter.requestDevice()
 
-@compute @workgroup_size(64)
-fn main(@builtin(global_invocation_id) id: vec3u) {
-  data[id.x] = data[id.x] * 2.0;   // 每个线程处理一个元素
+  const module = device.createShaderModule({
+    code: `
+      @group(0) @binding(0) var<storage, read_write> data: array<f32>;
+      @compute @workgroup_size(64)
+      fn main(@builtin(global_invocation_id) id: vec3u) {
+        if (id.x >= arrayLength(&data)) { return; }
+        data[id.x] = data[id.x] * 2.0;
+      }
+    `,
+  })
+
+  const pipeline = device.createComputePipeline({
+    layout: 'auto',
+    compute: { module, entryPoint: 'main' },
+  })
+
+  const workBuffer = device.createBuffer({
+    size: input.byteLength,
+    usage:
+      GPUBufferUsage.STORAGE |
+      GPUBufferUsage.COPY_SRC |
+      GPUBufferUsage.COPY_DST,
+  })
+  device.queue.writeBuffer(workBuffer, 0, input)
+
+  const resultBuffer = device.createBuffer({
+    size: input.byteLength,
+    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+  })
+
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(0),
+    entries: [{ binding: 0, resource: { buffer: workBuffer } }],
+  })
+
+  const encoder = device.createCommandEncoder()
+  const pass = encoder.beginComputePass()
+  pass.setPipeline(pipeline)
+  pass.setBindGroup(0, bindGroup)
+  pass.dispatchWorkgroups(Math.ceil(input.length / 64))
+  pass.end()
+  encoder.copyBufferToBuffer(workBuffer, 0, resultBuffer, 0, input.byteLength)
+  device.queue.submit([encoder.finish()])
+
+  await resultBuffer.mapAsync(GPUMapMode.READ)
+  const out = new Float32Array(resultBuffer.getMappedRange().slice(0))
+  resultBuffer.unmap()
+  return out
+}
+
+// await doubleOnGpu(new Float32Array([1, 3, 5])) → [2, 6, 10]
+```
+
+要点：
+
++ **storage buffer** 给 shader 读写；结果要 `COPY` 到带 `MAP_READ` 的 buffer 才能回 CPU
++ `layout: 'auto'` 时，bind group layout 只能配给**这条** pipeline（见 MDN）
++ 浏览器端 AI（Transformers.js / ONNX Runtime Web）走的就是这条 Compute 路径；业务侧用法见 [Web AI](/notes/ai/web-ai)
+
+## 与 WebGL 回退
+
+```js
+async function getGpuBackend() {
+  if (navigator.gpu) {
+    const adapter = await navigator.gpu.requestAdapter()
+    if (adapter) {
+      const device = await adapter.requestDevice()
+      return { kind: 'webgpu', device }
+    }
+  }
+  const canvas = document.createElement('canvas')
+  const gl =
+    canvas.getContext('webgl2') || canvas.getContext('webgl')
+  if (!gl) return { kind: 'none' }
+  return { kind: 'webgl', gl }
 }
 ```
 
-配合 `device.createComputePipeline` 与 `pass.dispatchWorkgroups(...)` 调度，可把 CPU 密集型任务卸载到 GPU——这正是浏览器端 **AI 推理（如 ONNX Runtime Web、Transformer.js）** 的底层支撑。
++ **3D 展示**：优先 [Three.js](/notes/frontier/threejs) 的 `WebGPURenderer`，失败再回 `WebGLRenderer`
++ **手写管线**：不要假设 WebGPU ≈ WebGL 换皮；命令编码、显式 Pipeline、无全局状态机
++ 能力排查：`chrome://gpu`；不支持就降级，别假装跑在 GPU 上
 
 ## 典型应用场景
 
-+ 高性能 3D 渲染、大型场景（游戏、数字孪生）
-+ 浏览器端 **AI 推理 / 机器学习**（TensorFlow.js、Transformer.js 已支持 WebGPU 后端）
-+ 科学计算、物理仿真、粒子系统
-+ 图像/视频实时处理（滤镜、超分）
++ 高性能 3D、大型场景（游戏、数字孪生）
++ 浏览器端 AI 推理（[Web AI](/notes/ai/web-ai) 的 WebGPU 后端）
++ 科学计算、物理仿真、粒子、图像/视频实时处理
 
 ## 生态
 
-+ **Three.js**：已支持 WebGPU 渲染后端（`WebGPURenderer`）。
-+ **Babylon.js**：原生支持 WebGPU。
-+ **wgpu**（Rust）：可将 Rust 渲染逻辑编译到 WebAssembly + WebGPU。
++ **Three.js**：`WebGPURenderer`
++ **Babylon.js**：原生 WebGPU
++ **wgpu**（Rust）：WASM + WebGPU
 
 ## 注意事项
 
-+ **不是 WebGL 的"升级补丁"**：API 模型完全不同（命令编码、显式 Pipeline），学习曲线更陡。
-+ **需要特性检测**：老浏览器回退到 WebGL 或提示不支持。
-+ **调试工具**：Chrome DevTools 的 `chrome://gpu` 与 WebGPU 调试面板。
++ 学习曲线陡于 WebGL；先画三角，再上 Compute
++ 老浏览器必须特性检测 + 回退
++ storage / uniform 大小受 `GPUDevice.limits` 约束，大数据要分块 dispatch
 
 ## 参考
 
 + [WebGPU 规范](https://www.w3.org/TR/webgpu/)
 + [MDN: WebGPU API](https://developer.mozilla.org/zh-CN/docs/Web/API/WebGPU_API)
++ [MDN: createComputePipeline](https://developer.mozilla.org/en-US/docs/Web/API/GPUDevice/createComputePipeline)
 + [WGSL 规范](https://www.w3.org/TR/WGSL/)
++ 本站：[Canvas & WebGL](/notes/foundations/canvas-webgl) · [Three.js](/notes/frontier/threejs) · [Web AI](/notes/ai/web-ai)

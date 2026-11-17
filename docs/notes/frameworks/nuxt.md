@@ -309,4 +309,4 @@ const config = useRuntimeConfig()
 
 + [Nuxt 官方文档](https://nuxt.com/docs)
 + [Nuxt 4 发布公告](https://nuxt.com/blog/v4)
-+ 本站：[Vue 3](/notes/frameworks/vue3) · [SSR / SSG](/notes/engineering/ssr-ssg) · [NestJS](/notes/node/nestjs)
++ 本站：[Vue 3](/notes/frameworks/vue3) · [SSR / SSG](/notes/engineering/ssr-ssg) · [SEO 与 SSR 衔接](/notes/performance/seo-and-ssr) · [NestJS](/notes/node/nestjs)

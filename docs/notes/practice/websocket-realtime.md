@@ -543,37 +543,82 @@ io.adapter(createAdapter(pubClient, subClient))
 
 ## 6. WebRTC（点对点通信）
 
-WebRTC 用于浏览器间**点对点**音视频和数据通信，不需要服务器中转数据（仅需服务器协助建立连接）。
+> 流程以 [MDN Connectivity](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity) / [Signaling and video calling](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) / [webrtc.org peer connections](https://webrtc.org/getting-started/peer-connections) 为准。
 
-### 数据通道
+WebRTC 做浏览器间 **P2P 音视频 / 数据通道**：媒体面尽量直连，**信令面**（SDP + ICE candidate）必须自备通道（常用本篇的 WebSocket）。
+
+### 角色拆开
+
+| 角色 | 干什么 |
+|------|--------|
+| **信令服务器** | 转发 offer / answer / ICE candidate（协议自定，WebRTC 不管） |
+| **STUN** | 帮客户端发现自己的公网地址（srflx candidate） |
+| **TURN** | NAT/防火墙打不通时**中继**媒体（relay candidate）；生产几乎必备 |
+| **ICE** | 收集 candidate、试连通，选出可用路径 |
 
 ```js
-// 创建 RTCPeerConnection
-const pc = new RTCPeerConnection(configuration)
-
-// 创建数据通道
-const channel = pc.createDataChannel('chat', {
-  ordered: true,  // 保证顺序
+const pc = new RTCPeerConnection({
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }, // 公网 STUN 仅演示；生产用自有授权服务器
+    {
+      urls: 'turn:turn.example.com:3478',
+      username: 'user',
+      credential: 'pass',
+    },
+  ],
 })
-
-channel.onopen = () => {
-  channel.send('Hello!')
-}
-
-channel.onmessage = (e) => {
-  console.log('收到:', e.data)
-}
-
-// 通过信令服务器交换 SDP（_offer/answer）
-const offer = await pc.createOffer()
-await pc.setLocalDescription(offer)
-// 通过 WebSocket 发送 offer 给对方
-
-// 收到对方的 answer
-pc.setRemoteDescription(answer)
 ```
 
-> WebRTC 的完整流程较复杂（信令、ICE、STUN/TURN），这里只展示数据通道基本概念。实际使用建议用 PeerJS 等库简化。
+### Offer / Answer + Trickle ICE（最小骨架）
+
+```js
+// signaling 假设是已连上的 WebSocket 封装：send(obj) / onmessage
+function wireIce(pc, signaling) {
+  pc.onicecandidate = (e) => {
+    if (e.candidate) signaling.send({ type: 'candidate', candidate: e.candidate })
+  }
+}
+
+async function call(pc, signaling) {
+  wireIce(pc, signaling)
+  const channel = pc.createDataChannel('chat', { ordered: true })
+  channel.onopen = () => channel.send('Hello!')
+  channel.onmessage = (e) => console.log('recv', e.data)
+
+  const offer = await pc.createOffer()
+  await pc.setLocalDescription(offer) // 之后开始攒 ICE
+  signaling.send({ type: 'offer', sdp: pc.localDescription })
+}
+
+async function answer(pc, signaling, offer) {
+  wireIce(pc, signaling)
+  pc.ondatachannel = (e) => {
+    e.channel.onmessage = (ev) => console.log('recv', ev.data)
+  }
+  await pc.setRemoteDescription(offer)
+  const ans = await pc.createAnswer()
+  await pc.setLocalDescription(ans)
+  signaling.send({ type: 'answer', sdp: pc.localDescription })
+}
+
+signaling.onmessage = async (msg) => {
+  if (msg.type === 'offer') await answer(pc, signaling, msg.sdp)
+  if (msg.type === 'answer') await pc.setRemoteDescription(msg.sdp)
+  if (msg.type === 'candidate' && msg.candidate) {
+    await pc.addIceCandidate(msg.candidate)
+  }
+}
+```
+
+音视频时在 `createOffer` 前 `getUserMedia` + `addTrack`；MDN 完整通话示例见上链。
+
+### 踩坑
+
++ **先 addTrack / createDataChannel，再 createOffer**，否则 SDP 不含新媒体，要再谈一轮
++ 对称 NAT / 公司网几乎总要 **TURN**；只有 STUN 在演示 Wi‑Fi 下“偶发能通”
++ 信令与媒体分离：信令挂了只影响重协商，已建连的媒体可继续
++ 生产别滥用公共 STUN；TURN 要鉴权、限流、监控带宽（中继贵）
++ 封装库：简单 Demo 可用 PeerJS；要可控信令/房间仍建议自管 SDP 交换
 
 ---
 

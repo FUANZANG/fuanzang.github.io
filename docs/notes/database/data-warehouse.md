@@ -94,23 +94,58 @@ DIM（维度层）：用户表、商品表、时间表——被各层 join 的"�
 
 Doris vs SR vs ClickHouse 的选型之争是数据团队日常，应用开发者知道"都是用 SQL 查的 OLAP 引擎"即可。
 
+## CDC：业务库怎么「流」进仓
+
+CDC = **Change Data Capture**：订阅源库变更日志，近实时同步，而不是每天全表抽。
+
+```
+MySQL binlog
+  → Canal / Flink CDC / Debezium
+  → Kafka（常作缓冲）
+  → Flink / Spark 写入 ODS 或直接入湖（Iceberg/Paimon）
+```
+
+| 组件 | 角色 |
+|------|------|
+| **Canal** | 阿里系，解 MySQL binlog，国内常见 |
+| **Flink CDC** | 源端连接器 + 流计算一体，可直写仓/湖 |
+| **Debezium** | 社区主流，常配 Kafka Connect |
+
+应用开发者要懂的边界：
+
++ 源库账号要有复制权限；**别在高峰对主库狂扫全表**当「实时」
++ 下游消费必须**幂等**（至少一次投递）；主键冲突用 upsert
++ 大屏「准实时」= CDC + 仓内秒级可见；「昨日报表」= T+1 批处理——别混口径
+
+## Iceberg：湖上的「表」
+
+对象存储上的 Parquet 文件本身不是表（没事务、易成沼泽）。**Apache Iceberg**（以及 Delta / Hudi / Paimon）用元数据层补上：
+
++ **ACID 提交**、schema 演进、分区演进
++ **时间旅行**：按 snapshot 查「昨天中午的表长什么样」
++ 多引擎（Spark / Flink / Trino / SR）可读同一套表文件
+
+心智：业务库 CDC 进 Kafka → Flink 写 **Iceberg 表**（常落 ODS/DWD）→ OLAP 引擎外表查询或再灌进 Doris/SR 内表做 ADS。听人说「上 Iceberg」= 湖仓一体这层，不是换一个 SQL 方言。
+
 ## 应用开发者视角的实用结论
 
 + 报表/导出/大屏需求 → 找数据平台要 ADS 层接口，**不要**在业务库上写聚合 SQL
 + "这个指标口径是什么" → 问 ADS 层的指标定义，而不是自己算一份
 + 需要明细数据调研 → 申请 DWD 层查询权限
 + 听到"SR 上查一下" = 在 StarRocks 里跑 SQL（协议兼容 MySQL，客户端通用）
++ 听到"走 CDC / 上湖" → 问清延迟 SLA 与消费幂等，而不是自己轮询业务库
 
 ## 学习路径建议
 
 1. 本地 Docker 起 Doris 或 StarRocks（官方都有 all-in-one 镜像），灌一份测试数据
 2. 手动模拟分层：ODS 原始表 → DWD 清洗 → DWS 聚合 → ADS 指标，各建一张表跑通
 3. 对比体验：同一条聚合 SQL 在 MySQL 和 OLAP 引擎上各跑一次（百万行即可感知差距）
-4. 之后按需：CDC 链路（Canal/Flink CDC）、Iceberg 表格式上手
+4. 读通上面 CDC / Iceberg 两节；有环境再跟一篇 Flink CDC → Iceberg 官方 quickstart
 
 ## 参考
 
 + [Apache Doris 官方文档（中文）](https://doris.apache.org/zh-CN/docs/)
 + [StarRocks 官方文档](https://docs.starrocks.io/zh/docs/)
 + [Apache Iceberg](https://iceberg.apache.org/)
++ [Flink CDC](https://nightlies.apache.org/flink/flink-cdc-docs-stable/)
 + 阿里 OneData 方法论（数仓分层体系出处）

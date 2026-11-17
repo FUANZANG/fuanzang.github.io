@@ -96,7 +96,7 @@ admin.site.register(Book)
 
 1. `startproject` + `startapp` 走通"模型 → makemigrations → migrate → Admin 注册"一条线（10 分钟出 CRUD 后台）
 2. 写一个基于模板的页面（`{{ }}` 渲染 ≈ Vue 模板的简版），体会全栈路线
-3. 读 settings 的中间件栈（≈ Express 中间件链，对照 [Node.js 篇](/notes/node/node.md) 的中间机制）
+3. 读 settings 的中间件栈（≈ Express 中间件链，对照 [Node.js 篇](/notes/node/node) 的中间机制）
 4. 加 DRF 把一个模型暴露成 REST API，对照 [FastAPI](/notes/python/fastapi) 篇的两条路线差异
 
 ## 参考

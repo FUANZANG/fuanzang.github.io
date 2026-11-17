@@ -287,7 +287,7 @@ console.log(results.outputs.output)  // [6, 8, 10, 12]
 | 浏览器端完整 LLM 对话 | WebLLM |
 | 自定义 ONNX 模型推理 | ONNX Runtime Web |
 | 需要最大化硬件加速（NPU） | WebNN（通过 ONNX Runtime 间接使用） |
-| 调用外部 API（OpenAI / Claude 等） | 参见 ai-frontend-integration 笔记 |
+| 调用外部 API（OpenAI / Claude 等） | 见 [前端对接 AI](/notes/ai/ai-frontend-integration) |
 
 ---
 

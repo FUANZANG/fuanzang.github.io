@@ -171,56 +171,111 @@ export async function unmount() {
 
 ## micro-app（京东）
 
+> 官方：[生命周期](https://micro-zoe.github.io/doc/zh/life-cycles.html) · [样式隔离](https://micro-zoe.github.io/doc/zh/scopecss.html) · [配置项](https://micro-zoe.github.io/doc/v0/zh/configure.html)
+
++ 以自定义元素 `<micro-app>` 嵌入子应用；默认 **JS 沙箱 + scopecss**（按 `name` 给选择器加前缀）
++ 组件化心智：一个标签一个子应用，适合「页面里嵌一块别的系统」
+
 ### 主应用
 
-+ 安装 `npm i @micro-zoe/micro-app`
+```js
+import microApp from '@micro-zoe/micro-app'
 
-  ```js
-  // main-app/src/main.js
-  import microApp from '@micro-zoe/micro-app'
+microApp.start({
+  // lifeCycles: { mounted(e) {}, unmount(e) {} }, // 全局钩子可选
+})
+```
 
-  microApp.start()
-  ```
+```html
+<micro-app
+  name="vue-app"
+  url="http://localhost:8081/"
+  baseroute="/vue-app"
+  @created="onCreated"
+  @mounted="onMounted"
+  @unmount="onUnmount"
+  @error="onError"
+></micro-app>
+```
 
-  ```html
-  <!-- 在模板中使用自定义元素加载子应用 -->
-  <micro-app name="vue-app" url="http://localhost:8081"></micro-app>
-  ```
++ 生命周期：`created` → `beforemount` → `mounted` → `unmount`（致命错误才 `error`）
++ React 监听自定义事件需官方 `jsx-custom-event` polyfill；Vue 用 `@mounted` 即可
++ 子应用路由：history 子应用读 `window.__MICRO_APP_BASE_ROUTE__` 作 basename；基座 history + 子应用 hash 时常可不设
 
-### 子应用
+### 隔离与保活
 
-+ 监听基座数据 & 生命周期
+| 能力 | 默认 | 说明 |
+|------|------|------|
+| scopecss | 开 | `micro-app[name=xx] .cls`；主→子仍可能污染，靠约定/CSS Modules |
+| JS 沙箱 | 开 | `disableSandbox` 会连带关掉样式/元素隔离与路径补全，慎用 |
+| shadowDOM | 关 | 更强隔离，但 React/部分 UI 库兼容差；开启后默认 scopecss 失效 |
+| keep-alive | 关 | 卸载进缓存保状态；与 `destroy` 同开时 keep-alive 失效 |
 
-  ```js
-  // sub-app/src/main.js
-  window.microApp?.addDataListener((data) => {
-    console.log('收到基座数据:', data)
-  })
+```html
+<!-- 要强隔离且能接受适配成本 -->
+<micro-app name="vue-app" url="..." shadowDOM></micro-app>
+<!-- 卸载清空缓存资源 -->
+<micro-app name="vue-app" url="..." destroy></micro-app>
+```
 
-  // 向基座发送数据
-  window.microApp?.dispatch({ type: 'from-child', payload: 'hello' })
-  ```
+### 子应用通讯与卸载
+
+```js
+window.microApp?.addDataListener((data) => {
+  console.log('from host', data)
+})
+window.microApp?.dispatch({ type: 'from-child', payload: 'hello' })
+
+window.onunmount = () => {
+  // 清定时器、解绑，避免保活/重挂泄漏
+}
+```
 
 ## wujie（无界）
 
-+ 安装 `npm i wujie-vue3 -S`
+> 官方：[通信](https://wujie-micro.github.io/doc/guide/communication.html) · [`$wujie`](https://wujie-micro.github.io/doc/api/wujie.html)
 
-  ```vue
-  <template>
-    <WujieVue
-      name="vue-app"
-      url="http://localhost:8081"
-      :props="{ data: 'hello' }"
-    />
-  </template>
++ 原理：**JS 跑在同域 iframe**（天然 Window 隔离），**DOM 渲染到基座 WebComponent / Shadow**——隔离性高、体感接近组件
++ 适合：子应用技术栈杂、样式/全局变量冲突多、又不愿深度改子应用构建
 
-  <script setup>
-  import WujieVue from 'wujie-vue3'
-  </script>
-  ```
+### 接入（Vue 3）
 
-+ 核心原理：子应用运行在 iframe 的 JS 沙箱中，DOM 渲染在基座的 WebComponent 容器内，兼得 iframe 的隔离性和 WebComponent 的体验
-+ 通讯（官方三种）：`props`、同域 `window`/`parent`、`bus` 事件总线，见下文「应用间通信」
+```vue
+<template>
+  <WujieVue
+    name="vue-app"
+    :url="url"
+    :props="{ token }"
+    :alive="true"
+    width="100%"
+    height="100%"
+  />
+</template>
+
+<script setup>
+import WujieVue from 'wujie-vue3'
+const url = 'http://localhost:8081/'
+const token = '...'
+</script>
+```
+
+```bash
+npm i wujie-vue3 -S
+```
+
++ `:alive="true"`：切换不销毁，状态保持（对照 qiankun 保活 / micro-app keep-alive）
++ 子应用用 Vite 时，`window.location.host` 可能仍是主应用；读真实地址用 `window.$wujie.location`（官方变量说明）
+
+### 隔离与通讯要点
+
+| 点 | 做法 |
+|----|------|
+| 样式 | 落在 `$wujie.shadowRoot`；弹层挂 body 的组件要改挂载容器 |
+| props | 主应用 `:props` → 子应用 `window.$wujie.props` |
+| bus | 主 `WujieVue.bus.$emit/$on`；子 `$wujie.bus`；组件内 `$on` 要在 unmount `$off` |
+| window | 同域可 `iframe.contentWindow` / `parent`，耦合高，优先 bus |
+
+详细 API 示例见下文「应用间通信 · wujie」。
 
 ## Garfish（字节）
 

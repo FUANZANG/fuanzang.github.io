@@ -289,4 +289,4 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 + [Next.js 官方文档](https://nextjs.org/docs)
 + [Next.js 16 升级指南](https://nextjs.org/docs/app/guides/upgrading/version-16)
-+ 本站：[React](/notes/frameworks/react) · [Nuxt](/notes/frameworks/nuxt) · [SSR / SSG](/notes/engineering/ssr-ssg)
++ 本站：[React](/notes/frameworks/react) · [Nuxt](/notes/frameworks/nuxt) · [SSR / SSG](/notes/engineering/ssr-ssg) · [SEO 与 SSR 衔接](/notes/performance/seo-and-ssr)
