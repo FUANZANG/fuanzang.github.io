@@ -1,18 +1,68 @@
 # 微前端
 
+> 版本锚点（2026-11，npm registry）：`single-spa@6.0.3` · `qiankun@2.10.x` · `garfish@1.19.x`。
+> qiankun **3.x** 文档已在 [qiankunjs.com](https://www.qiankunjs.com/) 推进（样式改 `@scope`、移除 `initGlobalState` 等），但 npm 稳定版仍以 2.x 为主；下文默认按 2.x 写，3.x 差异单独标注。
+
 ## 什么是微前端
 
 + 将一个大型前端应用拆分成多个**独立开发、独立部署、独立运行**的子应用，再由一个主应用（基座）统一加载和调度
 + 核心价值：技术栈无关、独立部署、增量升级
++ 常见链路：`single-spa`（生命周期调度底座）→ 工程化封装（`qiankun` / `Garfish` 等）→ 另路隔离方案（`wujie` / `micro-app`）→ 模块级共享（`Module Federation`）
 
 ## 主流方案对比
 
 | 方案 | 原理 | 隔离性 | 技术栈限制 | 适用场景 |
 |------|------|--------|-----------|---------|
-| **qiankun** | 基于 single-spa，JS 沙箱 + CSS 隔离 | 中（Proxy 沙箱） | 无 | 企业级后台、老系统改造 |
+| **single-spa** | 注册应用 + activity 函数调度生命周期 | 不自带沙箱（需自建或上层框架） | 无 | 自研基座、理解底层调度 |
+| **qiankun** | 基于 single-spa，JS 沙箱 + CSS 隔离 | 中（Proxy / 快照沙箱） | 无 | 企业级后台、老系统改造 |
+| **Garfish** | Loader + Router + VM/快照沙箱 + Store/Channel | 中高（默认 VM；`strictIsolation` 走 Shadow DOM） | 官方主推 UMD 产物 | 多团队后台、要多实例 / 预加载 |
 | **micro-app** | WebComponent 容器 | 高（Shadow DOM） | 无 | 京东体系、组件化思维 |
 | **wujie** | iframe + WebComponent | 高（iframe 天然隔离） | 无 | 对隔离性要求高的场景 |
 | **Module Federation** | Webpack 5 模块共享（1.0）/ 多构建器运行时共享（2.0） | 低（共享运行时） | 1.0 需 Webpack 5；2.0 无构建器限制 | 同技术栈、模块共享 |
+
+## single-spa（底座）
+
+> 官方：[Configuring single-spa](https://single-spa.js.org/docs/configuration/) · [Applications API](https://single-spa.js.org/docs/api/) · [Building applications](https://single-spa.js.org/docs/building-applications/)
+
++ **只做调度**：何时 load / bootstrap / mount / unmount；**不负责** JS/CSS 沙箱、HTML entry 解析
++ 子应用入口必须导出生命周期：`bootstrap`、`mount`、`unmount`（可选 `unload`）；每个都必须返回 Promise 或写成 async
++ qiankun 在它之上补了 HTML entry、沙箱、样式隔离、全局状态等工程能力
+
+### 根配置注册
+
+```js
+import { registerApplication, start } from 'single-spa'
+
+registerApplication({
+  name: 'app1',
+  app: () => import('./apps/app1.js'), // 或 System.import('app1')
+  activeWhen: '/app1', // 也可用 (location) => boolean，或数组
+  customProps: { authToken: 'x' }, // 传入各生命周期
+})
+
+// 可先 register 再延后 start：先下载代码，等用户信息就绪再挂载
+start()
+```
+
+### 子应用生命周期
+
+```js
+// apps/app1.js
+let dom = null
+
+export async function bootstrap() {}
+
+export async function mount(props) {
+  dom = document.createElement('div')
+  ;(props.domElement || document.getElementById('app')).appendChild(dom)
+  dom.textContent = `hello ${props.authToken ?? ''}`
+}
+
+export async function unmount() {
+  dom?.remove()
+  dom = null
+}
+```
 
 ## qiankun
 
@@ -170,6 +220,74 @@
   ```
 
 + 核心原理：子应用运行在 iframe 的 JS 沙箱中，DOM 渲染在基座的 WebComponent 容器内，兼得 iframe 的隔离性和 WebComponent 的体验
++ 通讯（官方三种）：`props`、同域 `window`/`parent`、`bus` 事件总线，见下文「应用间通信」
+
+## Garfish（字节）
+
+> 官方：[快速开始](https://www.garfishjs.org/guide/quick-start/start.html) · [沙箱](https://www.garfishjs.org/guide/concept/sandbox.html) · [Garfish.channel](https://www.garfishjs.org/api/channel.html)
+> npm：`garfish@1.19.x`（2026-11）
+
++ 头条号场景演进的微前端方案；核心模块：Loader（HTML/JS entry）、Router、Sandbox、Store/Channel、插件
++ 支持路由驱动（`activeWhen`）与手动 `Garfish.loadApp`；可多实例；默认 **VM 沙箱**（`snapshot: false`）
+
+### 主应用
+
+```js
+import Garfish from 'garfish'
+
+Garfish.run({
+  basename: '/',
+  domGetter: '#subApp', // 挂载点须常驻，否则 Invalid domGetter
+  apps: [
+    {
+      name: 'react',
+      activeWhen: '/react',
+      entry: 'http://localhost:3000', // HTML entry
+      props: { msg: 'from host' },
+    },
+    {
+      name: 'vue',
+      activeWhen: '/vue',
+      entry: 'http://localhost:8080/index.js', // JS entry
+    },
+  ],
+  sandbox: {
+    snapshot: false, // false=VM（默认可多实例）；true=快照（不能多实例、难隔离主/子）
+    strictIsolation: false, // true 时容器走 Shadow DOM closed，查询/插入限制在作用域内
+  },
+})
+```
+
+### 子应用要点
+
++ 官方主推 **UMD** 产物：`libraryTarget: 'umd'`、`globalObject: 'window'`、资源 `publicPath` 用绝对地址、开发态 CORS
++ 入口导出 `provider`（`render` / `destroy`）；React 推荐 `@garfish/bridge-react`（v18 用 `@garfish/bridge-react-v18`）
++ 子应用路由要接主应用下发的 `basename`
+
+```js
+// 手写 provider（示意）
+export const provider = () => ({
+  render({ dom, basename, props }) {
+    // 挂到 dom 内，Router 设置 basename
+  },
+  destroy({ dom }) {
+    // 卸载框架根节点
+  },
+})
+```
+
+### 手动加载 / 缓存
+
+```js
+const app = await Garfish.loadApp('vue-app', {
+  domGetter: '#container',
+  entry: 'http://localhost:3000',
+  cache: true,
+})
+app.mounted ? app.show() : await app.mount()
+```
+
++ `cache: true` 时二次进入走 `show`（复用执行上下文，只再跑 `render`），性能更好但闭包副作用会残留——官方文档有专门说明
 
 ## Module Federation（Webpack 5）
 
@@ -332,7 +450,16 @@
 
 ## 应用间通信
 
-### qiankun - initGlobalState
+先按「协议形态」选型，再套各框架 API：
+
+| 形态 | 适用 | 注意 |
+|------|------|------|
+| **props 下发** | 初始化配置、注入方法、Token | 多为一次性/随挂载传入；更新要靠框架二次机制或事件 |
+| **全局状态 / Store** | 跨子应用共享用户态 | qiankun 2.x 有 `initGlobalState`；3.x 官方改为自行经 props 传 store |
+| **事件总线** | 松耦合通知（登录、刷新列表） | 卸载时要 off，防泄漏 |
+| **CustomEvent / URL / storage** | 框架无关兜底 | storage 无实时性；URL 只适合少量可序列化数据 |
+
+### qiankun 2.x - initGlobalState / props
 
   ```js
   // 主应用
@@ -355,6 +482,8 @@
   }
   ```
 
++ 3.x：内置全局状态 API 已移除，官方建议把自有 store 经 props 传入（见 [Migrating from 2.x](https://www.qiankunjs.com/cookbook/migrate-from-2x)）
+
 ### micro-app - dispatch / addDataListener
 
   ```js
@@ -366,6 +495,50 @@
   app.addDataListener((data) => console.log(data))
   ```
 
+### wujie - props / bus / window
+
+> 官方：[通信](https://wujie-micro.github.io/doc/guide/communication.html)
+
+  ```vue
+  <!-- 主应用 props -->
+  <WujieVue name="vue-app" url="http://localhost:8081" :props="{ user }" />
+  ```
+
+  ```js
+  // 子应用读 props
+  const props = window.$wujie?.props
+
+  // 主应用 bus（wujie-vue3）
+  import WujieVue from 'wujie-vue3'
+  const { bus } = WujieVue
+  bus.$on('user:logout', handler)
+  bus.$emit('user:logout', payload)
+
+  // 子应用 bus
+  window.$wujie?.bus.$on('user:logout', handler)
+  window.$wujie?.bus.$emit('user:logout', payload)
+  ```
+
++ 同域 iframe 还可 `iframe.contentWindow` / `window.parent` 直连；组件内 `$on` 要在 unmount 时 `$off`（保活销毁时框架会清订阅，组件反复挂载仍需自己配对）
+
+### Garfish - props / channel
+
+> 官方：[Garfish.channel](https://www.garfishjs.org/api/channel.html)（EventEmitter2）
+
+  ```js
+  // 主应用：注册时 props；运行时 channel
+  Garfish.run({
+    apps: [{ name: 'vue-app', entry: '...', props: { msg: 'hello' } }],
+  })
+  window.Garfish.channel.emit('login', { name: 'alice' })
+
+  // 子应用：provider 收到 props；channel 监听
+  window.Garfish?.channel.on('login', (userInfo) => {
+    console.log(userInfo.name)
+  })
+  // 卸载时 removeListener，避免泄漏
+  ```
+
 ### 通用方案
 
 + **CustomEvent** — 跨应用事件总线，不依赖框架
@@ -373,6 +546,16 @@
 + **共享存储** — localStorage / sessionStorage，需注意同步问题
 
 ## JS 沙箱原理
+
+### 各方案怎么隔离 JS
+
+| 方案 | 机制 | 多实例 | 备注 |
+|------|------|--------|------|
+| single-spa | 无内置沙箱 | — | 需自建或叠 qiankun/Garfish |
+| qiankun | Proxy 沙箱（默认）/ 快照沙箱 | Proxy 可；快照难 | 2.x 文档见官网 API `sandbox` |
+| Garfish | 默认 VM；可选快照；可关沙箱 | VM 可；快照不可 | 快照无法隔离主/子；ESM 需插件且有性能代价 |
+| wujie | iframe 独立 Window | 天然 | DOM 在主文档 WebComponent / Shadow |
+| micro-app | WebComponent + 运行时隔离 | 高 | 以组件方式嵌入 |
 
 ### Proxy 沙箱（qiankun 默认）
 
@@ -408,14 +591,25 @@
 
 + **多实例沙箱**：每个子应用独立的 fakeWindow，互不影响
 + **快照沙箱**（兼容模式）：激活时记录 window 快照，卸载时恢复
++ Garfish 还会收集 `setInterval` / `addEventListener` 等副作用，卸载时 `recover`；持久化存储靠命名空间改写（见官方沙箱文）
 
 ## CSS 隔离方案
 
-+ **Shadow DOM** — 天然隔离，但事件冒泡和第三方 UI 库有兼容问题
-+ **CSS Scoped / BEM** — 约定命名空间，简单但靠自觉
-+ **CSS Modules** — 编译时生成唯一类名
-+ **qiankun strictStyleIsolation** — 使用 Shadow DOM
-+ **qiankun experimentalStyleIsolation** — 给所有样式加前缀选择器（类似 Angular 方案）
+### 通用手段
+
++ **Shadow DOM** — 天然隔离，但事件冒泡和第三方 UI 库（弹层挂 `body`）常要适配
++ **CSS Scoped / BEM / CSS Modules** — 工程约定或编译期改名，简单但靠自觉 / 构建链
++ **运行时改写选择器 / `@scope`** — 基座在加载时给规则加容器前缀
+
+### 各框架
+
+| 方案 | 做法 | 出处 |
+|------|------|------|
+| qiankun **2.x** | `sandbox.strictStyleIsolation` → Shadow DOM；`experimentalStyleIsolation` → 选择器加 `div[data-qiankun-appName]` 前缀（`@keyframes` 等不改写） | [qiankun API](https://qiankun.umijs.org/zh/api/) |
+| qiankun **3.x** | 上述两项移除；`sandbox.styleIsolation: true` 用原生 CSS `@scope ([data-name="app"])` | [样式隔离](https://www.qiankunjs.com/zh-CN/internals/style-isolation) |
+| Garfish | 默认收集/卸载样式副作用；多实例仍可能互染 → `strictIsolation: true`（Shadow DOM closed）或 `@garfish/css-scope` 等插件 | [沙箱机制](https://www.garfishjs.org/guide/concept/sandbox.html) |
+| wujie | 子应用样式落在 Shadow 容器（`$wujie.shadowRoot`） | 官方变量说明 |
+| micro-app | WebComponent / Shadow DOM 容器隔离 | 方案定位即组件化隔离 |
 
 ## 常见问题
 
@@ -634,7 +828,9 @@
 
 | 方案 | Vite 支持现状（官方口径） | 注意点 |
 |------|--------------------------|--------|
+| **single-spa** | 本身不绑构建器；子应用用 SystemJS / 原生 import / UMD 均可 | 兼容性取决于你怎么实现 `app` 加载函数 |
 | **qiankun** | **2.x（next 分支）原生支持 Vite 5+**，通过 `@qiankunjs/bundler-plugin` 的 Vite 插件；子应用以原生 ESM 运行在 qiankun 的 ESM 沙箱里，经 import maps 路由，**不再需要 SystemJS 转换** | 1.x 时代需社区 `vite-plugin-qiankun`（仅 1.0.15，长期未维护），2.x 已官方化；1.x 接 Vite 坑最多（dev 白屏、样式丢失） |
+| **Garfish** | 官方主推 UMD；有 Vite 接入指南；ESM 进 VM 沙箱需 `@garfish/es-module`（有性能代价），也可关沙箱 | 新 Vite 子应用要单独评估沙箱策略 |
 | **micro-app** | 基于 WebComponent 容器，对 Vite 友好（官方文档站本身就是 VitePress）；子应用 `vite.config` 基本照常，无需特殊打包格式 | 注意子应用 `vite.config` 的 `base` 设为基座下挂载路径，dev 下 `@micro-zoe/micro-app` 直接 fetch ESM 即可 |
 | **wujie** | 官方明确「支持 vite 框架」；子应用 JS 跑在 iframe 沙箱、DOM 渲染在基座 WebComponent，天然隔离与构建器无关 | 子应用 Vite 配置照常，挂载到基座用 `<WujieVue :url>` 即可 |
 | **Module Federation** | 1.0 只能 Webpack 5；Vite 下用社区 `@originjs/vite-plugin-federation`（1.4.x，兼容 1.0 协议）；**2.0 有官方 `@module-federation/vite`**，原生支持 | 见上「Module Federation 2.0」节 |
@@ -686,6 +882,8 @@
 
 ### 选型建议
 
-+ 新项目想用 qiankun + Vite → **直接用 qiankun 2.x + `@qiankunjs/bundler-plugin`**，别碰已停更的 `vite-plugin-qiankun`
++ 要自己控调度、先理解生命周期 → 从 **single-spa** 看底座，再决定是否上 qiankun/Garfish
++ 新项目想用 qiankun + Vite → **直接用 qiankun 2.x + `@qiankunjs/bundler-plugin`**，别碰已停更的 `vite-plugin-qiankun`；盯紧 3.x 迁移（全局状态、样式 API 会变）
++ 要多实例、预加载、字节系文档习惯 → **Garfish**；Vite/ESM 子应用先确认沙箱策略
 + 隔离性优先、不想折腾沙箱 → micro-app / wujie 对 Vite 更「无感」
 + 走模块共享（不是应用级加载）→ Module Federation 2.0 的 `@module-federation/vite` 才是正解，不要拿 1.0 + Vite 硬凑
