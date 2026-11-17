@@ -612,7 +612,7 @@ npx electron-rebuild
 ## 常见问题
 
 **Q: Electron 应用体积为什么这么大？**
-A: 因为打包了整个 Chromium 和 Node.js 运行时。一个最简应用也有 ~80MB。如果需要更小的体积，考虑 Tauri（使用系统 WebView）。
+A: 因为打包了整个 Chromium 和 Node.js 运行时。一个最简应用也有 ~80MB。如果需要更小的体积，考虑 [Tauri 2](/notes/cross-platform/tauri2)（系统 WebView + Rust，Capabilities 收权限）。
 
 **Q: Electron 和 NW.js 的区别？**
 A: Electron 的社区生态更成熟，VS Code、Discord、Slack 都在用。NW.js 的 Node 集成方式不同（直接在页面中可用），但维护力度不如 Electron。
