@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 132 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 133 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -141,3 +141,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最小路径和（Minimum Path Sum） | Medium | [minimum-path-sum](./minimum-path-sum.md) |
 | 去除重复字母（Remove Duplicate Letters） | Medium | [remove-duplicate-letters](./remove-duplicate-letters.md) |
 | 最长回文串（Longest Palindrome） | Easy | [longest-palindrome](./longest-palindrome.md) |
+| 省份数量（Number of Provinces） | Medium | [number-of-provinces](./number-of-provinces.md) |
