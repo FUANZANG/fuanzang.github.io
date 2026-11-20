@@ -65,5 +65,5 @@
 ## 6. 参考
 
 - [JEDEC DDR5 标准](https://www.jedec.org/)
-- [AnandTech DDR5 评测](https://www.anandtag.com/)
+- [AnandTech](https://www.anandtech.com/)
 - [三星 DDR6 新闻](https://www.samsung.com/semiconductor/)

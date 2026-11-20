@@ -169,6 +169,7 @@ export default withPwa(defineConfig({
             { text: '制程工艺与摩尔定律', link: '/hardware/chips/chip-process' },
             { text: 'DDR 内存标准', link: '/hardware/chips/ddr-standards' },
             { text: 'GPU 架构与显存', link: '/hardware/chips/gpu-architectures' },
+            { text: '本地 AI 硬件选型', link: '/hardware/chips/local-ai-hardware' },
             { text: '移动 SoC 横评', link: '/hardware/chips/mobile-soc' }
           ]
         },

@@ -2,7 +2,7 @@
 
 > 本文基于 2026-11 时点（vLLM 主线 0.33.0 / vllm-metal 0.32.0，均在 GitHub/PyPI 当日核验；vllm-metal 2026-09 首发、与主线同步版本号，面向 Apple Silicon）。
 
-> 关联：[本地大模型](/notes/ai/local-llm)（Ollama/LM Studio 的定位）、[Hugging Face 生态](/notes/ai/huggingface)（模型从哪来）、[Python LLM 开发](/notes/ai/python-llm-apps)（端点怎么接）、[模型微调与定制](/notes/ai/fine-tuning)（量化与 adapter 的背景）。
+> 关联：[本地大模型](/notes/ai/local-llm)（Ollama/LM Studio 的定位）、[本地 AI 硬件选型](/hardware/chips/local-ai-hardware)（显存/统一内存档位）、[Hugging Face 生态](/notes/ai/huggingface)（模型从哪来）、[Python LLM 开发](/notes/ai/python-llm-apps)（端点怎么接）、[模型微调与定制](/notes/ai/fine-tuning)（量化与 adapter 的背景）。
 
 ## 定位：把模型变成"自托管 OpenAI"
 

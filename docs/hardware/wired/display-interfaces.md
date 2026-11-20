@@ -54,4 +54,4 @@
 
 - [HDMI 官方规范](https://www.hdmi.org/)
 - [VESA DisplayPort 规范](https://www.vesa.org/technical-resources/)
-- [AnandTech 显示接口评测](https://www.anandtag.com/)
+- [AnandTech](https://www.anandtech.com/)

@@ -135,3 +135,5 @@ M5 基线 153 GB/s 是 M4 的 ~1.28 倍、M1 的 2 倍以上。统一内存让�
 - [HBM 技术简介](https://en.wikipedia.org/wiki/High_Bandwidth_Memory)
 - [相关：CPU 架构对比](./cpu-architectures.md)
 - [相关：DDR 内存标准](./ddr-standards.md)
+- [相关：本地 AI 硬件选型](./local-ai-hardware.md) — 显存/统一内存怎么对齐模型档
+- 笔记：[本地大模型](/notes/ai/local-llm)

@@ -2,7 +2,7 @@
 
 > 本文基于 2026-09 时点（LM Studio 0.4.x / Ollama 0.21+）。前提环境：Apple Silicon（M 系列）+ 24GB 统一内存的 Mac。本地跑模型不是"穷人版云端"——它是隐私、离线、零边际成本、无限制实验的独立价值。
 
-> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（量化要懂参数与显存）、[推理模型](/notes/ai/reasoning-models)（r1 蒸馏版为什么"顿一下才答"）、[RAG](/notes/ai/rag)（本地 embedding 落地）、[前端对接 AI](/notes/ai/ai-frontend-integration)（OpenAI 兼容封装）、[模型微调与定制](/notes/ai/fine-tuning)（在本地训 LoRA）、[vLLM 推理服务](/notes/ai/vllm-serving)（vllm-metal：本机高并发 OpenAI 兼容端点）。
+> 关联：[LLM 基础概念](/notes/ai/llm-fundamentals)（量化要懂参数与显存）、[推理模型](/notes/ai/reasoning-models)（r1 蒸馏版为什么"顿一下才答"）、[RAG](/notes/ai/rag)（本地 embedding 落地）、[前端对接 AI](/notes/ai/ai-frontend-integration)（OpenAI 兼容封装）、[模型微调与定制](/notes/ai/fine-tuning)（在本地训 LoRA）、[vLLM 推理服务](/notes/ai/vllm-serving)（vllm-metal：本机高并发 OpenAI 兼容端点）。买机器 / 显存档位见 [本地 AI 硬件选型](/hardware/chips/local-ai-hardware)。
 
 ## 两大工具：都在用，各干什么
 
@@ -148,3 +148,4 @@ LM Studio / Ollama（引擎：量化加载、推理、暴露 :1234 / :11434）
 + [LM Studio 文档](https://lmstudio.ai/docs)
 + [Ollama 官网](https://ollama.com/)
 + [GGUF 量化说明（llama.cpp）](https://github.com/ggml-org/llama.cpp)
++ 本站：[本地 AI 硬件选型](/hardware/chips/local-ai-hardware) · [vLLM 推理服务](/notes/ai/vllm-serving)
