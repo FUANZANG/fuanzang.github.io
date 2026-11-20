@@ -2,7 +2,7 @@
 
 > 本文件记录在浏览器端运行 AI 的三种主要方案：Transformers.js（ONNX/WASM/WebGPU）、WebLLM（本地 LLM）、WebNN API（浏览器原生 ML 加速）。
 >
-> 基于以下版本：@huggingface/transformers 4.x | @mlc-ai/web-llm 0.x
+> 基于 2026-11 时点（Transformers.js / WebLLM 主线；浏览器能力以 [WebGPU](/notes/frontier/webgpu) 为准）。
 
 ## 1. 概述
 
@@ -225,7 +225,7 @@ console.log(webllm.prebuiltAppConfig.model_list)
 - `Phi-3.5-mini-instruct-q4f16_1-MLC` — Microsoft Phi，小而强
 - `gemma-2-2b-it-q4f32_1-MLC` — Google Gemma 2B
 
-> ⚠️ 运行 LLM 需要 WebGPU 支持（Chrome 113+）和足够的显存（通常 >= 4GB）。Safari 尚不支持 WebGPU（截至 2025 年支持仍有限制）。
+> ⚠️ 运行 LLM 需要 WebGPU 与足够显存（通常 ≥ 4GB）。Chrome/Edge 113+ 稳定；**Safari 26+**（需较新系统，如 macOS 26 / iOS 26）已默认开启，旧系统即使装了 Safari 26 也可能没有；Firefox 仍偏预览/受限。细节见 [WebGPU](/notes/frontier/webgpu)。
 
 ---
 

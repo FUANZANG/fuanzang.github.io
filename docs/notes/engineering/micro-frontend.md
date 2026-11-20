@@ -16,7 +16,7 @@
 | **single-spa** | 注册应用 + activity 函数调度生命周期 | 不自带沙箱（需自建或上层框架） | 无 | 自研基座、理解底层调度 |
 | **qiankun** | 基于 single-spa，JS 沙箱 + CSS 隔离 | 中（Proxy / 快照沙箱） | 无 | 企业级后台、老系统改造 |
 | **Garfish** | Loader + Router + VM/快照沙箱 + Store/Channel | 中高（默认 VM；`strictIsolation` 走 Shadow DOM） | 官方主推 UMD 产物 | 多团队后台、要多实例 / 预加载 |
-| **micro-app** | WebComponent 容器 | 高（Shadow DOM） | 无 | 京东体系、组件化思维 |
+| **micro-app** | WebComponent 容器 | 中高（默认 scopecss + JS 沙箱；可选 Shadow DOM） | 无 | 京东体系、组件化思维 |
 | **wujie** | iframe + WebComponent | 高（iframe 天然隔离） | 无 | 对隔离性要求高的场景 |
 | **Module Federation** | Webpack 5 模块共享（1.0）/ 多构建器运行时共享（2.0） | 低（共享运行时） | 1.0 需 Webpack 5；2.0 无构建器限制 | 同技术栈、模块共享 |
 
