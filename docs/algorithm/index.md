@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 134 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 135 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -143,3 +143,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 最长回文串（Longest Palindrome） | Easy | [longest-palindrome](./longest-palindrome.md) |
 | 省份数量（Number of Provinces） | Medium | [number-of-provinces](./number-of-provinces.md) |
 | 买卖股票的最佳时机含手续费（Best Time to Buy and Sell Stock with Transaction Fee） | Medium | [best-time-to-buy-and-sell-stock-with-transaction-fee](./best-time-to-buy-and-sell-stock-with-transaction-fee.md) |
+| 找出字符串中第一个匹配项的下标（Find the Index of the First Occurrence in a String） | Easy | [find-the-index-of-the-first-occurrence-in-a-string](./find-the-index-of-the-first-occurrence-in-a-string.md) |
