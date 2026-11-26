@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 137 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 138 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -146,3 +146,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 找出字符串中第一个匹配项的下标（Find the Index of the First Occurrence in a String） | Easy | [find-the-index-of-the-first-occurrence-in-a-string](./find-the-index-of-the-first-occurrence-in-a-string.md) |
 | 最小高度树（Minimum Height Trees） | Medium | [minimum-height-tree](./minimum-height-tree.md) |
 | 二叉树的最大宽度（Maximum Width of Binary Tree） | Medium | [maximum-width-of-binary-tree](./maximum-width-of-binary-tree.md) |
+| 被围绕的区域（Surrounded Regions） | Medium | [surrounded-regions](./surrounded-regions.md) |
