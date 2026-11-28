@@ -5,7 +5,7 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 
 # 算法题库
 
-> 共 139 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
+> 共 140 题（按 LeetCode 题组织，已去重合并）。结构先看 [数据结构与算法识字](./fundamentals.md)，再按题练习。
 
 | 题目 | 难度 | 链接 |
 |------|------|------|
@@ -148,3 +148,4 @@ description: 每日 JavaScript 算法题练习，含题目、思路与解法
 | 二叉树的最大宽度（Maximum Width of Binary Tree） | Medium | [maximum-width-of-binary-tree](./maximum-width-of-binary-tree.md) |
 | 被围绕的区域（Surrounded Regions） | Medium | [surrounded-regions](./surrounded-regions.md) |
 | 最长回文子序列（Longest Palindromic Subsequence） | Medium | [longest-palindromic-subsequence](./longest-palindromic-subsequence.md) |
+| 超级丑数（Super Ugly Number） | Medium | [super-ugly-number](./super-ugly-number.md) |
